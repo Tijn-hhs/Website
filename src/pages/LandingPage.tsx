@@ -44,13 +44,11 @@ export default function LandingPage() {
 
             {/* Right Image */}
             <div className="flex justify-center lg:justify-end">
-              <div className="w-full max-w-md lg:max-w-full rounded-2xl shadow-xl overflow-hidden">
-                <img
-                  src="/assets/Hero_banner.jpg"
-                  alt="International students in a modern city"
-                  className="w-full h-auto object-cover"
-                />
-              </div>
+              <img
+                src="/assets/Hero_mock.png"
+                alt="International students in a modern city"
+                className="w-full h-auto"
+              />
             </div>
           </div>
         </div>
