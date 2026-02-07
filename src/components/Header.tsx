@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { Link } from 'react-router-dom'
+import logo from '../assets/Logo.png'
 
 export default function Header() {
   return (
@@ -8,7 +9,8 @@ export default function Header() {
         <div className="flex items-center">
           <Link to="/" aria-label="Go to homepage">
             <img
-              src={`${import.meta.env.BASE_URL}assets/Logo.png`}
+              // Vite-imported asset avoids production path issues on AWS.
+              src={logo}
               alt="LiveCity"
               className="h-9 w-auto"
             />

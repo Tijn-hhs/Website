@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import heroMock from '../assets/Hero_mock.png'
 import Header from '../components/Header'
 
 export default function LandingPage() {
@@ -45,7 +46,8 @@ export default function LandingPage() {
             {/* Right Image */}
             <div className="flex justify-center lg:justify-end">
               <img
-                src={`${import.meta.env.BASE_URL}assets/Hero_mock.png`}
+                // Vite-imported asset avoids production path issues on AWS.
+                src={heroMock}
                 alt="International students in a modern city"
                 className="w-full h-auto"
               />
