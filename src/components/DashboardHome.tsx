@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import StepCard from './StepCard'
 
 const steps = [
@@ -13,6 +14,20 @@ const steps = [
   'Daily Life',
   'Cost of Living'
 ]
+
+const stepRoutes: Record<string, string | undefined> = {
+  'University Application': '/dashboard/university-application',
+  'Student Visa': '/dashboard/student-visa',
+  'Before Departure': '/dashboard/before-departure',
+  'Immigration & Registration': '/dashboard/immigration-registration',
+  'Arrival & First Days': '/dashboard/arrival-first-days',
+  Housing: '/dashboard/housing',
+  'Legal, Banking & Insurance': '/dashboard/legal-banking-insurance',
+  Healthcare: '/dashboard/healthcare',
+  'Information Centre': '/dashboard/information-centre',
+  'Daily Life': '/dashboard/daily-life',
+  'Cost of Living': '/dashboard/cost-of-living',
+}
 
 export default function DashboardHome() {
   return (
@@ -53,12 +68,12 @@ export default function DashboardHome() {
           <p className="mt-4 text-sm text-slate-600">
             Next step: Step 1 — University Application
           </p>
-          <button
-            type="button"
+          <Link
+            to="/dashboard/university-application"
             className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:scale-[1.02]"
           >
             Open Step
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -75,6 +90,7 @@ export default function DashboardHome() {
               title={title}
               description="Mock description for this step goes here."
               highlighted={index === 0}
+              to={stepRoutes[title]}
             />
           ))}
         </div>

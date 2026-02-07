@@ -1,19 +1,24 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 type StepCardProps = {
   stepNumber: number
   title: string
   description: string
   highlighted?: boolean
+  to?: string
 }
 
 export default function StepCard({
   stepNumber,
   title,
   description,
-  highlighted = false
+  highlighted = false,
+  to
 }: StepCardProps) {
   const [completed, setCompleted] = useState(false)
+  const navigate = useNavigate()
+  const isClickable = Boolean(to)
   const statusStyles = completed
     ? 'border-teal-200 ring-1 ring-teal-100'
     : highlighted
@@ -22,7 +27,25 @@ export default function StepCard({
 
   return (
     <article
-      className={`rounded-2xl border bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md ${statusStyles}`}
+      className={`rounded-2xl border bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md ${statusStyles} ${
+        isClickable ? 'cursor-pointer' : 'cursor-not-allowed'
+      }`}
+      role={isClickable ? 'link' : undefined}
+      tabIndex={isClickable ? 0 : -1}
+      onClick={() => {
+        if (to) {
+          navigate(to)
+        }
+      }}
+      onKeyDown={(event) => {
+        if (!to) {
+          return
+        }
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          navigate(to)
+        }
+      }}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -45,11 +68,15 @@ export default function StepCard({
           ) : null}
         </div>
       </div>
-      <label className="mt-5 flex items-center gap-2 text-sm font-medium text-slate-600">
+      <label
+        className="mt-5 flex items-center gap-2 text-sm font-medium text-slate-600"
+        onClick={(event) => event.stopPropagation()}
+      >
         <input
           type="checkbox"
           checked={completed}
           onChange={(event) => setCompleted(event.target.checked)}
+          onClick={(event) => event.stopPropagation()}
           className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-400"
         />
         Mark as done
