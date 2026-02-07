@@ -6,7 +6,7 @@ frontend:
         - npm ci
     build:
       commands:
-        - npx ampx generate outputs --format json --outputs-version 1.4
+        - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json --outputs-version 1.4
         - cp amplify_outputs.json public/amplify_outputs.json
         - npm run build
   artifacts:
