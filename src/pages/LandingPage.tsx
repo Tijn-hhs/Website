@@ -45,7 +45,7 @@ export default function LandingPage() {
             {/* Right Image */}
             <div className="flex justify-center lg:justify-end">
               <img
-                src="/assets/Hero_mock.png"
+                src={`${import.meta.env.BASE_URL}assets/Hero_mock.png`}
                 alt="International students in a modern city"
                 className="w-full h-auto"
               />

@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { Link } from 'react-router-dom'
 
 export default function Header() {
@@ -5,11 +6,13 @@ export default function Header() {
     <header className="w-full bg-white border-b border-slate-200/70 shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
         <div className="flex items-center">
-          <img
-            src="/assets/Logo.png"
-            alt="LiveCity"
-            className="h-9 w-auto"
-          />
+          <Link to="/" aria-label="Go to homepage">
+            <img
+              src={`${import.meta.env.BASE_URL}assets/Logo.png`}
+              alt="LiveCity"
+              className="h-9 w-auto"
+            />
+          </Link>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
