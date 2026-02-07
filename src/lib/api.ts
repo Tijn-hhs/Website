@@ -1,7 +1,7 @@
 import { get, put } from 'aws-amplify/api'
 import { UserProfile, UserData } from '../types/user'
 
-const API_NAME = 'userApi'
+const API_NAME = 'livecityRest'
 
 export async function fetchUserData(): Promise<UserData> {
   try {
