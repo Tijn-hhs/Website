@@ -1,18 +1,28 @@
 version: 1
-frontend:
-  phases:
-    preBuild:
-      commands:
-        - npm ci
-    build:
-      commands:
-        - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json --outputs-version 1.4
-        - cp amplify_outputs.json public/amplify_outputs.json
-        - npm run build
-  artifacts:
-    baseDirectory: build
-    files:
-      - '**/*'
-  cache:
-    paths:
-      - node_modules/**/*
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            # 1) Deploy Gen 2 backend voor deze app+branch (zodat stacks bestaan)
+            - npx ampx pipeline-deploy --app-id $AWS_APP_ID --branch $AWS_BRANCH
+
+            # 2) Genereer outputs voor precies die backend
+            - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json --outputs-version 1.4
+
+            # 3) Maak outputs runtime beschikbaar
+            - cp amplify_outputs.json public/amplify_outputs.json
+
+            # 4) Build frontend
+            - npm run build
+      artifacts:
+        baseDirectory: build
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+    appRoot: .
