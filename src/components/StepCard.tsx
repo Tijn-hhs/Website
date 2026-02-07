@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 type StepCardProps = {
@@ -7,6 +6,8 @@ type StepCardProps = {
   description: string
   highlighted?: boolean
   to?: string
+  completed?: boolean
+  onComplete?: (completed: boolean) => void
 }
 
 export default function StepCard({
@@ -14,9 +15,10 @@ export default function StepCard({
   title,
   description,
   highlighted = false,
-  to
+  to,
+  completed = false,
+  onComplete,
 }: StepCardProps) {
-  const [completed, setCompleted] = useState(false)
   const navigate = useNavigate()
   const isClickable = Boolean(to)
   const statusStyles = completed
@@ -75,7 +77,12 @@ export default function StepCard({
         <input
           type="checkbox"
           checked={completed}
-          onChange={(event) => setCompleted(event.target.checked)}
+          onChange={(event) => {
+            const newValue = event.target.checked
+            if (onComplete) {
+              onComplete(newValue)
+            }
+          }}
           onClick={(event) => event.stopPropagation()}
           className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-400"
         />

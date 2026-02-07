@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AuthGate } from './components/AuthGate'
 import DashboardPage from './pages/DashboardPage'
 import LandingPage from './pages/LandingPage'
 import MySituationPage from './pages/MySituationPage'
@@ -19,37 +20,110 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <AuthGate>
+              <DashboardPage />
+            </AuthGate>
+          }
+        />
         <Route
           path="/dashboard/university-application"
-          element={<UniversityApplicationPage />}
+          element={
+            <AuthGate>
+              <UniversityApplicationPage />
+            </AuthGate>
+          }
         />
-        <Route path="/dashboard/student-visa" element={<StudentVisaPage />} />
+        <Route
+          path="/dashboard/student-visa"
+          element={
+            <AuthGate>
+              <StudentVisaPage />
+            </AuthGate>
+          }
+        />
         <Route
           path="/dashboard/before-departure"
-          element={<BeforeDeparturePage />}
+          element={
+            <AuthGate>
+              <BeforeDeparturePage />
+            </AuthGate>
+          }
         />
         <Route
           path="/dashboard/immigration-registration"
-          element={<ImmigrationRegistrationPage />}
+          element={
+            <AuthGate>
+              <ImmigrationRegistrationPage />
+            </AuthGate>
+          }
         />
         <Route
           path="/dashboard/arrival-first-days"
-          element={<ArrivalFirstDaysPage />}
+          element={
+            <AuthGate>
+              <ArrivalFirstDaysPage />
+            </AuthGate>
+          }
         />
-        <Route path="/dashboard/housing" element={<HousingPage />} />
+        <Route
+          path="/dashboard/housing"
+          element={
+            <AuthGate>
+              <HousingPage />
+            </AuthGate>
+          }
+        />
         <Route
           path="/dashboard/legal-banking-insurance"
-          element={<LegalBankingInsurancePage />}
+          element={
+            <AuthGate>
+              <LegalBankingInsurancePage />
+            </AuthGate>
+          }
         />
-        <Route path="/dashboard/healthcare" element={<HealthcarePage />} />
+        <Route
+          path="/dashboard/healthcare"
+          element={
+            <AuthGate>
+              <HealthcarePage />
+            </AuthGate>
+          }
+        />
         <Route
           path="/dashboard/information-centre"
-          element={<InformationCentrePage />}
+          element={
+            <AuthGate>
+              <InformationCentrePage />
+            </AuthGate>
+          }
         />
-        <Route path="/dashboard/daily-life" element={<DailyLifePage />} />
-        <Route path="/dashboard/cost-of-living" element={<CostOfLivingPage />} />
-        <Route path="/my-situation" element={<MySituationPage />} />
+        <Route
+          path="/dashboard/daily-life"
+          element={
+            <AuthGate>
+              <DailyLifePage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/dashboard/cost-of-living"
+          element={
+            <AuthGate>
+              <CostOfLivingPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/my-situation"
+          element={
+            <AuthGate>
+              <MySituationPage />
+            </AuthGate>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

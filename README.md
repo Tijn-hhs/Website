@@ -36,6 +36,20 @@ npm run dev
 
 The app will be available at `http://localhost:5173`
 
+### Amplify Gen 2 (Local Backend)
+
+```bash
+npm run sandbox
+```
+
+```bash
+npm run amplify:outputs
+```
+
+```bash
+npm run dev
+```
+
 ### Build
 
 ```bash
