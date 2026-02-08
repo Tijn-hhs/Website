@@ -1,8 +1,27 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import heroMock from '../assets/Hero_mock.png'
 import Header from '../components/Header'
+import { isSignedIn } from '../lib/auth'
 
 export default function LandingPage() {
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleGetStarted = async () => {
+    setIsLoading(true)
+    try {
+      const signed = await isSignedIn()
+      if (signed) {
+        navigate('/dashboard')
+      } else {
+        navigate('/onboarding')
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -26,27 +45,21 @@ export default function LandingPage() {
                 From choosing the right university to settling into your new city LiveCity guides you through every step of your relocation.
               </p>
 
-              {/* CTA Buttons */}
+              {/* CTA Button */}
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link
-                  to="/my-situation"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-800 hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                <button
+                  onClick={handleGetStarted}
+                  disabled={isLoading}
+                  className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-800 hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Get Started
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-slate-300 text-slate-700 font-semibold rounded-xl hover:border-slate-400 hover:bg-slate-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
-                >
-                  Go to Dashboard
-                </Link>
+                  {isLoading ? 'Loading...' : 'Get Started'}
+                </button>
               </div>
             </div>
 
             {/* Right Image */}
             <div className="flex justify-center lg:justify-end">
               <img
-                // Vite-imported asset avoids production path issues on AWS.
                 src={heroMock}
                 alt="International students in a modern city"
                 className="w-full h-auto"

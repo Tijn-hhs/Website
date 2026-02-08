@@ -1,7 +1,8 @@
-import { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { ReactNode, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
 import { totalOnboardingSteps } from './steps'
+import { isSignedIn } from '../lib/auth'
 
 interface OnboardingLayoutProps {
   stepId: number
@@ -24,7 +25,23 @@ export default function OnboardingLayout({
   nextDisabled,
   nextLabel,
 }: OnboardingLayoutProps) {
+  const navigate = useNavigate()
+  const [isLoadingExit, setIsLoadingExit] = useState(false)
   const progressPercent = Math.min(100, Math.round((stepId / totalOnboardingSteps) * 100))
+
+  const handleSaveAndExit = async () => {
+    setIsLoadingExit(true)
+    try {
+      const signed = await isSignedIn()
+      if (signed) {
+        navigate('/dashboard')
+      } else {
+        navigate(`/auth?returnTo=/dashboard`)
+      }
+    } finally {
+      setIsLoadingExit(false)
+    }
+  }
 
   return (
     <>
@@ -33,12 +50,13 @@ export default function OnboardingLayout({
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between text-sm text-slate-500">
             <span>Step {stepId} of {totalOnboardingSteps}</span>
-            <Link
-              to="/dashboard"
-              className="text-blue-600 hover:text-blue-700 font-medium"
+            <button
+              onClick={handleSaveAndExit}
+              disabled={isLoadingExit}
+              className="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Save and exit
-            </Link>
+              {isLoadingExit ? 'Loading...' : 'Save and exit'}
+            </button>
           </div>
 
           <div className="mt-3 h-2 w-full rounded-full bg-slate-100">

@@ -1,3 +1,350 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   LiveCity - Amplify Authenticator Styling
+   - Single centered card (no nested Amplify card)
+   - Blue tabs (no green/teal)
+   - Consistent with LiveCity brand
+   ============================================================ */
+
+/* 1. NEUTRALIZE AMPLIFY LAYOUT - Make it fit inside our AuthLayout card */
+[data-amplify-authenticator],
+.amplify-authenticator {
+  background: transparent !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+/* 2. REMOVE NESTED CARD - Kill Amplify's internal container/card styling */
+.amplify-card,
+.amplify-authenticator__container,
+.amplify-authenticator-container,
+.amplify-authenticator__wrapper,
+.amplify-authenticator__router,
+.amplify-form-section,
+.amplify-authenticator__form {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Make forms full width inside our card */
+[data-amplify-authenticator] form,
+[data-amplify-authenticator] .amplify-form {
+  width: 100% !important;
+  max-width: none !important;
+  background: transparent !important;
+}
+
+.amplify-container {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* 3. TABS - Centered + Blue accent (NO GREEN) */
+.amplify-tabs {
+  width: 100% !important;
+  margin: 0 0 1.5rem 0 !important;
+  padding: 0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.amplify-tabs__list {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.amplify-tabs__item,
+.amplify-tabs__trigger {
+  padding: 0.875rem 1.5rem !important;
+  margin: 0 !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  background: transparent !important;
+  color: #64748b !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  text-transform: capitalize !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  flex: 1 !important;
+  text-align: center !important;
+}
+
+.amplify-tabs__item[data-selected="true"],
+.amplify-tabs__trigger[aria-selected="true"] {
+  color: #0f172a !important;
+  border-bottom-color: #3b82f6 !important; /* LiveCity blue - NO GREEN */
+  background: transparent !important;
+}
+
+.amplify-tabs__item:hover:not([data-selected="true"]),
+.amplify-tabs__trigger:hover:not([aria-selected="true"]) {
+  color: #475569 !important;
+}
+
+.amplify-tabs__content {
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+/* 4. FORM FIELDS */
+.amplify-field,
+.amplify-fieldgroup,
+.amplify-field-group {
+  margin-bottom: 1.25rem !important;
+  width: 100% !important;
+}
+
+.amplify-field:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* 5. LABELS */
+.amplify-label {
+  display: block !important;
+  margin-bottom: 0.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #0f172a !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+}
+
+/* 6. INPUTS - Rounded-xl with blue focus ring */
+.amplify-input,
+.amplify-select,
+.amplify-textarea {
+  width: 100% !important;
+  padding: 0.75rem 1rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important; /* rounded-xl */
+  font-size: 1rem !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  background: white !important;
+  color: #0f172a !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+}
+
+.amplify-input::placeholder,
+.amplify-select::placeholder,
+.amplify-textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.amplify-input:focus,
+.amplify-select:focus,
+.amplify-textarea:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+.amplify-input:disabled,
+.amplify-select:disabled,
+.amplify-textarea:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  background: #f8fafc !important;
+}
+
+/* 7. BUTTONS - Full width, rounded-xl, blue gradient */
+.amplify-button {
+  width: 100% !important;
+  padding: 0.875rem 1rem !important;
+  border-radius: 0.75rem !important; /* rounded-xl */
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+  text-transform: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Primary button - LiveCity blue gradient (replaces Amplify's green) */
+.amplify-button--primary,
+.amplify-button[type="submit"] {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: white !important;
+}
+
+.amplify-button--primary:hover,
+.amplify-button--primary:focus,
+.amplify-button[type="submit"]:hover,
+.amplify-button[type="submit"]:focus {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.amplify-button--primary:active,
+.amplify-button[type="submit"]:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Secondary button - light gray */
+.amplify-button--secondary,
+.amplify-button[type="button"] {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.amplify-button--secondary:hover,
+.amplify-button[type="button"]:hover {
+  background: #e2e8f0 !important;
+}
+
+.amplify-button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* 8. LINKS - LiveCity blue */
+.amplify-link {
+  color: #3b82f6 !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: color 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.amplify-link:hover {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+}
+
+/* 9. CHECKBOXES/RADIOS - Blue accent */
+.amplify-checkbox,
+.amplify-radio {
+  accent-color: #3b82f6 !important;
+  cursor: pointer !important;
+}
+
+.amplify-checkbox:focus,
+.amplify-radio:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5) !important;
+  outline-offset: 2px !important;
+}
+
+/* 10. ERROR MESSAGES */
+.amplify-field__error-message,
+.amplify-error {
+  color: #dc2626 !important;
+  font-size: 0.875rem !important;
+  margin-top: 0.5rem !important;
+  display: block !important;
+}
+
+/* 11. HELP TEXT */
+.amplify-field__hint,
+.amplify-text--hint {
+  font-size: 0.875rem !important;
+  color: #64748b !important;
+  margin-top: 0.25rem !important;
+}
+
+/* 12. ALERTS */
+.amplify-alert {
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.75rem !important;
+  margin-bottom: 1rem !important;
+  font-size: 0.875rem !important;
+  display: flex !important;
+  gap: 0.75rem !important;
+  align-items: flex-start !important;
+}
+
+.amplify-alert--error {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+.amplify-alert--success {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #86efac !important;
+}
+
+.amplify-alert--info {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+.amplify-alert--warning {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+/* 13. TYPOGRAPHY */
+.amplify-heading {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  margin: 0 0 0.5rem 0 !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+}
+
+.amplify-text {
+  font-size: 0.875rem !important;
+  color: #475569 !important;
+  line-height: 1.5 !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+}
+
+/* 14. HIDE AMPLIFY'S DEFAULT HEADER/FOOTER */
+.amplify-authenticator__heading,
+.amplify-authenticator__footer,
+.amplify-authenticator-header,
+.amplify-authenticator-footer {
+  display: none !important;
+}
+
+/* 15. LOADING SPINNER */
+.amplify-loader {
+  color: #3b82f6 !important;
+}
+
+.amplify-loader-track {
+  background: #e2e8f0 !important;
+}
+
+/* 16. MOBILE RESPONSIVE */
+@media (max-width: 640px) {
+  .amplify-tabs__item,
+  .amplify-tabs__trigger {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.8125rem !important;
+  }
+
+  .amplify-button {
+    padding: 0.75rem 0.875rem !important;
+    font-size: 0.9375rem !important;
+  }
+
+  .amplify-input,
+  .amplify-select,
+  .amplify-textarea {
+    padding: 0.625rem 0.875rem !important;
+    font-size: 1rem !important; /* Prevent iOS zoom */
+  }
+}

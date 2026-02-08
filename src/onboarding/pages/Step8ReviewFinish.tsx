@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Authenticator } from '@aws-amplify/ui-react'
 import OnboardingLayout from '../OnboardingLayout'
 import { cardBase } from '../ui'
 import { getPrevEnabledStepId, getStepConfig } from '../steps'
 import { useOnboardingDraft } from '../useOnboardingDraft'
 import { fetchUserData, saveProfile } from '../../lib/api'
 import { UserProfile } from '../../types/user'
+import { isSignedIn } from '../../lib/auth'
+import { clearOnboardingDraft } from '../sync'
 
 const formatValue = (value: string | boolean | undefined) => {
   if (value === undefined || value === '') return 'Not specified'
@@ -22,8 +25,18 @@ export default function Step8ReviewFinish() {
   const step = getStepConfig(8)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [userSignedIn, setUserSignedIn] = useState(false)
+  const hasCheckedAuthRef = useRef(false)
 
   const prevStepId = useMemo(() => getPrevEnabledStepId(8, draft), [draft])
+
+  // Check auth status on mount
+  useEffect(() => {
+    if (!hasCheckedAuthRef.current) {
+      hasCheckedAuthRef.current = true
+      isSignedIn().then(setUserSignedIn)
+    }
+  }, [])
 
   const handleBack = () => navigate(`/onboarding/${prevStepId}`)
 
@@ -61,6 +74,7 @@ export default function Step8ReviewFinish() {
       }
 
       clearLocalDraft()
+      clearOnboardingDraft()
       navigate('/dashboard')
     } catch (error) {
       console.error('Error finishing onboarding:', error)
@@ -90,10 +104,28 @@ export default function Step8ReviewFinish() {
       title={step.title}
       subtitle={step.subtitle}
       onBack={handleBack}
-      onNext={handleFinish}
+      onNext={userSignedIn ? handleFinish : undefined}
       nextLabel={isSaving ? 'Saving...' : 'Finish onboarding'}
-      nextDisabled={isSaving}
+      nextDisabled={isSaving || !userSignedIn}
     >
+      {!userSignedIn && (
+        <div className={cardBase}>
+          <h2 className="text-sm font-semibold text-slate-800 mb-3">Create an account to save your progress</h2>
+          <p className="text-sm text-slate-600 mb-4">
+            Sign up or sign in to save your onboarding progress to your profile.
+          </p>
+          <div className="rounded-lg border border-slate-200 p-4">
+            <Authenticator>
+              {() => {
+                // After successful authentication
+                setUserSignedIn(true)
+                return <div className="text-sm text-green-600">Successfully signed in!</div>
+              }}
+            </Authenticator>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className={cardBase}>
           <h2 className="text-sm font-semibold text-slate-800">Destination</h2>
@@ -201,3 +233,4 @@ function mapHousingPreference(value: string) {
       return ''
   }
 }
+

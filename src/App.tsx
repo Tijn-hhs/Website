@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthGate } from './components/AuthGate'
 import DashboardPage from './pages/DashboardPage'
 import LandingPage from './pages/LandingPage'
+import AuthPage from './pages/AuthPage'
 import MySituationPage from './pages/MySituationPage'
 import UniversityApplicationPage from './pages/UniversityApplicationPage'
 import StudentVisaPage from './pages/StudentVisaPage'
@@ -29,6 +30,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPage />} />
         <Route
           path="/dashboard"
           element={
@@ -133,78 +135,15 @@ export default function App() {
             </AuthGate>
           }
         />
-        <Route
-          path="/onboarding"
-          element={
-            <AuthGate>
-              <OnboardingStart />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/onboarding/1"
-          element={
-            <AuthGate>
-              <Step1Destination />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/onboarding/2"
-          element={
-            <AuthGate>
-              <Step2Origin />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/onboarding/3"
-          element={
-            <AuthGate>
-              <Step3Program />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/onboarding/4"
-          element={
-            <AuthGate>
-              <Step4Admission />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/onboarding/5"
-          element={
-            <AuthGate>
-              <Step5Visa />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/onboarding/6"
-          element={
-            <AuthGate>
-              <Step6Budget />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/onboarding/7"
-          element={
-            <AuthGate>
-              <Step7Housing />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/onboarding/8"
-          element={
-            <AuthGate>
-              <Step8ReviewFinish />
-            </AuthGate>
-          }
-        />
+        <Route path="/onboarding" element={<OnboardingStart />} />
+        <Route path="/onboarding/1" element={<Step1Destination />} />
+        <Route path="/onboarding/2" element={<Step2Origin />} />
+        <Route path="/onboarding/3" element={<Step3Program />} />
+        <Route path="/onboarding/4" element={<Step4Admission />} />
+        <Route path="/onboarding/5" element={<Step5Visa />} />
+        <Route path="/onboarding/6" element={<Step6Budget />} />
+        <Route path="/onboarding/7" element={<Step7Housing />} />
+        <Route path="/onboarding/8" element={<Step8ReviewFinish />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
