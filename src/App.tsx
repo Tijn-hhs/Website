@@ -14,6 +14,15 @@ import HealthcarePage from './pages/HealthcarePage'
 import InformationCentrePage from './pages/InformationCentrePage'
 import DailyLifePage from './pages/DailyLifePage'
 import CostOfLivingPage from './pages/CostOfLivingPage'
+import OnboardingStart from './onboarding/pages/OnboardingStart'
+import Step1Destination from './onboarding/pages/Step1Destination'
+import Step2Origin from './onboarding/pages/Step2Origin'
+import Step3Program from './onboarding/pages/Step3Program'
+import Step4Admission from './onboarding/pages/Step4Admission'
+import Step5Visa from './onboarding/pages/Step5Visa'
+import Step6Budget from './onboarding/pages/Step6Budget'
+import Step7Housing from './onboarding/pages/Step7Housing'
+import Step8ReviewFinish from './onboarding/pages/Step8ReviewFinish'
 
 export default function App() {
   return (
@@ -121,6 +130,78 @@ export default function App() {
           element={
             <AuthGate>
               <MySituationPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding"
+          element={
+            <AuthGate>
+              <OnboardingStart />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding/1"
+          element={
+            <AuthGate>
+              <Step1Destination />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding/2"
+          element={
+            <AuthGate>
+              <Step2Origin />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding/3"
+          element={
+            <AuthGate>
+              <Step3Program />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding/4"
+          element={
+            <AuthGate>
+              <Step4Admission />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding/5"
+          element={
+            <AuthGate>
+              <Step5Visa />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding/6"
+          element={
+            <AuthGate>
+              <Step6Budget />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding/7"
+          element={
+            <AuthGate>
+              <Step7Housing />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/onboarding/8"
+          element={
+            <AuthGate>
+              <Step8ReviewFinish />
             </AuthGate>
           }
         />

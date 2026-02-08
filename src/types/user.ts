@@ -1,4 +1,5 @@
 export interface UserProfile {
+  onboardingDraftJson?: string
   firstName?: string
   lastName?: string
   nationality?: string
