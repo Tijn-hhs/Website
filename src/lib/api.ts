@@ -67,6 +67,9 @@ export async function saveProfile(profile: UserProfile): Promise<boolean> {
   }
 }
 
+// Alias for fetchUserData - semantic convenience for "fetch me"
+export const fetchMe = fetchUserData
+
 export async function saveStepProgress(
   stepKey: string,
   completed: boolean
