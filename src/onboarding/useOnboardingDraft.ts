@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { getCurrentUser } from 'aws-amplify/auth'
 import { fetchUserData, saveProfile } from '../lib/api'
 import { UserProfile } from '../types/user'
 import { createDefaultDraft } from './defaultDraft'
@@ -38,6 +39,18 @@ const pickLatestDraft = (
   return primary || secondary
 }
 
+/**
+ * Check if user is currently authenticated.
+ */
+async function isUserAuthenticated(): Promise<boolean> {
+  try {
+    await getCurrentUser()
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function useOnboardingDraft() {
   const [draft, setDraft] = useState<OnboardingDraft>(() => createDefaultDraft())
   const [isLoading, setIsLoading] = useState(true)
@@ -45,6 +58,7 @@ export function useOnboardingDraft() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const persistDraft = useCallback((nextDraft: OnboardingDraft) => {
+    // Always save to localStorage immediately
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(LOCAL_KEY, JSON.stringify(nextDraft))
     }
@@ -53,12 +67,18 @@ export function useOnboardingDraft() {
       window.clearTimeout(saveTimeoutRef.current)
     }
 
+    // Debounce backend save, but only if user is authenticated
     saveTimeoutRef.current = window.setTimeout(async () => {
-      const currentProfile = profileRef.current || {}
-      await saveProfile({
-        ...currentProfile,
-        onboardingDraftJson: JSON.stringify(nextDraft),
-      })
+      const isAuthenticated = await isUserAuthenticated()
+      
+      if (isAuthenticated) {
+        const currentProfile = profileRef.current || {}
+        await saveProfile({
+          ...currentProfile,
+          onboardingDraftJson: JSON.stringify(nextDraft),
+        })
+      }
+      // If not authenticated, data stays in localStorage
     }, SAVE_DEBOUNCE_MS) as unknown as ReturnType<typeof setTimeout>
   }, [])
 
@@ -70,18 +90,30 @@ export function useOnboardingDraft() {
       const localDraft =
         typeof window !== 'undefined' ? parseDraft(window.localStorage.getItem(LOCAL_KEY)) : null
 
+      const isAuthenticated = await isUserAuthenticated()
+
       try {
-        const data = await fetchUserData()
-        const profile = data.profile || {}
-        profileRef.current = profile
+        if (isAuthenticated) {
+          // User is logged in - prioritize backend data
+          const data = await fetchUserData()
+          const profile = data.profile || {}
+          profileRef.current = profile
 
-        const profileDraft = parseDraft(profile.onboardingDraftJson ?? null)
-        const mergedDraft = pickLatestDraft(profileDraft, localDraft) || defaultDraft
+          const profileDraft = parseDraft(profile.onboardingDraftJson ?? null)
+          const mergedDraft = pickLatestDraft(profileDraft, localDraft) || defaultDraft
 
-        if (isMounted) {
-          setDraft({ ...defaultDraft, ...mergedDraft })
+          if (isMounted) {
+            setDraft({ ...defaultDraft, ...mergedDraft })
+          }
+        } else {
+          // User is not logged in - use localStorage only
+          const fallbackDraft = localDraft || defaultDraft
+          if (isMounted) {
+            setDraft({ ...defaultDraft, ...fallbackDraft })
+          }
         }
       } catch (error) {
+        // On error, use localStorage as fallback
         const fallbackDraft = localDraft || defaultDraft
         if (isMounted) {
           setDraft({ ...defaultDraft, ...fallbackDraft })

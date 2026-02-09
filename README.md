@@ -36,19 +36,30 @@ npm run dev
 
 The app will be available at `http://localhost:5173`
 
-### Amplify Gen 2 (Local Backend)
+### Local Development with Amplify Auth
+
+For full local development with authentication:
 
 ```bash
+# Terminal 1: Start Amplify sandbox (generates amplify_outputs.json)
 npm run sandbox
+
+# Terminal 2: Start Vite dev server
+npm run dev
 ```
+
+**See [LOCAL_DEV_SETUP.md](./LOCAL_DEV_SETUP.md) for detailed setup instructions and troubleshooting.**
+
+If you don't want to run sandbox, generate configuration once:
 
 ```bash
 npm run amplify:outputs
 ```
 
-```bash
-npm run dev
-```
+### Backend Commands
+
+- `npm run sandbox` - Start Amplify Gen 2 sandbox (local AWS services)
+- `npm run amplify:outputs` - Generate runtime configuration from backend
 
 ### Build
 

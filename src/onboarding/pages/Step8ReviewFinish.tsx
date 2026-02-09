@@ -8,7 +8,7 @@ import { useOnboardingDraft } from '../useOnboardingDraft'
 import { fetchUserData, saveProfile } from '../../lib/api'
 import { UserProfile } from '../../types/user'
 import { isSignedIn } from '../../lib/auth'
-import { clearOnboardingDraft } from '../sync'
+import { clearOnboardingDraft, syncOnboardingDraftToProfileIfPresent } from '../sync'
 
 const formatValue = (value: string | boolean | undefined) => {
   if (value === undefined || value === '') return 'Not specified'
@@ -117,7 +117,12 @@ export default function Step8ReviewFinish() {
           <div className="rounded-lg border border-slate-200 p-4">
             <Authenticator>
               {() => {
-                // After successful authentication
+                // After successful authentication, sync the draft and update state
+                syncOnboardingDraftToProfileIfPresent()
+                  .catch(() => {
+                    // Sync failed, but user is signed in - proceed anyway
+                  })
+                
                 setUserSignedIn(true)
                 return <div className="text-sm text-green-600">Successfully signed in!</div>
               }}
