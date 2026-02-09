@@ -14,7 +14,6 @@ dist-ssr
 
 # Amplify Gen 2
 .amplify/
-amplify_outputs.json
 public/amplify_outputs.json
 
 # Frontend build output

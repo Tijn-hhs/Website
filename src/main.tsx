@@ -79,9 +79,14 @@ async function initializeApp() {
     
     // Validate that auth configuration is present (CRITICAL for login to work)
     const typedOutputs = outputs as any
-    const hasAuthConfig = typedOutputs.auth?.userPoolId && typedOutputs.auth?.userPoolClientId
+    const authConfig = typedOutputs.auth || typedOutputs.Auth
+    const userPoolId = authConfig?.user_pool_id || authConfig?.userPoolId
+    const userPoolClientId = authConfig?.user_pool_client_id || authConfig?.userPoolClientId
+    const authRegion = authConfig?.aws_region || authConfig?.region
+    const hasAuthConfig = Boolean(userPoolId && userPoolClientId && authRegion)
     
     if (!hasAuthConfig) {
+      console.error('Parsed amplify_outputs.json:', typedOutputs)
       console.error(
         '❌ Auth configuration missing from amplify_outputs.json\n\n' +
         '⚠️  LOCAL DEVELOPMENT: This file must contain Cognito UserPool config for authentication to work.\n\n' +
@@ -89,7 +94,7 @@ async function initializeApp() {
         '1. Run: npx amplify sandbox\n' +
         '   This will generate public/amplify_outputs.json with full Cognito configuration\n' +
         '2. Verify: Visit http://localhost:5173/amplify_outputs.json in browser\n' +
-        '   Should show auth.userPoolId and auth.userPoolClientId\n' +
+        '   Should show auth.user_pool_id and auth.user_pool_client_id (or camelCase equivalents)\n' +
         '3. Restart: npm run dev\n\n' +
         'PRODUCTION: Ensure amplify_outputs.json is deployed with your backend.\n\n' +
         'See LOCAL_DEV_SETUP.md for more details.'
