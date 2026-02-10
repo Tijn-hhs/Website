@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
 import { fetchMe, saveProfile } from '../lib/api'
 import { UserProfile } from '../types/user'
+import type { OnboardingDraft } from '../onboarding/types'
 
 // Tailwind styles
 const inputBase =
@@ -12,11 +13,28 @@ const selectBase =
 const textAreaBase =
   'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-blue-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
 
+// Helper to convert onboarding draft to profile format
+function convertDraftToProfile(draft: OnboardingDraft): Partial<UserProfile> {
+  return {
+    destinationCountry: draft.destinationCountry || undefined,
+    destinationCity: draft.destinationCity || undefined,
+    universityName: draft.destinationUniversity || undefined,
+    nationality: draft.nationality || undefined,
+    residenceCountry: draft.residenceCountry || undefined,
+    studyLevel: draft.degreeType || undefined,
+    programName: draft.fieldOfStudy || undefined,
+    startDate: draft.programStartMonth ? `${draft.programStartMonth}-01` : undefined,
+    passportExpiry: draft.passportExpiry || undefined,
+    visaType: draft.visaType || undefined,
+  }
+}
+
 // EDITABLE_KEYS: whitelisted keys from UserProfile that can be saved
 const EDITABLE_KEYS: (keyof UserProfile)[] = [
   'firstName',
   'lastName',
   'nationality',
+  'residenceCountry',
   'dateOfBirth',
   'destinationCountry',
   'destinationCity',
@@ -61,9 +79,17 @@ const createEmptyProfile = (): UserProfile => {
 const buildSavePayload = (formData: UserProfile): UserProfile => {
   const payload: Partial<UserProfile> = {}
   EDITABLE_KEYS.forEach((key) => {
-    if (formData[key] !== undefined) {
-      payload[key] = formData[key] as any
+    const value = formData[key]
+    // Only include values that are actually set (not empty strings or undefined)
+    if (value !== undefined && value !== '' && value !== null) {
+      payload[key] = value as any
     }
+  })
+  console.log('[MySituation] buildSavePayload - included keys:', Object.keys(payload))
+  console.log('[MySituation] buildSavePayload - sample values:', {
+    destinationCountry: payload.destinationCountry,
+    universityName: payload.universityName,
+    studyLevel: payload.studyLevel,
   })
   return payload as UserProfile
 }
@@ -97,12 +123,57 @@ export default function MySituationPage() {
     try {
       const data = await fetchMe()
       const profile = data.profile || {}
-      const merged = { ...emptyProfile, ...profile }
+      
+      // Check if profile has any of the key onboarding fields
+      const hasProfileData = !!(
+        profile.destinationCountry ||
+        profile.universityName ||
+        profile.nationality ||
+        profile.studyLevel
+      )
+      
+      let merged = { ...emptyProfile, ...profile }
+      
+      // Fallback: if profile is empty, try to load from localStorage draft
+      if (!hasProfileData && typeof window !== 'undefined') {
+        const draftJson = window.localStorage.getItem('livecity:onboardingDraft')
+        if (draftJson) {
+          try {
+            const draft = JSON.parse(draftJson) as OnboardingDraft
+            const draftData = convertDraftToProfile(draft)
+            
+            console.log('[MySituation] No profile data, using localStorage draft as fallback')
+            console.log('[MySituation] Draft data from localStorage:', draftData)
+            
+            merged = { ...emptyProfile, ...draftData }
+          } catch (e) {
+            console.error('[MySituation] Failed to parse localStorage draft:', e)
+          }
+        }
+      }
+      
       setFormData(merged)
       setOriginalData(merged)
       setLoadError(null)
-      const editableValues = EDITABLE_KEYS.filter((k) => profile[k] !== undefined)
-      console.log('[MySituation] loaded editable values', editableValues)
+      
+      const editableValues = EDITABLE_KEYS.filter((k) => merged[k] !== undefined && merged[k] !== '')
+      console.log('[MySituation] loaded profile (has backend data:', hasProfileData + ')')
+      console.log('[MySituation] profile keys with values:', editableValues)
+      console.log('[MySituation] full profile data:', {
+        destinationCountry: merged.destinationCountry,
+        destinationCity: merged.destinationCity,
+        universityName: merged.universityName,
+        programName: merged.programName,
+        studyLevel: merged.studyLevel,
+        startDate: merged.startDate,
+        nationality: merged.nationality,
+        admissionStatus: merged.admissionStatus,
+        passportExpiry: merged.passportExpiry,
+        visaType: merged.visaType,
+        monthlyBudget: merged.monthlyBudget,
+        accommodationType: merged.accommodationType,
+        leaseStart: merged.leaseStart,
+      })
     } catch (error) {
       console.error('[MySituation] loadProfile error:', error)
       if (error instanceof Error && (error.message.includes('401') || error.message.includes('403'))) {
@@ -164,17 +235,31 @@ export default function MySituationPage() {
 
     try {
       const payload = buildSavePayload(formData)
+      console.log('[MySituation] Submitting form data...')
       console.log('[MySituation] saving payload keys', Object.keys(payload))
+      console.log('[MySituation] sample payload data:', {
+        destinationCountry: payload.destinationCountry,
+        universityName: payload.universityName,
+        studyLevel: payload.studyLevel,
+        nationality: payload.nationality,
+      })
 
-      const success = await saveProfile(payload)
-      if (!success) {
-        throw new Error('saveProfile returned false')
-      }
+      await saveProfile(payload)
+      console.log('[MySituation] saveProfile call succeeded')
 
       // Always re-fetch from backend (source of truth)
       const data = await fetchMe()
       const profile = data.profile || {}
       const verified = { ...emptyProfile, ...profile }
+      
+      console.log('[MySituation] After save, re-fetched profile from backend')
+      console.log('[MySituation] Re-fetched data:', {
+        destinationCountry: profile.destinationCountry,
+        universityName: profile.universityName,
+        studyLevel: profile.studyLevel,
+        nationality: profile.nationality,
+      })
+      
       setFormData(verified)
       setOriginalData(verified)
       setSaveStatus('success')

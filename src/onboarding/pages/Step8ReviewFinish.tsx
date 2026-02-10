@@ -5,7 +5,7 @@ import OnboardingLayout from '../OnboardingLayout'
 import { cardBase } from '../ui'
 import { getPrevEnabledStepId, getStepConfig } from '../steps'
 import { useOnboardingDraft } from '../useOnboardingDraft'
-import { fetchUserData, saveProfile } from '../../lib/api'
+import { fetchMe, saveProfile } from '../../lib/api'
 import { UserProfile } from '../../types/user'
 import { isSignedIn } from '../../lib/auth'
 import { clearOnboardingDraft, syncOnboardingDraftToProfileIfPresent } from '../sync'
@@ -18,6 +18,17 @@ const formatValue = (value: string | boolean | undefined) => {
 }
 
 const formatMonthToDate = (value: string) => (value ? `${value}-01` : '')
+
+const cleanProfile = (profile: UserProfile): UserProfile => {
+  const cleaned: Partial<UserProfile> = {}
+  Object.entries(profile).forEach(([key, value]) => {
+    // Keep non-empty values, including false and 0
+    if (value !== undefined && value !== '' && value !== null) {
+      cleaned[key as keyof UserProfile] = value as any
+    }
+  })
+  return cleaned as UserProfile
+}
 
 export default function Step8ReviewFinish() {
   const navigate = useNavigate()
@@ -46,39 +57,157 @@ export default function Step8ReviewFinish() {
     setLastCompletedStep(8)
 
     try {
-      const data = await fetchUserData()
+      // Log draft state first
+      console.log('[Onboarding] handleFinish - Draft state:', {
+        destinationCountry: draft.destinationCountry,
+        destinationCity: draft.destinationCity,
+        destinationUniversity: draft.destinationUniversity,
+        nationality: draft.nationality,
+        degreeType: draft.degreeType,
+        fieldOfStudy: draft.fieldOfStudy,
+        programStartMonth: draft.programStartMonth,
+      })
+
+      // Fetch current profile (for userId and other required fields)
+      console.log('[Onboarding] Fetching current profile...')
+      const data = await fetchMe()
       const profile = data.profile || {}
+      
+      console.log('[Onboarding] Current backend profile keys:', Object.keys(profile).length)
 
-      const updatedProfile: UserProfile = {
-        ...profile,
-        destinationCountry: draft.destinationUnknownCountry ? profile.destinationCountry : draft.destinationCountry || profile.destinationCountry,
-        destinationCity: draft.destinationUnknownCity ? profile.destinationCity : draft.destinationCity || profile.destinationCity,
-        universityName: draft.destinationUnknownUniversity ? profile.universityName : draft.destinationUniversity || profile.universityName,
-        nationality: draft.nationality || profile.nationality,
-        studyLevel: draft.degreeType || profile.studyLevel,
-        programName: draft.fieldOfStudy || profile.programName,
-        startDate: formatMonthToDate(draft.programStartMonth) || profile.startDate,
-        admissionStatus: mapAdmissionStatus(draft.admissionStatus) || profile.admissionStatus,
-        passportExpiry: draft.passportExpiry || profile.passportExpiry,
-        visaType: draft.visaType || profile.visaType,
-        monthlyBudget: mapBudgetRange(draft.monthlyBudgetRange) || profile.monthlyBudget,
-        accommodationType: mapHousingPreference(draft.housingPreference) || profile.accommodationType,
-        leaseStart: formatMonthToDate(draft.moveInWindow) || profile.leaseStart,
-        onboardingDraftJson: '',
+      // Build the update with ONLY the fields we want to send
+      // Don't spread the entire profile - only send onboarding data
+      const profileToSave: Partial<UserProfile> = {}
+
+      // Only add userId if it exists (backend may need this)
+      if ((profile as any).userId) {
+        (profileToSave as any).userId = (profile as any).userId
       }
 
-      const success = await saveProfile(updatedProfile)
-      if (!success) {
-        setSaveError('We could not save your profile. Please try again.')
-        return
+      // Explicitly set each field from draft - ONLY if it has a value
+      if (draft.destinationCountry && !draft.destinationUnknownCountry) {
+        profileToSave.destinationCountry = draft.destinationCountry
       }
+      if (draft.destinationCity && !draft.destinationUnknownCity) {
+        profileToSave.destinationCity = draft.destinationCity
+      }
+      if (draft.destinationUniversity && !draft.destinationUnknownUniversity) {
+        profileToSave.universityName = draft.destinationUniversity
+      }
+      if (draft.nationality) {
+        profileToSave.nationality = draft.nationality
+      }
+      if (draft.residenceCountry) {
+        profileToSave.residenceCountry = draft.residenceCountry
+      }
+      if (draft.degreeType) {
+        profileToSave.studyLevel = draft.degreeType
+      }
+      if (draft.fieldOfStudy) {
+        profileToSave.programName = draft.fieldOfStudy
+      }
+      if (draft.programStartMonth) {
+        profileToSave.startDate = formatMonthToDate(draft.programStartMonth)
+      }
+      if (draft.admissionStatus) {
+        const mappedStatus = mapAdmissionStatus(draft.admissionStatus)
+        if (mappedStatus) {
+          profileToSave.admissionStatus = mappedStatus
+        }
+      }
+      if (draft.passportExpiry) {
+        profileToSave.passportExpiry = draft.passportExpiry
+      }
+      if (draft.visaType) {
+        profileToSave.visaType = draft.visaType
+      }
+      if (draft.monthlyBudgetRange) {
+        const mappedBudget = mapBudgetRange(draft.monthlyBudgetRange)
+        if (mappedBudget) {
+          profileToSave.monthlyBudget = mappedBudget
+        }
+      }
+      if (draft.housingPreference) {
+        const mappedHousing = mapHousingPreference(draft.housingPreference)
+        if (mappedHousing) {
+          profileToSave.accommodationType = mappedHousing
+        }
+      }
+      if (draft.moveInWindow) {
+        profileToSave.leaseStart = formatMonthToDate(draft.moveInWindow)
+      }
+
+      // Clear draft JSON field
+      profileToSave.onboardingDraftJson = ''
+
+      const cleanedProfile = profileToSave as UserProfile
+
+      console.log('[Onboarding] Profile to save:', {
+        destinationCountry: cleanedProfile.destinationCountry,
+        destinationCity: cleanedProfile.destinationCity,
+        universityName: cleanedProfile.universityName,
+        nationality: cleanedProfile.nationality,
+        studyLevel: cleanedProfile.studyLevel,
+        programName: cleanedProfile.programName,
+        startDate: cleanedProfile.startDate,
+        admissionStatus: cleanedProfile.admissionStatus,
+        passportExpiry: cleanedProfile.passportExpiry,
+        visaType: cleanedProfile.visaType,
+        monthlyBudget: cleanedProfile.monthlyBudget,
+        accommodationType: cleanedProfile.accommodationType,
+        leaseStart: cleanedProfile.leaseStart,
+        allKeys: Object.keys(cleanedProfile),
+      })
+
+       // Delete onboardingDraftJson if empty to avoid backend issues
+       if (cleanedProfile.onboardingDraftJson === '') {
+         delete cleanedProfile.onboardingDraftJson
+       }
+
+       // Save to backend
+       console.log('[Onboarding] Calling saveProfile...')
+       console.log('[Onboarding] Final payload to send:', {
+         keys: Object.keys(cleanedProfile),
+         values: cleanedProfile,
+       })
+       await saveProfile(cleanedProfile as UserProfile)
+      
+      console.log('[Onboarding] saveProfile succeeded')
+      
+      // Verify the save by re-fetching
+      console.log('[Onboarding] Verifying save by re-fetching profile...')
+      const verifyData = await fetchMe()
+      const verifiedProfile = verifyData.profile || {}
+      
+      console.log('[Onboarding] Verification - saved data retrieved:', {
+        destinationCountry: verifiedProfile.destinationCountry,
+        destinationCity: verifiedProfile.destinationCity,
+        universityName: verifiedProfile.universityName,
+        nationality: verifiedProfile.nationality,
+        studyLevel: verifiedProfile.studyLevel,
+        programName: verifiedProfile.programName,
+        startDate: verifiedProfile.startDate,
+        admissionStatus: verifiedProfile.admissionStatus,
+        passportExpiry: verifiedProfile.passportExpiry,
+        visaType: verifiedProfile.visaType,
+        monthlyBudget: verifiedProfile.monthlyBudget,
+        accommodationType: verifiedProfile.accommodationType,
+        leaseStart: verifiedProfile.leaseStart,
+      })
 
       clearLocalDraft()
       clearOnboardingDraft()
+      
+      console.log('[Onboarding] Navigating to dashboard...')
       navigate('/dashboard')
     } catch (error) {
-      console.error('Error finishing onboarding:', error)
-      setSaveError('We could not save your profile. Please try again.')
+      console.error('[Onboarding] Error during finish:', error)
+      console.error('[Onboarding] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      })
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      setSaveError(`Could not save your profile: ${errorMsg}`)
     } finally {
       setIsSaving(false)
     }

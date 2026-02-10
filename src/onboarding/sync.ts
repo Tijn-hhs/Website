@@ -1,4 +1,4 @@
-import { fetchUserData, saveProfile } from '../lib/api'
+import { fetchMe, saveProfile } from '../lib/api'
 
 const DRAFT_LOCAL_KEY = 'livecity:onboardingDraft'
 
@@ -15,20 +15,17 @@ export async function syncOnboardingDraftToProfileIfPresent(): Promise<boolean> 
       return true // No draft to sync, no error
     }
 
-    const data = await fetchUserData()
+    const data = await fetchMe()
     const profile = data.profile || {}
 
-    const updated = await saveProfile({
+    await saveProfile({
       ...profile,
       onboardingDraftJson: draftJson,
     })
 
-    if (updated) {
-      // Keep draft in localStorage until onboarding is fully complete
-      // It will be cleared on Step 8 finish
-    }
-
-    return updated
+    // Keep draft in localStorage until onboarding is fully complete
+    // It will be cleared on Step 8 finish
+    return true
   } catch (error) {
     console.error('Error syncing onboarding draft:', error)
     // Fail gracefully; localStorage is fallback

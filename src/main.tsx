@@ -60,8 +60,11 @@ function ConfigErrorFallback() {
 // Fetch and configure Amplify at runtime
 async function initializeApp() {
   try {
+    console.log('[Amplify] Starting initialization...')
+    
     // Fetch amplify outputs from public folder
     // For local dev: run `amplify sandbox` to generate amplify_outputs.json with Cognito config
+    console.log('[Amplify] Fetching /amplify_outputs.json...')
     const response = await fetch('/amplify_outputs.json')
     
     if (!response.ok) {
@@ -76,6 +79,12 @@ async function initializeApp() {
     }
     
     const outputs = await response.json()
+    console.log('[Amplify] Successfully loaded amplify_outputs.json')
+    console.log('[Amplify] Loaded config structure:', {
+      hasAuth: !!outputs.auth,
+      hasCustom: !!outputs.custom,
+      hasApi: !!outputs.custom?.API,
+    })
     
     // Validate that auth configuration is present (CRITICAL for login to work)
     const typedOutputs = outputs as any
@@ -85,8 +94,15 @@ async function initializeApp() {
     const authRegion = authConfig?.aws_region || authConfig?.region
     const hasAuthConfig = Boolean(userPoolId && userPoolClientId && authRegion)
     
+    console.log('[Amplify] Auth validation:', {
+      userPoolId: !!userPoolId,
+      userPoolClientId: !!userPoolClientId,
+      authRegion: !!authRegion,
+      hasAuthConfig,
+    })
+    
     if (!hasAuthConfig) {
-      console.error('Parsed amplify_outputs.json:', typedOutputs)
+      console.error('❌ Auth validation failed. Parsed amplify_outputs.json:', typedOutputs)
       console.error(
         '❌ Auth configuration missing from amplify_outputs.json\n\n' +
         '⚠️  LOCAL DEVELOPMENT: This file must contain Cognito UserPool config for authentication to work.\n\n' +
@@ -105,19 +121,105 @@ async function initializeApp() {
       )
     }
     
-    // Configure Amplify with auth and custom REST API
-    Amplify.configure({
-      ...outputs,
+    console.log('[Amplify] ✅ Auth configuration validated')
+    
+    // Validate REST API configuration
+    const apiName = typedOutputs.custom?.API?.apiName
+    const apiEndpoint = typedOutputs.custom?.API?.endpoint
+    const apiRegion = typedOutputs.custom?.API?.region
+    
+    console.log('[Amplify] REST API validation:', {
+      apiName,
+      apiEndpoint: apiEndpoint ? `${apiEndpoint.substring(0, 50)}...` : undefined,
+      apiRegion,
+    })
+    
+    if (!apiName || typeof apiName !== 'string') {
+      console.error('❌ REST API name validation failed:', { apiName, typeOf: typeof apiName })
+      console.error('Parsed amplify_outputs.json:', typedOutputs)
+      throw new Error(
+        '❌ REST API name missing or invalid in amplify_outputs.json\n\n' +
+        'Expected: custom.API.apiName = "livecityRest"\n' +
+        `Found: ${apiName || 'undefined'}\n\n` +
+        'Run: npx amplify sandbox (to regenerate configuration)'
+      )
+    }
+    
+    if (!apiEndpoint || typeof apiEndpoint !== 'string' || !apiEndpoint.startsWith('http')) {
+      console.error('❌ REST API endpoint validation failed:', { apiEndpoint, typeOf: typeof apiEndpoint })
+      console.error('Parsed amplify_outputs.json:', typedOutputs)
+      throw new Error(
+        '❌ REST API endpoint missing or invalid in amplify_outputs.json\n\n' +
+        'Expected: custom.API.endpoint = "https://..."\n' +
+        `Found: ${apiEndpoint || 'undefined'}\n\n` +
+        'Run: npx amplify sandbox (to regenerate configuration)'
+      )
+    }
+    
+    if (!apiRegion || typeof apiRegion !== 'string') {
+      console.error('❌ REST API region validation failed:', { apiRegion, typeOf: typeof apiRegion })
+      console.error('Parsed amplify_outputs.json:', typedOutputs)
+      throw new Error(
+        '❌ REST API region missing or invalid in amplify_outputs.json\n\n' +
+        'Expected: custom.API.region = "eu-north-1"\n' +
+        `Found: ${apiRegion || 'undefined'}\n\n` +
+        'Run: npx amplify sandbox (to regenerate configuration)'
+      )
+    }
+    
+    console.log('[Amplify] ✅ REST API configuration validated')
+    console.log('[Amplify] REST API values:', { apiName, apiEndpoint, apiRegion })
+    
+    // Build configuration in the exact format Amplify v6 expects
+    // Do NOT spread outputs as it may have conflicting 'custom' or 'API' keys
+    const usernameAttributes = Array.isArray(authConfig?.username_attributes)
+      ? authConfig.username_attributes
+      : Array.isArray(authConfig?.usernameAttributes)
+        ? authConfig.usernameAttributes
+        : []
+
+    const loginWith = {
+      email: usernameAttributes.includes('email'),
+      phone: usernameAttributes.includes('phone_number'),
+      username: usernameAttributes.length === 0,
+    }
+
+    const cognitoConfig = {
+      userPoolId,
+      userPoolClientId,
+      identityPoolId: authConfig?.identity_pool_id || authConfig?.identityPoolId,
+      region: authRegion,
+      allowGuestAccess: Boolean(
+        authConfig?.unauthenticated_identities_enabled ?? authConfig?.allowGuestAccess
+      ),
+      loginWith,
+    }
+
+    const amplifyConfig = {
+      Auth: {
+        Cognito: cognitoConfig,
+      },
       API: {
         REST: {
-          livecityRest: {
-            endpoint: typedOutputs.custom?.API?.endpoint || '',
-            region: typedOutputs.custom?.API?.region || 'us-east-1',
+          [apiName]: {
+            endpoint: apiEndpoint,
+            region: apiRegion,
           },
         },
       },
-    })
+    }
     
+    console.log('[Amplify] Built Amplify config:')
+    console.log('[Amplify] Auth keys:', Object.keys(cognitoConfig))
+    console.log('[Amplify] API.REST keys:', Object.keys(amplifyConfig.API.REST))
+    console.log('[Amplify] Full config:', JSON.stringify(amplifyConfig, null, 2))
+    
+    Amplify.configure(amplifyConfig)
+    
+    console.log('[Amplify] ✅ Amplify.configure() succeeded')
+    console.log('[Amplify] ✅ Registered REST API:', apiName)
+    
+    console.log('[App] Rendering application...')
     // Render the app after successful configuration
     root.render(
       <React.StrictMode>
@@ -126,13 +228,17 @@ async function initializeApp() {
         </ThemeProvider>
       </React.StrictMode>
     )
+    console.log('[App] ✅ Application rendered successfully')
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    console.error(
-      '❌ Failed to initialize app:\n' + errorMessage
-    )
+    console.error('[App] ❌ INITIALIZATION FAILED')
+    console.error('[App] Error:', errorMessage)
+    if (error instanceof Error) {
+      console.error('[App] Error stack:', error.stack)
+    }
     
     // Render fallback UI with error details
+    console.log('[App] Rendering ConfigErrorFallback...')
     root.render(<ConfigErrorFallback />)
   }
 }

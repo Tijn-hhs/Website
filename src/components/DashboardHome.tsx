@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import StepCard from './StepCard'
-import { fetchUserData, saveStepProgress } from '../lib/api'
+import { fetchMe, saveStepProgress } from '../lib/api'
 import { StepProgress } from '../types/user'
 
 const steps = [
@@ -56,7 +56,7 @@ export default function DashboardHome() {
 
   async function loadProgress() {
     try {
-      const data = await fetchUserData()
+      const data = await fetchMe()
       const progressMap: Record<string, boolean> = {}
       data.progress.forEach((p: StepProgress) => {
         progressMap[p.stepKey] = p.completed

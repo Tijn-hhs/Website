@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getCurrentUser } from 'aws-amplify/auth'
-import { fetchUserData, saveProfile } from '../lib/api'
+import { fetchMe, saveProfile } from '../lib/api'
 import { UserProfile } from '../types/user'
 import { createDefaultDraft } from './defaultDraft'
 import { OnboardingDraft } from './types'
@@ -95,7 +95,7 @@ export function useOnboardingDraft() {
       try {
         if (isAuthenticated) {
           // User is logged in - prioritize backend data
-          const data = await fetchUserData()
+          const data = await fetchMe()
           const profile = data.profile || {}
           profileRef.current = profile
 

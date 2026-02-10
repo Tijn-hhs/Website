@@ -3,6 +3,7 @@ export interface UserProfile {
   firstName?: string
   lastName?: string
   nationality?: string
+  residenceCountry?: string
   dateOfBirth?: string
   destinationCountry?: string
   destinationCity?: string
