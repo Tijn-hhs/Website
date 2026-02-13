@@ -4,6 +4,7 @@ import CalloutCard from '../components/CalloutCard'
 import DashboardLayout from '../components/DashboardLayout'
 import InfoSectionCard from '../components/InfoSectionCard'
 import StepHeader from '../components/StepHeader'
+import UserInfoBox from '../components/UserInfoBox'
 
 export default function UniversityApplicationPage() {
   return (
@@ -13,6 +14,19 @@ export default function UniversityApplicationPage() {
           stepLabel="STEP 1"
           title="University Application"
           subtitle="A practical checklist to choose the right university and submit a strong application."
+        />
+
+        <UserInfoBox
+          title="Your Study Plan"
+          fields={[
+            { key: 'destinationCountry', label: 'Country' },
+            { key: 'destinationCity', label: 'City' },
+            { key: 'universityName', label: 'University' },
+            { key: 'programName', label: 'Program' },
+            { key: 'studyLevel', label: 'Degree Type' },
+            { key: 'startDate', label: 'Start Date', formatter: (val) => val ? new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Not set' },
+            { key: 'admissionStatus', label: 'Status' },
+          ]}
         />
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

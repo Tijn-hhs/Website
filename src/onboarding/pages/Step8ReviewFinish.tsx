@@ -77,12 +77,8 @@ export default function Step8ReviewFinish() {
 
       // Build the update with ONLY the fields we want to send
       // Don't spread the entire profile - only send onboarding data
+      // NOTE: Do NOT send userId or updatedAt - backend handles these
       const profileToSave: Partial<UserProfile> = {}
-
-      // Only add userId if it exists (backend may need this)
-      if ((profile as any).userId) {
-        (profileToSave as any).userId = (profile as any).userId
-      }
 
       // Explicitly set each field from draft - ONLY if it has a value
       if (draft.destinationCountry && !draft.destinationUnknownCountry) {

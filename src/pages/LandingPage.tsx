@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import heroMock from '../assets/Hero_mock.png'
 import Header from '../components/Header'
+import LandingSections from '../components/LandingSections'
 import { isSignedIn } from '../lib/auth'
 
 export default function LandingPage() {
@@ -23,7 +24,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-white">
       <Header />
       
       {/* Hero Section */}
@@ -68,6 +69,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* All Landing Sections Below Hero */}
+      <LandingSections />
     </div>
   )
 }

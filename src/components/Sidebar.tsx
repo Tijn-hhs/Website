@@ -56,8 +56,34 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Bottom Home Button */}
-      <div className="mt-auto border-t border-slate-200/70 px-4 py-4">
+      {/* Bottom Section */}
+      <div className="mt-auto border-t border-slate-200/70 px-4 py-4 space-y-1.5">
+        <Link
+          to="/my-situation"
+          className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${
+            location.pathname === '/my-situation'
+              ? 'bg-blue-100/60 text-slate-900 font-semibold focus:ring-blue-300'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
+          }`}
+          aria-label="My Situation"
+          aria-current={location.pathname === '/my-situation' ? 'page' : undefined}
+        >
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          My Situation
+        </Link>
+        
         <Link
           to="/"
           className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${

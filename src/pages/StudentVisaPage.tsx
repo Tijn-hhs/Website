@@ -1,6 +1,7 @@
 import DashboardLayout from '../components/DashboardLayout'
 import InfoCard from '../components/InfoCard'
 import StepPageLayout from '../components/StepPageLayout'
+import UserInfoBox from '../components/UserInfoBox'
 
 export default function StudentVisaPage() {
   return (
@@ -10,6 +11,18 @@ export default function StudentVisaPage() {
         title="Student Visa"
         subtitle="Prepare, apply, and track your visa with confidence."
         secondaryActionLabel="Save for later"
+        infoBox={
+          <UserInfoBox
+            title="Your Visa Information"
+            fields={[
+              { key: 'nationality', label: 'Nationality' },
+              { key: 'destinationCountry', label: 'Destination' },
+              { key: 'visaType', label: 'Visa Type' },
+              { key: 'passportExpiry', label: 'Passport Expiry', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
+              { key: 'visaAppointmentDate', label: 'Appointment', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
+            ]}
+          />
+        }
       >
         <InfoCard title="Overview">
           <p>

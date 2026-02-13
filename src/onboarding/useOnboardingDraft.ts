@@ -72,11 +72,11 @@ export function useOnboardingDraft() {
       const isAuthenticated = await isUserAuthenticated()
       
       if (isAuthenticated) {
-        const currentProfile = profileRef.current || {}
+        // Only save the onboardingDraftJson field
+        // Don't spread currentProfile to avoid sending system fields
         await saveProfile({
-          ...currentProfile,
           onboardingDraftJson: JSON.stringify(nextDraft),
-        })
+        } as UserProfile)
       }
       // If not authenticated, data stays in localStorage
     }, SAVE_DEBOUNCE_MS) as unknown as ReturnType<typeof setTimeout>

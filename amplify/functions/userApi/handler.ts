@@ -78,8 +78,27 @@ async function getUserProfile(userId: string): Promise<UserProfile | null> {
     const response = await dynamoClient.send(new GetItemCommand(params))
     
     if (response.Item) {
-      const profile = unmarshall(response.Item) as UserProfile
-      console.log('Retrieved profile from DynamoDB:', {
+      const rawItem = unmarshall(response.Item)
+      
+      console.log('RAW unmarshalled item from DynamoDB:', {
+        userId,
+        rawKeys: Object.keys(rawItem),
+        rawKeyCount: Object.keys(rawItem).length,
+        rawSample: {
+          destinationCountry: rawItem.destinationCountry,
+          universityName: rawItem.universityName,
+          studyLevel: rawItem.studyLevel,
+          nationality: rawItem.nationality,
+        },
+        firstFewKeys: Object.keys(rawItem).slice(0, 10),
+        rawItemStringLength: JSON.stringify(rawItem).length,
+      })
+      
+      // IMPORTANT: Exclude system fields (userId, updatedAt) from the profile
+      // These should not be returned to the client or they'll be re-saved
+      const { userId: _, updatedAt: __, ...profile } = rawItem
+      
+      console.log('Retrieved profile from DynamoDB (after removing system fields):', {
         userId,
         hasItem: true,
         keys: Object.keys(profile || {}),
@@ -93,7 +112,7 @@ async function getUserProfile(userId: string): Promise<UserProfile | null> {
           monthlyBudget: profile.monthlyBudget,
         },
       })
-      return profile
+      return profile as UserProfile
     }
     
     console.log('No profile found for userId:', userId)
@@ -109,34 +128,116 @@ async function getUserProfile(userId: string): Promise<UserProfile | null> {
   }
 }
 
-async function saveUserProfile(userId: string, profile: UserProfile): Promise<void> {
-  const params = {
-    TableName: process.env.USER_PROFILE_TABLE_NAME || 'UserProfileTable',
-    Item: marshall({
-      userId,
-      ...profile,
-      updatedAt: new Date().toISOString(),
-    }),
-  }
-
+async function saveUserProfile(userId: string, profileUpdates: UserProfile): Promise<void> {
   try {
+    // CRITICAL: Validate that profileUpdates is actually an object
+    console.log('saveUserProfile - validating input:', {
+      userId,
+      profileUpdatesType: typeof profileUpdates,
+      isArray: Array.isArray(profileUpdates),
+      isNull: profileUpdates === null,
+      isUndefined: profileUpdates === undefined,
+    })
+    
+    if (!profileUpdates || typeof profileUpdates !== 'object' || Array.isArray(profileUpdates)) {
+      console.error('Invalid profileUpdates type:', {
+        type: typeof profileUpdates,
+        isArray: Array.isArray(profileUpdates),
+        value: profileUpdates,
+      })
+      throw new Error('profileUpdates must be a non-array object')
+    }
+    
     console.log('Saving user profile to DynamoDB:', {
       userId,
-      tableName: params.TableName,
-      profileKeys: Object.keys(profile || {}),
-      keyCount: Object.keys(profile || {}).length,
-      nonEmptyKeys: Object.keys(profile).filter(k => profile[k as keyof UserProfile] !== undefined && profile[k as keyof UserProfile] !== ''),
-      marshalledItemSize: JSON.stringify(params.Item).length,
+      tableName: process.env.USER_PROFILE_TABLE_NAME,
+      profileKeys: Object.keys(profileUpdates || {}),
+      keyCount: Object.keys(profileUpdates || {}).length,
+      nonEmptyKeys: Object.keys(profileUpdates).filter(k => profileUpdates[k as keyof UserProfile] !== undefined && profileUpdates[k as keyof UserProfile] !== ''),
       sampleFields: {
-        destinationCountry: profile.destinationCountry,
-        universityName: profile.universityName,
-        studyLevel: profile.studyLevel,
-        nationality: profile.nationality,
-        monthlyBudget: profile.monthlyBudget,
+        destinationCountry: profileUpdates.destinationCountry,
+        universityName: profileUpdates.universityName,
+        studyLevel: profileUpdates.studyLevel,
+        nationality: profileUpdates.nationality,
+        monthlyBudget: profileUpdates.monthlyBudget,
       },
     })
     
-    await dynamoClient.send(new PutItemCommand(params))
+    // CRITICAL: Get existing profile first and merge with updates
+    // This prevents overwriting fields that aren't in the update
+    let existingProfile: Record<string, any> = {}
+    const getParams = {
+      TableName: process.env.USER_PROFILE_TABLE_NAME || 'UserProfileTable',
+      Key: marshall({ userId }),
+    }
+    
+    try {
+      const getResponse = await dynamoClient.send(new GetItemCommand(getParams))
+      if (getResponse.Item) {
+        const rawItem = unmarshall(getResponse.Item)
+        // Exclude system fields
+        const { userId: _, updatedAt: __, ...existing } = rawItem
+        existingProfile = existing
+        console.log('Found existing profile, will merge updates:', {
+          existingFieldCount: Object.keys(existingProfile).length,
+          existingFields: Object.keys(existingProfile),
+        })
+      } else {
+        console.log('No existing profile found, will create new one')
+      }
+    } catch (getError) {
+      console.warn('Failed to fetch existing profile, will use updates only:', getError)
+      // Continue with empty existingProfile - we'll just save the updates
+    }
+    
+    // Merge existing with updates (updates take precedence)
+    const mergedProfile = { ...existingProfile, ...profileUpdates }
+    
+    console.log('After merge:', {
+      mergedFieldCount: Object.keys(mergedProfile).length,
+      mergedFields: Object.keys(mergedProfile),
+      sampleMergedValues: {
+        destinationCountry: mergedProfile.destinationCountry,
+        universityName: mergedProfile.universityName,
+        studyLevel: mergedProfile.studyLevel,
+      },
+    })
+    
+    // Remove any fields that are explicitly set to empty string or undefined
+    // but keep false and 0 values
+    const cleanedProfile: Record<string, any> = {}
+    Object.entries(mergedProfile).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        cleanedProfile[key] = value
+      }
+    })
+    
+    console.log('After cleaning:', {
+      cleanedFieldCount: Object.keys(cleanedProfile).length,
+      cleanedFields: Object.keys(cleanedProfile),
+      sampleCleanedValues: {
+        destinationCountry: cleanedProfile.destinationCountry,
+        universityName: cleanedProfile.universityName,
+        studyLevel: cleanedProfile.studyLevel,
+      },
+    })
+    
+    const putParams = {
+      TableName: process.env.USER_PROFILE_TABLE_NAME || 'UserProfileTable',
+      Item: marshall({
+        userId,
+        ...cleanedProfile,
+        updatedAt: new Date().toISOString(),
+      }),
+    }
+    
+    console.log('Saving to DynamoDB with item:', {
+      userId,
+      fieldCount: Object.keys(cleanedProfile).length + 2, // +2 for userId and updatedAt
+      fields: ['userId', ...Object.keys(cleanedProfile), 'updatedAt'],
+    })
+    
+    await dynamoClient.send(new PutItemCommand(putParams))
     
     console.log('✓ Successfully saved profile to DynamoDB for userId:', userId)
   } catch (error) {
@@ -144,8 +245,8 @@ async function saveUserProfile(userId: string, profile: UserProfile): Promise<vo
     console.error('PutItem error details:', {
       message: error instanceof Error ? error.message : String(error),
       userId,
-      tableName: params.TableName,
-      profileKeysAttempted: Object.keys(profile || {}),
+      tableName: process.env.USER_PROFILE_TABLE_NAME,
+      profileKeysAttempted: Object.keys(profileUpdates || {}),
     })
     throw error
   }
@@ -270,12 +371,16 @@ export async function handler(event: any): Promise<ApiResponse> {
           universityName: response.profile.universityName,
           studyLevel: response.profile.studyLevel,
         },
+        responseStringLength: JSON.stringify(response).length,
       })
+      
+      const responseBody = JSON.stringify(response)
+      console.log('GET /user/me - response body preview:', responseBody.substring(0, 500))
 
       return {
         statusCode: 200,
         headers: corsHeaders(),
-        body: JSON.stringify(response),
+        body: responseBody,
       }
     }
 
@@ -299,6 +404,8 @@ export async function handler(event: any): Promise<ApiResponse> {
         keyCount: Object.keys(body || {}).length,
         nonEmptyKeys: Object.keys(body).filter(k => body[k] !== undefined && body[k] !== ''),
         bodyDataLength: JSON.stringify(body).length,
+        bodyType: typeof body,
+        bodyIsArray: Array.isArray(body),
         sampleFields: {
           destinationCountry: body.destinationCountry,
           universityName: body.universityName,
@@ -307,9 +414,20 @@ export async function handler(event: any): Promise<ApiResponse> {
         },
       })
       
-      await saveUserProfile(userId, body)
-      
-      console.log('PUT /user/me - profile saved successfully for userId:', userId)
+      try {
+        await saveUserProfile(userId, body)
+        console.log('PUT /user/me - profile saved successfully for userId:', userId)
+      } catch (saveError) {
+        console.error('PUT /user/me - Error saving profile:', saveError)
+        return {
+          statusCode: 500,
+          headers: corsHeaders(),
+          body: JSON.stringify({ 
+            error: saveError instanceof Error ? saveError.message : 'Failed to save profile',
+            details: saveError instanceof Error ? saveError.stack : String(saveError)
+          }),
+        }
+      }
 
       return {
         statusCode: 200,

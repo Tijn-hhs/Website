@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthGate } from './components/AuthGate'
+import AppLayout from './components/AppLayout'
 import DashboardPage from './pages/DashboardPage'
 import LandingPage from './pages/LandingPage'
 import AuthPage from './pages/AuthPage'
@@ -28,7 +29,8 @@ import Step8ReviewFinish from './onboarding/pages/Step8ReviewFinish'
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <AppLayout>
+        <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route
@@ -145,7 +147,8 @@ export default function App() {
         <Route path="/onboarding/7" element={<Step7Housing />} />
         <Route path="/onboarding/8" element={<Step8ReviewFinish />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </AppLayout>
     </BrowserRouter>
   )
 }

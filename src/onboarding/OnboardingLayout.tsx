@@ -46,7 +46,7 @@ export default function OnboardingLayout({
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white pt-8">
+      <main className="bg-gradient-to-b from-blue-50 to-white pt-8 pb-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between text-sm text-slate-500">
             <span>Step {stepId} of {totalOnboardingSteps}</span>

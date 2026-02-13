@@ -6,7 +6,7 @@ interface BrandedAuthShellProps {
 
 export default function BrandedAuthShell({ children }: BrandedAuthShellProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50 to-purple-50 flex flex-col items-center justify-center px-4 py-8">
+    <div className="bg-gradient-to-b from-slate-50 via-blue-50 to-purple-50 flex flex-col items-center justify-center px-4 py-16">
       {/* Header with logo */}
       <div className="mb-8 flex items-center gap-2">
         <img

@@ -62,22 +62,51 @@ export async function fetchUserData(): Promise<UserData> {
          profile = {}
        }
      }
+     
+     // CRITICAL FIX: Filter out any keys that look like DynamoDB internal fields
+     // or have undefined/null/empty values to prevent data corruption
+     const cleanedProfile: Record<string, unknown> = {}
+     Object.entries(profile).forEach(([key, value]) => {
+       // Keep only valid profile fields with actual values
+       if (
+         value !== undefined &&
+         value !== null &&
+         value !== '' &&
+         // Skip any internal/system fields
+         !key.startsWith('_') &&
+         // Skip numeric keys (arrays shouldn't be in profile)
+         isNaN(Number(key))
+       ) {
+         cleanedProfile[key] = value
+       }
+     })
+     
+     console.log('[API] Profile cleaning:', {
+       originalKeyCount: Object.keys(profile).length,
+       cleanedKeyCount: Object.keys(cleanedProfile).length,
+       removedKeyCount: Object.keys(profile).length - Object.keys(cleanedProfile).length,
+     })
    
      // Rebuild the response with parsed profile
      const userData: UserData = {
-       profile,
+       profile: cleanedProfile,
        progress: (jsonObj.progress as StepProgress[] | undefined) || [],
      }
    
      console.log('[API] fetchUserData response received:', {
        hasProfile: !!userData.profile,
+       profileType: typeof userData.profile,
+       profileIsArray: Array.isArray(userData.profile),
        profileKeys: Object.keys(userData.profile || {}),
+       profileKeyCount: Object.keys(userData.profile || {}).length,
        sampleFields: {
          destinationCountry: userData.profile?.destinationCountry,
          universityName: userData.profile?.universityName,
          studyLevel: userData.profile?.studyLevel,
          nationality: userData.profile?.nationality,
        },
+       firstFewKeys: Object.keys(userData.profile || {}).slice(0, 20),
+       profileStructure: userData.profile ? Object.entries(userData.profile).slice(0, 5).map(([k, v]) => `${k}: ${typeof v}`) : [],
      })
    
      return userData
@@ -103,12 +132,15 @@ export async function saveProfile(profile: UserProfile): Promise<boolean> {
     console.log('[API] Calling saveProfile with API_NAME:', API_NAME)
     console.log('[API] Request headers:', Object.keys(headers))
     console.log('[API] Profile keys:', Object.keys(profile))
+    console.log('[API] Profile to save:', profile)
     
+    // CRITICAL: Pass the profile as stringified JSON
+    // Amplify's put() expects the body to be a string, not an object
     const restOperation = put({
       apiName: API_NAME,
       path: '/user/me',
       options: {
-        body: JSON.stringify(profile),
+        body: JSON.stringify(profile),  // Must stringify for Amplify API
         headers: {
           'Content-Type': 'application/json',
           ...headers,
@@ -116,17 +148,55 @@ export async function saveProfile(profile: UserProfile): Promise<boolean> {
       },
     })
 
-    const response = await restOperation.response
-    console.log('[API] saveProfile response received')
-    console.log('[API] Response object type:', typeof response)
-    console.log('[API] Response object keys:', Object.keys(response || {}))
-    
-    // Check response status
-    if (response && 'status' in response) {
-      console.log('[API] Response status:', response.status)
+    try {
+      const response = await restOperation.response
+      console.log('[API] saveProfile response received')
+      console.log('[API] Response object type:', typeof response)
+      console.log('[API] Response object keys:', Object.keys(response || {}))
+      
+      // Check response status
+      if (response && 'statusCode' in response) {
+        console.log('[API] Response statusCode:', response.statusCode)
+      }
+      
+      return true
+    } catch (responseError: any) {
+      console.error('[API] Error awaiting response:', responseError)
+      console.error('[API] Full error object:', JSON.stringify(responseError, null, 2))
+      
+      // Try to extract error body from the exception
+      if (responseError?._response) {
+        console.error('[API] Error has _response:', responseError._response)
+        console.error('[API] _response type:', typeof responseError._response)
+        console.error('[API] _response keys:', Object.keys(responseError._response || {}))
+        
+        // Try to get the body
+        if (responseError._response.body) {
+          console.error('[API] _response.body:', responseError._response.body)
+          
+          // If body is a ReadableStream, try to read it
+          if (typeof responseError._response.body.json === 'function') {
+            try {
+              const errorBody = await responseError._response.body.json();
+              console.error('[API] Parsed error body:', errorBody);
+            } catch (e) {
+              console.error('[API] Failed to parse error body:', e);
+            }
+          }
+        }
+      }
+      if (responseError?.$metadata) {
+        console.error('[API] Error $metadata:', responseError.$metadata)
+        console.error('[API] $metadata type:', typeof responseError.$metadata)
+        console.error('[API] $metadata stringify:', JSON.stringify(responseError.$metadata, null, 2))
+      }
+      if (responseError?.underlyingError) {
+        console.error('[API] Underlying error:', responseError.underlyingError)
+        console.error('[API] underlyingError type:', typeof responseError.underlyingError)
+      }
+      
+      throw responseError
     }
-    
-    return true
   } catch (error) {
     console.error('[API] Error in saveProfile:', error)
     console.error('[API] Error type:', error instanceof Error ? error.constructor.name : typeof error)

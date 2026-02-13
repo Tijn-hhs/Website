@@ -121,7 +121,14 @@ export default function MySituationPage() {
 
   const loadProfile = async () => {
     try {
+      console.log('[MySituation] loadProfile - Starting...')
       const data = await fetchMe()
+      console.log('[MySituation] loadProfile - fetchMe returned:', {
+        hasData: !!data,
+        hasProfile: !!data.profile,
+        profileType: typeof data.profile,
+        profileKeys: data.profile ? Object.keys(data.profile) : [],
+      })
       const profile = data.profile || {}
       
       // Check if profile has any of the key onboarding fields
@@ -131,6 +138,14 @@ export default function MySituationPage() {
         profile.nationality ||
         profile.studyLevel
       )
+      
+      console.log('[MySituation] loadProfile - Profile fields:', {
+        destinationCountry: profile.destinationCountry,
+        universityName: profile.universityName,
+        nationality: profile.nationality,
+        studyLevel: profile.studyLevel,
+        hasProfileData,
+      })
       
       let merged = { ...emptyProfile, ...profile }
       
@@ -248,16 +263,58 @@ export default function MySituationPage() {
       console.log('[MySituation] saveProfile call succeeded')
 
       // Always re-fetch from backend (source of truth)
+      console.log('[MySituation] Re-fetching profile from backend...')
       const data = await fetchMe()
+      console.log('[MySituation] Re-fetch response:', {
+        hasData: !!data,
+        hasProfile: !!data.profile,
+        profileType: typeof data.profile,
+        profileKeys: data.profile ? Object.keys(data.profile) : [],
+        profileKeyCount: data.profile ? Object.keys(data.profile).length : 0,
+      })
       const profile = data.profile || {}
+      
+      // DEBUG: Log the actual structure of the profile to diagnose the 382 keys issue
+      console.log('[MySituation] DEBUG - Profile analysis:', {
+        profileType: typeof profile,
+        isArray: Array.isArray(profile),
+        constructor: profile.constructor?.name,
+        firstTenKeys: Object.keys(profile).slice(0, 10),
+        keysWithValues: Object.entries(profile).filter(([k, v]) => v !== undefined && v !== '' && v !== null).slice(0, 10),
+        allKeysSample: Object.keys(profile).slice(0, 50),
+      })
+      
+      // SAFETY CHECK: If the re-fetched profile is empty, something went wrong
+      // Don't clear the form - keep the current data
+      const hasAnyData = Object.keys(profile).some(key => {
+        const value = profile[key as keyof typeof profile]
+        return value !== undefined && value !== '' && value !== null
+      })
+      
+      if (!hasAnyData) {
+        console.warn('[MySituation] WARNING: Re-fetched profile is empty! Not updating form.')
+        console.warn('[MySituation] This suggests the save might have failed or not propagated yet.')
+        setSaveStatus('error')
+        setTimeout(() => setSaveStatus('idle'), 3000)
+        return
+      }
+      
       const verified = { ...emptyProfile, ...profile }
       
       console.log('[MySituation] After save, re-fetched profile from backend')
-      console.log('[MySituation] Re-fetched data:', {
+      console.log('[MySituation] Re-fetched profile data:', {
         destinationCountry: profile.destinationCountry,
         universityName: profile.universityName,
         studyLevel: profile.studyLevel,
         nationality: profile.nationality,
+        allKeys: Object.keys(profile),
+      })
+      console.log('[MySituation] Verified (merged with emptyProfile):', {
+        destinationCountry: verified.destinationCountry,
+        universityName: verified.universityName,
+        studyLevel: verified.studyLevel,
+        nationality: verified.nationality,
+        allKeys: Object.keys(verified).filter(k => verified[k as keyof UserProfile] !== ''),
       })
       
       setFormData(verified)
@@ -292,7 +349,7 @@ export default function MySituationPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white pt-8">
+      <main className="bg-gradient-to-b from-blue-50 to-white pt-8 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">My Situation</h1>
@@ -393,16 +450,17 @@ export default function MySituationPage() {
                     >
                       Destination country <span className="text-red-500">*</span>
                     </label>
-                    <input
+                    <select
                       id="destinationCountry"
                       name="destinationCountry"
-                      type="text"
-                      placeholder="e.g., Italy"
                       value={formData.destinationCountry || ''}
                       onChange={handleChange}
-                      className={getInputClass('destinationCountry')}
+                      className={getSelectClass('destinationCountry')}
                       aria-required="true"
-                    />
+                    >
+                      <option value="">Select country</option>
+                      <option value="Italy">Italy</option>
+                    </select>
                     {renderError('destinationCountry')}
                   </div>
                   <div>
@@ -412,16 +470,17 @@ export default function MySituationPage() {
                     >
                       Destination city <span className="text-red-500">*</span>
                     </label>
-                    <input
+                    <select
                       id="destinationCity"
                       name="destinationCity"
-                      type="text"
-                      placeholder="e.g., Milan"
                       value={formData.destinationCity || ''}
                       onChange={handleChange}
-                      className={getInputClass('destinationCity')}
+                      className={getSelectClass('destinationCity')}
                       aria-required="true"
-                    />
+                    >
+                      <option value="">Select city</option>
+                      <option value="Milan">Milan</option>
+                    </select>
                     {renderError('destinationCity')}
                   </div>
                   <div>
@@ -431,15 +490,26 @@ export default function MySituationPage() {
                     >
                       University name
                     </label>
-                    <input
+                    <select
                       id="universityName"
                       name="universityName"
-                      type="text"
-                      placeholder="e.g., Bocconi University"
                       value={formData.universityName || ''}
                       onChange={handleChange}
-                      className={inputBase}
-                    />
+                      className={selectBase}
+                    >
+                      <option value="">Select university</option>
+                      <option value="Bocconi University">Bocconi University</option>
+                      <option value="Politecnico di Milano">Politecnico di Milano</option>
+                      <option value="Università degli Studi di Milano">Università degli Studi di Milano (State University)</option>
+                      <option value="Università Cattolica del Sacro Cuore">Università Cattolica del Sacro Cuore (Catholic University)</option>
+                      <option value="Università degli Studi di Milano-Bicocca">Università degli Studi di Milano-Bicocca</option>
+                      <option value="NABA - Nuova Accademia di Belle Arti">NABA - Nuova Accademia di Belle Arti</option>
+                      <option value="IED - Istituto Europeo di Design">IED - Istituto Europeo di Design</option>
+                      <option value="Marangoni Institute">Marangoni Institute</option>
+                      <option value="Domus Academy">Domus Academy</option>
+                      <option value="IULM University">IULM University</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                   <div>
                     <label

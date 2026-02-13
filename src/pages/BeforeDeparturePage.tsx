@@ -1,6 +1,7 @@
 import DashboardLayout from '../components/DashboardLayout'
 import InfoCard from '../components/InfoCard'
 import StepPageLayout from '../components/StepPageLayout'
+import UserInfoBox from '../components/UserInfoBox'
 
 export default function BeforeDeparturePage() {
   return (
@@ -10,6 +11,18 @@ export default function BeforeDeparturePage() {
         title="Before Departure"
         subtitle="Get your plans, paperwork, and essentials ready before you fly."
         secondaryActionLabel="Save for later"
+        infoBox={
+          <UserInfoBox
+            title="Your Travel Information"
+            fields={[
+              { key: 'destinationCity', label: 'Destination' },
+              { key: 'travelDate', label: 'Travel Date', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
+              { key: 'flightsBooked', label: 'Flights Booked' },
+              { key: 'arrivalDate', label: 'Arrival Date', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
+              { key: 'startDate', label: 'Program Start', formatter: (val) => val ? new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Not set' },
+            ]}
+          />
+        }
       >
         <InfoCard title="Overview">
           <p>

@@ -13,7 +13,7 @@ interface AuthLayoutProps {
  */
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 via-blue-50 to-purple-50">
+    <div className="flex flex-col bg-gradient-to-b from-slate-50 via-blue-50 to-purple-50 py-8">
       <Header />
 
       <main className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-4">

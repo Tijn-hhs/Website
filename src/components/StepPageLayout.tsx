@@ -7,6 +7,7 @@ type StepPageLayoutProps = {
   subtitle: string
   secondaryActionLabel?: string
   showActions?: boolean
+  infoBox?: ReactNode
   children?: ReactNode
 }
 
@@ -16,6 +17,7 @@ export default function StepPageLayout({
   subtitle,
   secondaryActionLabel,
   showActions = true,
+  infoBox,
   children,
 }: StepPageLayoutProps) {
   const hasChildren = Children.count(children) > 0
@@ -50,6 +52,8 @@ export default function StepPageLayout({
           ) : null}
         </div>
       ) : null}
+
+      {infoBox ? <div>{infoBox}</div> : null}
 
       {hasChildren ? (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

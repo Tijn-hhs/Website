@@ -15,13 +15,11 @@ export async function syncOnboardingDraftToProfileIfPresent(): Promise<boolean> 
       return true // No draft to sync, no error
     }
 
-    const data = await fetchMe()
-    const profile = data.profile || {}
-
+    // Only save the onboardingDraftJson field
+    // Backend will merge this with existing profile data
     await saveProfile({
-      ...profile,
       onboardingDraftJson: draftJson,
-    })
+    } as any)
 
     // Keep draft in localStorage until onboarding is fully complete
     // It will be cleared on Step 8 finish
