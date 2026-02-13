@@ -134,13 +134,13 @@ export async function saveProfile(profile: UserProfile): Promise<boolean> {
     console.log('[API] Profile keys:', Object.keys(profile))
     console.log('[API] Profile to save:', profile)
     
-    // CRITICAL: Pass the profile as stringified JSON
-    // Amplify's put() expects the body to be a string, not an object
+    // CRITICAL: Pass the profile object directly
+    // Amplify's put() handles JSON serialization internally
     const restOperation = put({
       apiName: API_NAME,
       path: '/user/me',
       options: {
-        body: JSON.stringify(profile),  // Must stringify for Amplify API
+        body: profile as any,  // Type assertion - Amplify handles serialization
         headers: {
           'Content-Type': 'application/json',
           ...headers,
