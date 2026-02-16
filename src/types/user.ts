@@ -12,6 +12,7 @@ export interface UserProfile {
   studyLevel?: string
   startDate?: string
   admissionStatus?: string
+  isEuCitizen?: string
   visaType?: string
   passportExpiry?: string
   visaAppointmentDate?: string
@@ -36,6 +37,11 @@ export interface UserProfile {
   budgetingNotes?: string
   communityInterest?: string
   supportNeeds?: string
+  monthlyBudgetRange?: string
+  scholarshipNeed?: string
+  fundingSource?: string
+  housingPreference?: string
+  housingSupportNeeded?: string
 }
 
 export interface StepProgress {

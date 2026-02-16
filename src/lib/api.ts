@@ -1,4 +1,4 @@
-import { get, put } from 'aws-amplify/api'
+import { get, put, post } from 'aws-amplify/api'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { UserProfile, UserData, StepProgress } from '../types/user'
 
@@ -251,6 +251,41 @@ export async function saveStepProgress(
     return true
   } catch (error) {
     console.error('[API] Error in saveStepProgress:', error)
+    
+    // Re-throw with more context if it's an Amplify InvalidApiName error
+    if (error instanceof Error && error.message.includes('API name is invalid')) {
+      throw new Error(
+        `InvalidApiName: Amplify cannot find REST API '${API_NAME}'. ` +
+        `Check that Amplify.configure() registers this API name.`
+      )
+    }
+    
+    throw error
+  }
+}
+
+export async function submitFeedback(message: string): Promise<boolean> {
+  try {
+    const headers = await getAuthHeaders()
+    
+    console.log('[API] Calling submitFeedback with message:', message)
+    
+    const restOperation = post({
+      apiName: API_NAME,
+      path: 'feedback',
+      options: {
+        body: { message },
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+      },
+    })
+
+    await restOperation.response
+    return true
+  } catch (error) {
+    console.error('[API] Error in submitFeedback:', error)
     
     // Re-throw with more context if it's an Amplify InvalidApiName error
     if (error instanceof Error && error.message.includes('API name is invalid')) {

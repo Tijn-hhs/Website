@@ -1,15 +1,18 @@
 import DashboardLayout from '../components/DashboardLayout'
+import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import UserInfoBox from '../components/UserInfoBox'
 
 export default function ArrivalFirstDaysPage() {
   return (
-    <DashboardLayout>
+    <>
+      <FeedbackWidget />
+      <DashboardLayout>
       <StepPageLayout
         stepLabel="Step 5"
         title="Arrival & First Days"
         subtitle="Settle in, handle essentials, and get oriented in your new city."
-        showActions={false}
+        checklistPageType="arrival-first-days"
         infoBox={
           <UserInfoBox
             title="Your Arrival Details"
@@ -22,7 +25,9 @@ export default function ArrivalFirstDaysPage() {
             ]}
           />
         }
-      />
-    </DashboardLayout>
+      >
+      </StepPageLayout>
+      </DashboardLayout>
+    </>
   )
 }

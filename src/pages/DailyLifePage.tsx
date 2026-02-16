@@ -1,15 +1,18 @@
 import DashboardLayout from '../components/DashboardLayout'
+import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import UserInfoBox from '../components/UserInfoBox'
 
 export default function DailyLifePage() {
   return (
-    <DashboardLayout>
+    <>
+      <FeedbackWidget />
+      <DashboardLayout>
       <StepPageLayout
-        stepLabel="Step 10"
+        stepLabel="Step 11"
         title="Daily Life"
         subtitle="Set up everyday routines, transport, and local services."
-        showActions={false}
+        checklistPageType="daily-life"
         infoBox={
           <UserInfoBox
             title="Your Daily Life Setup"
@@ -21,7 +24,9 @@ export default function DailyLifePage() {
             ]}
           />
         }
-      />
-    </DashboardLayout>
+      >
+      </StepPageLayout>
+      </DashboardLayout>
+    </>
   )
 }

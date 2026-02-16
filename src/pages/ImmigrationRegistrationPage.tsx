@@ -1,15 +1,18 @@
 import DashboardLayout from '../components/DashboardLayout'
+import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import UserInfoBox from '../components/UserInfoBox'
 
 export default function ImmigrationRegistrationPage() {
   return (
-    <DashboardLayout>
+    <>
+      <FeedbackWidget />
+      <DashboardLayout>
       <StepPageLayout
         stepLabel="Step 4"
         title="Immigration & Registration"
         subtitle="Complete local registrations and immigration formalities after arrival."
-        showActions={false}
+        checklistPageType="immigration-registration"
         infoBox={
           <UserInfoBox
             title="Your Registration Status"
@@ -22,7 +25,9 @@ export default function ImmigrationRegistrationPage() {
             ]}
           />
         }
-      />
-    </DashboardLayout>
+      >
+      </StepPageLayout>
+      </DashboardLayout>
+    </>
   )
 }

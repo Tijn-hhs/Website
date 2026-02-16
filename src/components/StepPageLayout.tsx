@@ -1,11 +1,13 @@
 import { Children, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import StepChecklist from '../onboarding/components/StepChecklist'
 
 type StepPageLayoutProps = {
   stepLabel: string
   title: string
   subtitle: string
   secondaryActionLabel?: string
+  checklistPageType?: string
   showActions?: boolean
   infoBox?: ReactNode
   children?: ReactNode
@@ -16,6 +18,7 @@ export default function StepPageLayout({
   title,
   subtitle,
   secondaryActionLabel,
+  checklistPageType,
   showActions = true,
   infoBox,
   children,
@@ -34,6 +37,8 @@ export default function StepPageLayout({
         <p className="text-base text-slate-600">{subtitle}</p>
       </header>
 
+      {infoBox ? <div>{infoBox}</div> : null}
+
       {showActions ? (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link
@@ -42,18 +47,19 @@ export default function StepPageLayout({
           >
             Back to Dashboard
           </Link>
-          {secondaryActionLabel ? (
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-colors duration-150 hover:text-slate-800 hover:bg-slate-50"
-            >
-              {secondaryActionLabel}
-            </button>
-          ) : null}
+          <div className="flex gap-3 flex-col sm:flex-row">
+            {checklistPageType ? <StepChecklist pageType={checklistPageType} /> : null}
+            {secondaryActionLabel ? (
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-colors duration-150 hover:text-slate-800 hover:bg-slate-50"
+              >
+                {secondaryActionLabel}
+              </button>
+            ) : null}
+          </div>
         </div>
       ) : null}
-
-      {infoBox ? <div>{infoBox}</div> : null}
 
       {hasChildren ? (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

@@ -11,7 +11,8 @@ import BeforeDeparturePage from './pages/BeforeDeparturePage'
 import ImmigrationRegistrationPage from './pages/ImmigrationRegistrationPage'
 import ArrivalFirstDaysPage from './pages/ArrivalFirstDaysPage'
 import HousingPage from './pages/HousingPage'
-import LegalBankingInsurancePage from './pages/LegalBankingInsurancePage'
+import BankingPage from './pages/BankingPage'
+import InsurancePage from './pages/InsurancePage'
 import HealthcarePage from './pages/HealthcarePage'
 import InformationCentrePage from './pages/InformationCentrePage'
 import DailyLifePage from './pages/DailyLifePage'
@@ -90,10 +91,18 @@ export default function App() {
           }
         />
         <Route
-          path="/dashboard/legal-banking-insurance"
+          path="/dashboard/banking"
           element={
             <AuthGate>
-              <LegalBankingInsurancePage />
+              <BankingPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/dashboard/insurance"
+          element={
+            <AuthGate>
+              <InsurancePage />
             </AuthGate>
           }
         />

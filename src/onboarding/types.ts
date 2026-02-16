@@ -23,5 +23,6 @@ export type OnboardingDraft = {
   moveInWindow: string
   housingSupportNeeded: 'yes' | 'no' | 'unknown'
   lastCompletedStep: number
+  checklistItems: Record<number, Record<string, boolean>>
   updatedAt?: string
 }

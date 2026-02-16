@@ -7,6 +7,7 @@ import {
   getPrevEnabledStepId,
   getStepConfig,
   isStepEnabled,
+  isStepDisabled,
 } from '../steps'
 import { useOnboardingDraft } from '../useOnboardingDraft'
 
@@ -14,6 +15,7 @@ export default function Step5Visa() {
   const navigate = useNavigate()
   const { draft, isLoading, setLastCompletedStep, updateField } = useOnboardingDraft()
   const step = getStepConfig(5)
+  const stepDisabled = isStepDisabled(5, draft)
 
   useEffect(() => {
     if (!isLoading && !isStepEnabled(5, draft)) {
@@ -40,11 +42,36 @@ export default function Step5Visa() {
   const prevStepId = getPrevEnabledStepId(5, draft)
 
   const handleNext = () => {
-    setLastCompletedStep(5)
+    if (!stepDisabled) {
+      setLastCompletedStep(5)
+    }
     navigate(`/onboarding/${nextStepId}`)
   }
 
   const handleBack = () => navigate(`/onboarding/${prevStepId}`)
+
+  if (stepDisabled) {
+    return (
+      <OnboardingLayout
+        stepId={5}
+        title={step.title}
+        subtitle={step.subtitle}
+        onBack={handleBack}
+        onNext={handleNext}
+        nextLabel="Next"
+        nextDisabled={true}
+      >
+        <div className={`${cardBase} border-2 border-amber-200 bg-amber-50`}>
+          <p className="text-sm text-amber-900 font-medium">
+            This step is not needed for EU citizens.
+          </p>
+          <p className="text-sm text-amber-700 mt-2">
+            Since you indicated you're an EU citizen, you don't need to fill in visa information. You can skip ahead to the next step.
+          </p>
+        </div>
+      </OnboardingLayout>
+    )
+  }
 
   return (
     <OnboardingLayout

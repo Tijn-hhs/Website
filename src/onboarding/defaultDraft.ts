@@ -26,6 +26,7 @@ export function createDefaultDraft(): OnboardingDraft {
     moveInWindow: '',
     housingSupportNeeded: 'unknown',
     lastCompletedStep: 0,
+    checklistItems: {},
     updatedAt: undefined,
   }
 }

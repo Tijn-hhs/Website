@@ -1,16 +1,66 @@
+import { useEffect, useState } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import FeedbackWidget from '../components/FeedbackWidget'
 import InfoCard from '../components/InfoCard'
 import StepPageLayout from '../components/StepPageLayout'
 import UserInfoBox from '../components/UserInfoBox'
+import { fetchMe } from '../lib/api'
+import type { OnboardingDraft } from '../onboarding/types'
 
 export default function StudentVisaPage() {
+  const [isEuCitizen, setIsEuCitizen] = useState(false)
+
+  useEffect(() => {
+    const checkEuCitizenStatus = async () => {
+      try {
+        const data = await fetchMe()
+        if (data?.profile?.onboardingDraftJson) {
+          const draft: OnboardingDraft = JSON.parse(data.profile.onboardingDraftJson)
+          setIsEuCitizen(draft.isEuCitizen === 'yes')
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      }
+    }
+
+    checkEuCitizenStatus()
+  }, [])
+
+  if (isEuCitizen) {
+    return (
+      <>
+        <FeedbackWidget />
+        <DashboardLayout>
+          <StepPageLayout
+            stepLabel="Step 2"
+            title="Student Visa"
+            subtitle="Prepare, apply, and track your visa with confidence."
+          >
+            <StepChecklist pageType="student-visa" />
+
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-amber-900 mb-2">Not applicable for EU citizens</h3>
+              <p className="text-amber-700">
+                Since you're an EU citizen, you don't need to go through the student visa process. 
+                You have freedom of movement within the EU and can travel and study freely.
+              </p>
+            </div>
+          </StepPageLayout>
+        </DashboardLayout>
+      </>
+    )
+  }
+
   return (
-    <DashboardLayout>
-      <StepPageLayout
-        stepLabel="Step 2"
-        title="Student Visa"
-        subtitle="Prepare, apply, and track your visa with confidence."
-        secondaryActionLabel="Save for later"
+    <>
+      <FeedbackWidget />
+      <DashboardLayout>
+        <StepPageLayout
+          stepLabel="Step 2"
+          title="Student Visa"
+          subtitle="Prepare, apply, and track your visa with confidence."
+          checklistPageType="student-visa"
+          secondaryActionLabel="Save for later"
         infoBox={
           <UserInfoBox
             title="Your Visa Information"
@@ -58,7 +108,8 @@ export default function StudentVisaPage() {
             <li>Keep receipts and tracking numbers for follow-up.</li>
           </ul>
         </InfoCard>
-      </StepPageLayout>
-    </DashboardLayout>
+        </StepPageLayout>
+      </DashboardLayout>
+    </>
   )
 }

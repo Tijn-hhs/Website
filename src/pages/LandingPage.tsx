@@ -46,6 +46,11 @@ export default function LandingPage() {
                 From choosing the right university to settling into your new city LiveCity guides you through every step of your relocation.
               </p>
 
+              {/* Free for students badge */}
+              <div className="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-200 rounded-full">
+                <span className="text-sm font-medium text-blue-700">Free for students</span>
+              </div>
+
               {/* CTA Button */}
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <button

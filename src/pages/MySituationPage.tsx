@@ -13,6 +13,35 @@ const selectBase =
 const textAreaBase =
   'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-blue-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
 
+// Helper to convert profile data back to onboarding draft format
+function syncProfileToDraft(profile: UserProfile): string {
+  const draft: Partial<OnboardingDraft> = {
+    destinationCountry: profile.destinationCountry || '',
+    destinationCity: profile.destinationCity || '',
+    destinationUniversity: profile.universityName || '',
+    nationality: profile.nationality || '',
+    residenceCountry: profile.residenceCountry || '',
+    isEuCitizen: (profile.isEuCitizen as 'yes' | 'no' | 'unknown') || 'unknown',
+    degreeType: (profile.studyLevel as 'bachelor' | 'master' | 'phd' | 'exchange' | 'other' | '') || '',
+    fieldOfStudy: profile.programName || '',
+    programStartMonth: profile.startDate ? profile.startDate.substring(0, 7) : '',
+    admissionStatus: (profile.admissionStatus as 'exploring' | 'applying' | 'accepted' | 'enrolled' | '') || '',
+    deadlinesKnown: 'unknown',
+    passportExpiry: profile.passportExpiry || '',
+    visaType: profile.visaType || '',
+    visaAppointmentNeeded: 'unknown',
+    monthlyBudgetRange: (profile.monthlyBudgetRange as 'lt500' | '500-900' | '900-1300' | '1300+' | 'unknown') || 'unknown',
+    scholarshipNeed: (profile.scholarshipNeed as 'yes' | 'no' | 'maybe') || 'maybe',
+    fundingSource: (profile.fundingSource as 'parents' | 'savings' | 'work' | 'scholarship' | 'mixed' | 'unknown') || 'unknown',
+    housingPreference: (profile.housingPreference as 'dorm' | 'private' | 'roommates' | 'unknown') || 'unknown',
+    moveInWindow: '',
+    housingSupportNeeded: (profile.housingSupportNeeded as 'yes' | 'no' | 'unknown') || 'unknown',
+    lastCompletedStep: 0,
+  }
+  
+  return JSON.stringify(draft)
+}
+
 // Helper to convert onboarding draft to profile format
 function convertDraftToProfile(draft: OnboardingDraft): Partial<UserProfile> {
   return {
@@ -43,6 +72,7 @@ const EDITABLE_KEYS: (keyof UserProfile)[] = [
   'studyLevel',
   'startDate',
   'admissionStatus',
+  'isEuCitizen',
   'visaType',
   'passportExpiry',
   'visaAppointmentDate',
@@ -67,6 +97,11 @@ const EDITABLE_KEYS: (keyof UserProfile)[] = [
   'budgetingNotes',
   'communityInterest',
   'supportNeeds',
+  'monthlyBudgetRange',
+  'scholarshipNeed',
+  'fundingSource',
+  'housingPreference',
+  'housingSupportNeeded',
 ]
 
 const createEmptyProfile = (): UserProfile => {
@@ -85,11 +120,16 @@ const buildSavePayload = (formData: UserProfile): UserProfile => {
       payload[key] = value as any
     }
   })
+  
+  // Sync the profile data back to onboarding draft JSON
+  payload.onboardingDraftJson = syncProfileToDraft(formData)
+  
   console.log('[MySituation] buildSavePayload - included keys:', Object.keys(payload))
   console.log('[MySituation] buildSavePayload - sample values:', {
     destinationCountry: payload.destinationCountry,
     universityName: payload.universityName,
     studyLevel: payload.studyLevel,
+    isEuCitizen: payload.isEuCitizen,
   })
   return payload as UserProfile
 }
@@ -441,6 +481,29 @@ export default function MySituationPage() {
               </section>
 
               <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Citizenship & Visa Status</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="isEuCitizen">
+                      Are you an EU citizen?
+                    </label>
+                    <select
+                      id="isEuCitizen"
+                      name="isEuCitizen"
+                      value={formData.isEuCitizen || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="yes">Yes, I am an EU citizen</option>
+                      <option value="no">No, I am not an EU citizen</option>
+                      <option value="unknown">I am not sure yet</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">University & Admission</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -647,6 +710,68 @@ export default function MySituationPage() {
               </section>
 
               <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Budget & Funding</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="monthlyBudgetRange">
+                      Monthly budget range
+                    </label>
+                    <select
+                      id="monthlyBudgetRange"
+                      name="monthlyBudgetRange"
+                      value={formData.monthlyBudgetRange || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select budget range</option>
+                      <option value="lt500">Less than €500</option>
+                      <option value="500-900">€500 - €900</option>
+                      <option value="900-1300">€900 - €1300</option>
+                      <option value="1300+">€1300+</option>
+                      <option value="unknown">Not sure yet</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="scholarshipNeed">
+                      Do you need a scholarship or financial aid?
+                    </label>
+                    <select
+                      id="scholarshipNeed"
+                      name="scholarshipNeed"
+                      value={formData.scholarshipNeed || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="yes">Yes, I need financial aid</option>
+                      <option value="no">No, I don't need it</option>
+                      <option value="maybe">Maybe, I'm exploring options</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="fundingSource">
+                      Primary funding source
+                    </label>
+                    <select
+                      id="fundingSource"
+                      name="fundingSource"
+                      value={formData.fundingSource || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select a source</option>
+                      <option value="parents">Parents/Family</option>
+                      <option value="savings">Personal savings</option>
+                      <option value="work">Work/Part-time job</option>
+                      <option value="scholarship">Scholarship/Grant</option>
+                      <option value="mixed">Mixed sources</option>
+                      <option value="unknown">Not sure yet</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Pre-Departure Preparation</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -775,6 +900,40 @@ export default function MySituationPage() {
                       onChange={handleChange}
                       className={inputBase}
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="housingPreference">
+                      Housing preference
+                    </label>
+                    <select
+                      id="housingPreference"
+                      name="housingPreference"
+                      value={formData.housingPreference || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select preference</option>
+                      <option value="dorm">Dormitory</option>
+                      <option value="private">Private apartment</option>
+                      <option value="roommates">Shared apartment with roommates</option>
+                      <option value="unknown">Not sure yet</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-3 pt-6">
+                    <input
+                      id="housingSupportNeeded"
+                      name="housingSupportNeeded"
+                      type="checkbox"
+                      checked={formData.housingSupportNeeded === 'yes'}
+                      onChange={(e) => {
+                        const value = e.target.checked ? 'yes' : 'no'
+                        handleChange({ target: { name: 'housingSupportNeeded', value } } as any)
+                      }}
+                      className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                    />
+                    <label className="text-sm font-medium text-gray-700" htmlFor="housingSupportNeeded">
+                      I need help finding housing
+                    </label>
                   </div>
                 </div>
               </section>

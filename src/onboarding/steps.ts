@@ -5,6 +5,7 @@ export type StepConfig = {
   title: string
   subtitle: string
   isEnabled: (draft: OnboardingDraft) => boolean
+  isDisabled?: (draft: OnboardingDraft) => boolean
   validate: (draft: OnboardingDraft) => boolean
 }
 
@@ -49,7 +50,8 @@ export const onboardingSteps: StepConfig[] = [
     id: 5,
     title: 'Visa and documents',
     subtitle: 'Needed for non-EU students or if you are unsure.',
-    isEnabled: (draft) => draft.isEuCitizen === 'no' || draft.isEuCitizen === 'unknown',
+    isEnabled: () => true,
+    isDisabled: (draft) => draft.isEuCitizen === 'yes',
     validate: () => true,
   },
   {
@@ -84,6 +86,11 @@ export function getStepConfig(stepId: number): StepConfig | undefined {
 export function isStepEnabled(stepId: number, draft: OnboardingDraft): boolean {
   const step = getStepConfig(stepId)
   return step ? step.isEnabled(draft) : false
+}
+
+export function isStepDisabled(stepId: number, draft: OnboardingDraft): boolean {
+  const step = getStepConfig(stepId)
+  return step && step.isDisabled ? step.isDisabled(draft) : false
 }
 
 export function isStepValid(stepId: number, draft: OnboardingDraft): boolean {

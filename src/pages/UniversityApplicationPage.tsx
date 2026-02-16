@@ -2,14 +2,18 @@ import { Link } from 'react-router-dom'
 import Accordion from '../components/Accordion'
 import CalloutCard from '../components/CalloutCard'
 import DashboardLayout from '../components/DashboardLayout'
+import FeedbackWidget from '../components/FeedbackWidget'
 import InfoSectionCard from '../components/InfoSectionCard'
 import StepHeader from '../components/StepHeader'
 import UserInfoBox from '../components/UserInfoBox'
+import StepChecklist from '../onboarding/components/StepChecklist'
 
 export default function UniversityApplicationPage() {
   return (
-    <DashboardLayout>
-      <section className="space-y-8">
+    <>
+      <FeedbackWidget />
+      <DashboardLayout>
+        <section className="space-y-8">
         <StepHeader
           stepLabel="STEP 1"
           title="University Application"
@@ -29,19 +33,18 @@ export default function UniversityApplicationPage() {
           ]}
         />
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50"
-          >
-            Back to Dashboard
-          </Link>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-colors duration-150 hover:text-slate-800 hover:bg-slate-50"
-          >
-            Download checklist
-          </button>
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50 whitespace-nowrap"
+            >
+              Back to Dashboard
+            </Link>
+            <div className="w-full relative">
+              <StepChecklist pageType="university-application" />
+            </div>
+          </div>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -361,7 +364,8 @@ export default function UniversityApplicationPage() {
             />
           </div>
         </div>
-      </section>
-    </DashboardLayout>
+        </section>
+      </DashboardLayout>
+    </>
   )
 }

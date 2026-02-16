@@ -1,40 +1,257 @@
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { signOut } from 'aws-amplify/auth'
+import {
+  GraduationCap,
+  FileText,
+  Plane,
+  ClipboardList,
+  MapPin,
+  Home,
+  Shield,
+  Heart,
+  HelpCircle,
+  Coffee,
+  DollarSign,
+  User,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  CreditCard,
+} from 'lucide-react'
+import { fetchMe } from '../lib/api'
+import type { OnboardingDraft } from '../onboarding/types'
 
 export default function Sidebar() {
-  const navItems: readonly { label: string; path: string }[] = [
-    { label: 'University Application', path: '/dashboard/university-application' },
-    { label: 'Student Visa', path: '/dashboard/student-visa' },
-    { label: 'Before Departure', path: '/dashboard/before-departure' },
-    { label: 'Immigration & Registration', path: '/dashboard/immigration-registration' },
-    { label: 'Arrival & First Days', path: '/dashboard/arrival-first-days' },
-    { label: 'Housing', path: '/dashboard/housing' },
-    { label: 'Legal, Banking & Insurance', path: '/dashboard/legal-banking-insurance' },
-    { label: 'Healthcare', path: '/dashboard/healthcare' },
-    { label: 'Information Centre', path: '/dashboard/information-centre' },
-    { label: 'Daily Life', path: '/dashboard/daily-life' },
-    { label: 'Cost of Living', path: '/dashboard/cost-of-living' },
+  // State for managing collapsed/expanded sidebar
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    // Initialize from localStorage if available, default to false (expanded)
+    const saved = localStorage.getItem('sidebarCollapsed')
+    return saved ? JSON.parse(saved) : false
+  })
+
+  // State for checking if student visa step is disabled
+  const [visaStepDisabled, setVisaStepDisabled] = useState(false)
+
+  // Persist collapsed state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(isCollapsed))
+  }, [isCollapsed])
+
+  // Check user's EU citizen status
+  useEffect(() => {
+    const checkVisaStepStatus = async () => {
+      try {
+        const data = await fetchMe()
+        if (data?.profile?.onboardingDraftJson) {
+          const draft: OnboardingDraft = JSON.parse(data.profile.onboardingDraftJson)
+          setVisaStepDisabled(draft.isEuCitizen === 'yes')
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      }
+    }
+
+    checkVisaStepStatus()
+  }, [])
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
+  }
+
+  // Steps items - Educational/Planning steps
+  const stepsItems: readonly { label: string; path: string; icon: React.ReactNode }[] = [
+    {
+      label: 'University Application',
+      path: '/dashboard/university-application',
+      icon: <GraduationCap size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Student Visa',
+      path: '/dashboard/student-visa',
+      icon: <FileText size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Before Departure',
+      path: '/dashboard/before-departure',
+      icon: <Plane size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Immigration & Registration',
+      path: '/dashboard/immigration-registration',
+      icon: <ClipboardList size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Housing',
+      path: '/dashboard/housing',
+      icon: <Home size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Banking',
+      path: '/dashboard/banking',
+      icon: <CreditCard size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Insurance',
+      path: '/dashboard/insurance',
+      icon: <Shield size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Healthcare',
+      path: '/dashboard/healthcare',
+      icon: <Heart size={20} className="flex-shrink-0" />,
+    },
+  ]
+
+  // Tools items - General information and resources
+  const toolsItems: readonly { label: string; path: string; icon: React.ReactNode }[] = [
+    {
+      label: 'Arrival & First Days',
+      path: '/dashboard/arrival-first-days',
+      icon: <MapPin size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Information Centre',
+      path: '/dashboard/information-centre',
+      icon: <HelpCircle size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Daily Life',
+      path: '/dashboard/daily-life',
+      icon: <Coffee size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Cost of Living',
+      path: '/dashboard/cost-of-living',
+      icon: <DollarSign size={20} className="flex-shrink-0" />,
+    },
   ]
 
   const location = useLocation()
   const isHomeActive = location.pathname === '/'
+  const isMySituationActive = location.pathname === '/my-situation'
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-60 bg-gradient-to-b from-slate-50 via-blue-50 to-purple-50 shadow-md flex flex-col border-r border-slate-200/70">
-      {/* Logo Section */}
-      <div className="flex items-center justify-center pt-8 pb-6 px-6">
-        <Link to="/" aria-label="Go to homepage" className="inline-flex">
-          <img src="/assets/Logo.png" alt="LiveCity Logo" className="w-32 h-auto" />
-        </Link>
+    // Enhanced sidebar container with floating effect (margin, border-radius, shadow)
+    <aside
+      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 via-blue-50 to-purple-50 shadow-lg flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${
+        isCollapsed ? 'w-16' : 'w-60'
+      }`}
+      aria-label="Navigation sidebar"
+    >
+      {/* Header Section with Toggle Button */}
+      <div className={`flex items-center pt-4 pb-2 ${
+        isCollapsed ? 'px-0 justify-center' : 'px-4 justify-between'
+      }`}>
+        {/* Logo - Hidden when collapsed, fades out smoothly */}
+        {!isCollapsed && (
+          <Link
+            to="/dashboard"
+            aria-label="Go to dashboard"
+            className="inline-flex flex-shrink-0 transition-opacity duration-75 ease-in-out"
+          >
+            <img src="/assets/Logo.png" alt="LiveCity Logo" className="w-24 h-auto" />
+          </Link>
+        )}
+
+        {/* Toggle Button - Circular with chevron icon, always visible */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100/60 hover:bg-blue-200/60 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all duration-75 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!isCollapsed}
+        >
+          {isCollapsed ? (
+            <ChevronRight size={18} className="flex-shrink-0" />
+          ) : (
+            <ChevronLeft size={18} className="flex-shrink-0" />
+          )}
+        </button>
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 px-4 pt-2 overflow-y-auto">
-        <ul className="space-y-1.5 pb-4">
-          {navItems.map((item) => {
+      <nav className="flex-1 px-2 pt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+        <ul className="space-y-1 pb-4">
+          {/* Steps Section Header */}
+          {!isCollapsed && (
+            <li className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wide mt-4">
+              Steps
+            </li>
+          )}
+
+          {/* Steps Items */}
+          {stepsItems.map((item) => {
+            const isActive = location.pathname === item.path
+            const isStudentVisaDisabled = item.label === 'Student Visa' && visaStepDisabled
+
+            const itemClasses = `flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 border-l-2 border-transparent ${
+              isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
+            } ${
+              isStudentVisaDisabled
+                ? 'text-slate-300 cursor-not-allowed opacity-60'
+                : isActive
+                  ? 'bg-blue-100/60 text-slate-900 font-semibold border-blue-400 shadow-sm focus:ring-blue-300'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
+            }`
+
+            return (
+              <li key={item.label}>
+                {isStudentVisaDisabled ? (
+                  <div
+                    className={`relative ${itemClasses}`}
+                    title="Not needed for EU citizens"
+                  >
+                    <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">{item.icon}</span>
+                    <span
+                      className={`transition-all duration-75 ease-in-out overflow-hidden whitespace-nowrap ${
+                        isCollapsed ? 'w-0 ml-0 opacity-0 pointer-events-none' : 'w-auto ml-3 opacity-100'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                ) : (
+                  <Link
+                    to={item.path}
+                    className={itemClasses}
+                    aria-label={item.label}
+                    aria-current={isActive ? 'page' : undefined}
+                    title={isCollapsed ? item.label : undefined}
+                  >
+                    <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">{item.icon}</span>
+                    <span
+                      className={`transition-all duration-75 ease-in-out overflow-hidden whitespace-nowrap ${
+                        isCollapsed ? 'w-0 ml-0 opacity-0 pointer-events-none' : 'w-auto ml-3 opacity-100'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </Link>
+                )}
+              </li>
+            )
+          })}
+
+          {/* Tools Section Header */}
+          {!isCollapsed && (
+            <li className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wide mt-6">
+              Tools
+            </li>
+          )}
+
+          {/* Tools Items */}
+          {toolsItems.map((item) => {
             const isActive = location.pathname === item.path
 
-            // IMPORTANT: Link is inline by default; make it block/flex so backgrounds, padding, w-full work.
-            const itemClasses = `flex items-center w-full text-left px-4 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 border-l-2 border-transparent ${
+            const itemClasses = `flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 border-l-2 border-transparent ${
+              isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
+            } ${
               isActive
                 ? 'bg-blue-100/60 text-slate-900 font-semibold border-blue-400 shadow-sm focus:ring-blue-300'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
@@ -47,8 +264,16 @@ export default function Sidebar() {
                   className={itemClasses}
                   aria-label={item.label}
                   aria-current={isActive ? 'page' : undefined}
+                  title={isCollapsed ? item.label : undefined}
                 >
-                  {item.label}
+                  <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">{item.icon}</span>
+                  <span
+                    className={`transition-all duration-75 ease-in-out overflow-hidden whitespace-nowrap ${
+                      isCollapsed ? 'w-0 ml-0 opacity-0 pointer-events-none' : 'w-auto ml-3 opacity-100'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
                 </Link>
               </li>
             )
@@ -56,59 +281,86 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Bottom Section */}
-      <div className="mt-auto border-t border-slate-200/70 px-4 py-4 space-y-1.5">
+      {/* Bottom Section with My Situation and Home links */}
+      <div className="border-t border-slate-200/70 px-2 py-4 space-y-1 flex-shrink-0">
+        {/* My Situation Link */}
         <Link
           to="/my-situation"
-          className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${
-            location.pathname === '/my-situation'
+          className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 ${
+            isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
+          } ${
+            isMySituationActive
               ? 'bg-blue-100/60 text-slate-900 font-semibold focus:ring-blue-300'
               : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
           }`}
           aria-label="My Situation"
-          aria-current={location.pathname === '/my-situation' ? 'page' : undefined}
+          aria-current={isMySituationActive ? 'page' : undefined}
+          title={isCollapsed ? 'My Situation' : undefined}
         >
-          <svg
-            className="w-4 h-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+          {/* Icon - Fixed width to maintain layout */}
+          <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <User size={20} />
+          </span>
+          {/* Label - Hidden but in DOM to prevent layout shift */}
+          <span
+            className={`transition-all duration-75 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? 'w-0 ml-0 opacity-0 pointer-events-none' : 'w-auto ml-3 opacity-100'
+            }`}
           >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          My Situation
+            My Situation
+          </span>
         </Link>
-        
+
+        {/* Home Link */}
         <Link
           to="/"
-          className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${
+          className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 ${
+            isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
+          } ${
             isHomeActive
               ? 'bg-blue-100/60 text-slate-900 font-semibold focus:ring-blue-300'
               : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
           }`}
           aria-label="Home"
           aria-current={isHomeActive ? 'page' : undefined}
+          title={isCollapsed ? 'Home' : undefined}
         >
-          <svg
-            className="w-4 h-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+          {/* Icon - Fixed width to maintain layout */}
+          <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <Home size={20} />
+          </span>
+          {/* Label - Hidden but in DOM to prevent layout shift */}
+          <span
+            className={`transition-all duration-75 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? 'w-0 ml-0 opacity-0 pointer-events-none' : 'w-auto ml-3 opacity-100'
+            }`}
           >
-            <path d="M3 12l9-9 9 9" />
-            <path d="M9 21v-8h6v8" />
-          </svg>
-          Home
+            Home
+          </span>
         </Link>
+
+        {/* Sign Out Button */}
+        <button
+          onClick={handleSignOut}
+          className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 text-slate-600 hover:text-red-700 hover:bg-red-50 focus:ring-red-200 ${
+            isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
+          }`}
+          aria-label="Sign out"
+          title={isCollapsed ? 'Sign Out' : undefined}
+        >
+          {/* Icon - Fixed width to maintain layout */}
+          <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <LogOut size={20} />
+          </span>
+          {/* Label - Hidden but in DOM to prevent layout shift */}
+          <span
+            className={`transition-all duration-75 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? 'w-0 ml-0 opacity-0 pointer-events-none' : 'w-auto ml-3 opacity-100'
+            }`}
+          >
+            Sign Out
+          </span>
+        </button>
       </div>
     </aside>
   )

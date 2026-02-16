@@ -4,9 +4,12 @@ import {
   PutItemCommand,
   QueryCommand,
 } from '@aws-sdk/client-dynamodb'
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 import { unmarshall, marshall } from '@aws-sdk/util-dynamodb'
+import { v4 as uuidv4 } from 'uuid'
 
 const dynamoClient = new DynamoDBClient({})
+const sesClient = new SESClient({})
 
 interface UserProfile {
   firstName?: string
@@ -62,7 +65,7 @@ function corsHeaders() {
   return {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }
@@ -297,6 +300,68 @@ async function saveStepProgress(
   }
 }
 
+async function saveFeedback(userId: string, message: string): Promise<void> {
+  const feedbackId = uuidv4()
+  const timestamp = Date.now()
+  
+  const params = {
+    TableName: process.env.FEEDBACK_TABLE_NAME || 'FeedbackTable',
+    Item: marshall({
+      feedbackId,
+      userId,
+      message,
+      timestamp,
+      createdAt: new Date().toISOString(),
+    }),
+  }
+
+  try {
+    await dynamoClient.send(new PutItemCommand(params))
+    console.log('Feedback saved to DynamoDB:', { feedbackId, userId })
+  } catch (error) {
+    console.error('Error saving feedback to DynamoDB:', error)
+    throw error
+  }
+}
+
+async function sendFeedbackEmail(userId: string, message: string): Promise<void> {
+  const feedbackEmail = process.env.FEEDBACK_EMAIL || 'tijn@eendenburg.eu'
+  
+  console.log('Attempting to send feedback email to:', feedbackEmail)
+  
+  const emailParams = {
+    Source: feedbackEmail,
+    Destination: {
+      ToAddresses: [feedbackEmail],
+    },
+    Message: {
+      Subject: {
+        Data: `[LiveCity Feedback] New user feedback from ${userId}`,
+      },
+      Body: {
+        Text: {
+          Data: `User ID: ${userId}\n\nFeedback Message:\n${message}`,
+        },
+      },
+    },
+  }
+
+  try {
+    const result = await sesClient.send(new SendEmailCommand(emailParams))
+    console.log('✅ Feedback email sent successfully to:', feedbackEmail, 'MessageId:', result.$metadata?.requestId)
+  } catch (error) {
+    console.error('❌ Error sending feedback email:', {
+      errorName: error instanceof Error ? error.name : 'Unknown',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorCode: (error as any)?.Code || 'No error code',
+      feedbackEmail,
+      userId,
+    })
+    // Don't throw - we want to keep the feedback even if email fails
+    console.log('Feedback was saved to database despite email delivery issue. Check SES settings.')
+  }
+}
+
 export async function handler(event: any): Promise<ApiResponse> {
   console.log('Event:', event)
 
@@ -322,7 +387,59 @@ export async function handler(event: any): Promise<ApiResponse> {
     }
   }
 
-  // Extract userId from Cognito claims
+  // Check if this is a feedback endpoint (doesn't require authentication)
+  if (method === 'POST' && path === '/feedback') {
+    let body
+    try {
+      body = typeof event.body === 'string' ? JSON.parse(event.body) : (event.body || {})
+    } catch (parseError) {
+      console.error('Error parsing feedback request body:', parseError, 'Raw body:', event.body)
+      return {
+        statusCode: 400,
+        headers: corsHeaders(),
+        body: JSON.stringify({ error: 'Invalid JSON in request body' }),
+      }
+    }
+
+    const { message } = body
+
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders(),
+        body: JSON.stringify({ error: 'Message is required and must be a non-empty string' }),
+      }
+    }
+
+    // Use 'guest' as userId for unauthenticated users
+    const feedbackUserId = 'guest-' + Date.now()
+
+    try {
+      // Save feedback to database and send email in parallel
+      await Promise.all([
+        saveFeedback(feedbackUserId, message.trim()),
+        sendFeedbackEmail(feedbackUserId, message.trim()),
+      ])
+
+      console.log('POST /feedback - Feedback processed successfully for userId:', feedbackUserId)
+      return {
+        statusCode: 200,
+        headers: corsHeaders(),
+        body: JSON.stringify({ message: 'Feedback received and will be processed' }),
+      }
+    } catch (feedbackError) {
+      console.error('POST /feedback - Error processing feedback:', feedbackError)
+      return {
+        statusCode: 500,
+        headers: corsHeaders(),
+        body: JSON.stringify({ 
+          error: feedbackError instanceof Error ? feedbackError.message : 'Failed to process feedback',
+        }),
+      }
+    }
+  }
+
+  // Extract userId from Cognito claims for other authenticated endpoints
   // Note: REST API v1 with Cognito authorizer puts claims directly on authorizer object
   // HTTP API v2 puts them under authorizer.claims
   const authorizer = event.requestContext?.authorizer || event.authorizer
