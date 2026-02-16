@@ -42,6 +42,19 @@ export interface UserProfile {
   fundingSource?: string
   housingPreference?: string
   housingSupportNeeded?: string
+  // Cost of Living detailed breakdown
+  housingType?: string
+  rentCost?: number
+  utilitiesCost?: number
+  internetCost?: number
+  mobileCost?: number
+  transportCost?: number
+  groceriesCost?: number
+  diningOutCost?: number
+  entertainmentCost?: number
+  clothingCost?: number
+  personalCareCost?: number
+  booksCost?: number
 }
 
 export interface StepProgress {

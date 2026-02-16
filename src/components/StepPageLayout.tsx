@@ -5,7 +5,7 @@ import StepChecklist from '../onboarding/components/StepChecklist'
 type StepPageLayoutProps = {
   stepLabel: string
   title: string
-  subtitle: string
+  subtitle: string | ReactNode
   secondaryActionLabel?: string
   checklistPageType?: string
   showActions?: boolean

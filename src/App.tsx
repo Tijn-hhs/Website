@@ -17,6 +17,8 @@ import HealthcarePage from './pages/HealthcarePage'
 import InformationCentrePage from './pages/InformationCentrePage'
 import DailyLifePage from './pages/DailyLifePage'
 import CostOfLivingPage from './pages/CostOfLivingPage'
+import BlogOverviewPage from './pages/BlogOverviewPage'
+import BlogPostPage from './pages/BlogPostPage'
 import OnboardingStart from './onboarding/pages/OnboardingStart'
 import Step1Destination from './onboarding/pages/Step1Destination'
 import Step2Origin from './onboarding/pages/Step2Origin'
@@ -135,6 +137,22 @@ export default function App() {
           element={
             <AuthGate>
               <CostOfLivingPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/dashboard/blog"
+          element={
+            <AuthGate>
+              <BlogOverviewPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/dashboard/blog/:postId"
+          element={
+            <AuthGate>
+              <BlogPostPage />
             </AuthGate>
           }
         />

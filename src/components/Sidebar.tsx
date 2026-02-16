@@ -18,6 +18,7 @@ import {
   ChevronRight,
   LogOut,
   CreditCard,
+  BookOpen,
 } from 'lucide-react'
 import { fetchMe } from '../lib/api'
 import type { OnboardingDraft } from '../onboarding/types'
@@ -130,6 +131,15 @@ export default function Sidebar() {
       label: 'Cost of Living',
       path: '/dashboard/cost-of-living',
       icon: <DollarSign size={20} className="flex-shrink-0" />,
+    },
+  ]
+
+  // Blog items - Blog posts and articles
+  const blogItems: readonly { label: string; path: string; icon: React.ReactNode }[] = [
+    {
+      label: 'Blog Posts',
+      path: '/dashboard/blog',
+      icon: <BookOpen size={20} className="flex-shrink-0" />,
     },
   ]
 
@@ -247,6 +257,47 @@ export default function Sidebar() {
 
           {/* Tools Items */}
           {toolsItems.map((item) => {
+            const isActive = location.pathname === item.path
+
+            const itemClasses = `flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 border-l-2 border-transparent ${
+              isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
+            } ${
+              isActive
+                ? 'bg-blue-100/60 text-slate-900 font-semibold border-blue-400 shadow-sm focus:ring-blue-300'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
+            }`
+
+            return (
+              <li key={item.label}>
+                <Link
+                  to={item.path}
+                  className={itemClasses}
+                  aria-label={item.label}
+                  aria-current={isActive ? 'page' : undefined}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">{item.icon}</span>
+                  <span
+                    className={`transition-all duration-75 ease-in-out overflow-hidden whitespace-nowrap ${
+                      isCollapsed ? 'w-0 ml-0 opacity-0 pointer-events-none' : 'w-auto ml-3 opacity-100'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
+
+          {/* Blog Section Header */}
+          {!isCollapsed && (
+            <li className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wide mt-6">
+              Blog
+            </li>
+          )}
+
+          {/* Blog Items */}
+          {blogItems.map((item) => {
             const isActive = location.pathname === item.path
 
             const itemClasses = `flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 border-l-2 border-transparent ${

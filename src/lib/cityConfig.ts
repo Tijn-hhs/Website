@@ -9,8 +9,18 @@ export interface CostSliderConfig {
   description: string
 }
 
+export interface HousingTypeOption {
+  id: string
+  label: string
+  min: number
+  max: number
+  default: number
+  description: string
+}
+
 export interface CityCostsConfig {
   rent: CostSliderConfig
+  housingTypes: HousingTypeOption[]
   utilities: CostSliderConfig
   internet: CostSliderConfig
   mobile: CostSliderConfig
@@ -43,9 +53,51 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       max: 900,
       default: 650,
       step: 10,
-      label: 'Rent (room in shared apartment)',
+      label: 'Rent',
       description: 'The low budget option assumes a basic or shared living situation. The high budget option assumes a more central location, greater comfort, or fewer shared costs. Choose what best fits your situation.',
     },
+    housingTypes: [
+      {
+        id: 'shared-room',
+        label: 'Room in shared apartment',
+        min: 400,
+        max: 700,
+        default: 550,
+        description: 'Single room in a shared apartment with other students',
+      },
+      {
+        id: 'studio',
+        label: 'Studio apartment',
+        min: 600,
+        max: 1100,
+        default: 850,
+        description: 'Small studio apartment for yourself',
+      },
+      {
+        id: 'one-bedroom',
+        label: '1-bedroom apartment',
+        min: 800,
+        max: 1500,
+        default: 1150,
+        description: 'Full one-bedroom apartment',
+      },
+      {
+        id: 'two-bedroom',
+        label: '2-bedroom apartment (shared)',
+        min: 500,
+        max: 900,
+        default: 700,
+        description: 'Your share of a 2-bedroom apartment split with a roommate',
+      },
+      {
+        id: 'student-residence',
+        label: 'Student residence',
+        min: 450,
+        max: 800,
+        default: 625,
+        description: 'University-managed student housing',
+      },
+    ],
     utilities: {
       min: 80,
       max: 220,
