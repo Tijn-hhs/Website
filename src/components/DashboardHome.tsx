@@ -181,8 +181,7 @@ export default function DashboardHome() {
     }
 
     const stepKey = stepKeys[stepTitle]
-    if (!stepKey) return    npx amplify deploy
-
+    if (!stepKey) return
     setProgress((prev) => ({ ...prev, [stepKey]: completed }))
 
     const success = await saveStepProgress(stepKey, completed)
