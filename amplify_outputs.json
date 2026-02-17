@@ -28,7 +28,7 @@
   "version": "1.4",
   "custom": {
     "API": {
-      "endpoint": "https://fb1al1mz2f.execute-api.eu-north-1.amazonaws.com/prod/",
+      "endpoint": "https://ltnepnyvci.execute-api.eu-north-1.amazonaws.com/prod/",
       "region": "eu-north-1",
       "apiName": "leavsRest"
     }

@@ -8,8 +8,7 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 import { unmarshall, marshall } from '@aws-sdk/util-dynamodb'
 import { v4 as uuidv4 } from 'uuid'
 
-const dynamoClient = new DynamoDBClient({})
-const sesClient = new SESClient({})
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface UserProfile {
   firstName?: string
@@ -47,7 +46,6 @@ interface UserProfile {
   budgetingNotes?: string
   communityInterest?: string
   supportNeeds?: string
-  // Cost of Living detailed breakdown
   housingType?: string
   rentCost?: number
   utilitiesCost?: number
@@ -85,330 +83,172 @@ interface ApiResponse {
   body: string
 }
 
-function corsHeaders() {
+// ─── Clients & Config ────────────────────────────────────────────────────────
+
+const dynamo = new DynamoDBClient({})
+const ses = new SESClient({})
+
+const TABLE = {
+  profiles: process.env.USER_PROFILE_TABLE_NAME!,
+  progress: process.env.USER_PROGRESS_TABLE_NAME!,
+  feedback: process.env.FEEDBACK_TABLE_NAME!,
+  deadlines: process.env.DEADLINES_TABLE_NAME!,
+} as const
+
+const FEEDBACK_EMAIL = process.env.FEEDBACK_EMAIL || 'tijn@eendenburg.eu'
+
+// ─── Response Helpers ────────────────────────────────────────────────────────
+
+const CORS_HEADERS: Record<string, string> = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+function ok(body: unknown, statusCode = 200): ApiResponse {
+  return { statusCode, headers: CORS_HEADERS, body: JSON.stringify(body) }
+}
+
+function fail(statusCode: number, message: string): ApiResponse {
+  return { statusCode, headers: CORS_HEADERS, body: JSON.stringify({ error: message }) }
+}
+
+function parseBody(event: any): Record<string, any> {
+  const raw = event.body
+  if (!raw) return {}
+  return typeof raw === 'string' ? JSON.parse(raw) : raw
+}
+
+/** Extract userId from Cognito authorizer (supports REST API v1 + HTTP API v2). */
+function extractUserId(event: any): string | null {
+  const auth = event.requestContext?.authorizer || event.authorizer
+  return auth?.sub || auth?.claims?.sub || null
+}
+
+/** Extract HTTP method and path from the API Gateway event. */
+function extractRoute(event: any): { method: string; path: string } {
+  const isV2 = !!event.requestContext?.http
   return {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    method: isV2
+      ? event.requestContext.http.method
+      : event.requestContext?.httpMethod || event.httpMethod || 'UNKNOWN',
+    path: isV2
+      ? event.requestContext.http.path
+      : event.requestContext?.resourcePath || event.path || event.rawPath || 'UNKNOWN',
   }
 }
+
+// ─── Data Access ─────────────────────────────────────────────────────────────
 
 async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  const params = {
-    TableName: process.env.USER_PROFILE_TABLE_NAME!,
-    Key: marshall({ userId }),
-  }
+  const { Item } = await dynamo.send(
+    new GetItemCommand({ TableName: TABLE.profiles, Key: marshall({ userId }) })
+  )
+  if (!Item) return null
 
-  try {
-    console.log('Getting user profile for userId:', userId, 'from table:', params.TableName)
-    const response = await dynamoClient.send(new GetItemCommand(params))
-    
-    if (response.Item) {
-      const rawItem = unmarshall(response.Item)
-      
-      console.log('RAW unmarshalled item from DynamoDB:', {
-        userId,
-        rawKeys: Object.keys(rawItem),
-        rawKeyCount: Object.keys(rawItem).length,
-        rawSample: {
-          destinationCountry: rawItem.destinationCountry,
-          universityName: rawItem.universityName,
-          studyLevel: rawItem.studyLevel,
-          nationality: rawItem.nationality,
-        },
-        firstFewKeys: Object.keys(rawItem).slice(0, 10),
-        rawItemStringLength: JSON.stringify(rawItem).length,
-      })
-      
-      // IMPORTANT: Exclude system fields (userId, updatedAt) from the profile
-      // These should not be returned to the client or they'll be re-saved
-      const { userId: _, updatedAt: __, ...profile } = rawItem
-      
-      console.log('Retrieved profile from DynamoDB (after removing system fields):', {
-        userId,
-        hasItem: true,
-        keys: Object.keys(profile || {}),
-        keyCount: Object.keys(profile || {}).length,
-        nonEmptyKeys: Object.keys(profile).filter(k => profile[k as keyof UserProfile] !== undefined && profile[k as keyof UserProfile] !== ''),
-        sampleFields: {
-          destinationCountry: profile.destinationCountry,
-          universityName: profile.universityName,
-          studyLevel: profile.studyLevel,
-          nationality: profile.nationality,
-          monthlyBudget: profile.monthlyBudget,
-        },
-      })
-      return profile as UserProfile
-    }
-    
-    console.log('No profile found for userId:', userId)
-    return null
-  } catch (error) {
-    console.error('Error getting user profile:', error)
-    console.error('GetItem error details:', {
-      message: error instanceof Error ? error.message : String(error),
-      userId,
-      tableName: params.TableName,
-    })
-    throw error
-  }
+  // Strip system fields before returning
+  const { userId: _, updatedAt: __, ...profile } = unmarshall(Item)
+  return profile as UserProfile
 }
 
-async function saveUserProfile(userId: string, profileUpdates: UserProfile): Promise<void> {
-  try {
-    // CRITICAL: Validate that profileUpdates is actually an object
-    console.log('saveUserProfile - validating input:', {
-      userId,
-      profileUpdatesType: typeof profileUpdates,
-      isArray: Array.isArray(profileUpdates),
-      isNull: profileUpdates === null,
-      isUndefined: profileUpdates === undefined,
-    })
-    
-    if (!profileUpdates || typeof profileUpdates !== 'object' || Array.isArray(profileUpdates)) {
-      console.error('Invalid profileUpdates type:', {
-        type: typeof profileUpdates,
-        isArray: Array.isArray(profileUpdates),
-        value: profileUpdates,
-      })
-      throw new Error('profileUpdates must be a non-array object')
-    }
-    
-    console.log('Saving user profile to DynamoDB:', {
-      userId,
-      tableName: process.env.USER_PROFILE_TABLE_NAME,
-      profileKeys: Object.keys(profileUpdates || {}),
-      keyCount: Object.keys(profileUpdates || {}).length,
-      nonEmptyKeys: Object.keys(profileUpdates).filter(k => profileUpdates[k as keyof UserProfile] !== undefined && profileUpdates[k as keyof UserProfile] !== ''),
-      sampleFields: {
-        destinationCountry: profileUpdates.destinationCountry,
-        universityName: profileUpdates.universityName,
-        studyLevel: profileUpdates.studyLevel,
-        nationality: profileUpdates.nationality,
-        monthlyBudget: profileUpdates.monthlyBudget,
-      },
-    })
-    
-    // CRITICAL: Get existing profile first and merge with updates
-    // This prevents overwriting fields that aren't in the update
-    let existingProfile: Record<string, any> = {}
-    const getParams = {
-      TableName: process.env.USER_PROFILE_TABLE_NAME!,
-      Key: marshall({ userId }),
-    }
-    
-    try {
-      const getResponse = await dynamoClient.send(new GetItemCommand(getParams))
-      if (getResponse.Item) {
-        const rawItem = unmarshall(getResponse.Item)
-        // Exclude system fields
-        const { userId: _, updatedAt: __, ...existing } = rawItem
-        existingProfile = existing
-        console.log('Found existing profile, will merge updates:', {
-          existingFieldCount: Object.keys(existingProfile).length,
-          existingFields: Object.keys(existingProfile),
-        })
-      } else {
-        console.log('No existing profile found, will create new one')
-      }
-    } catch (getError) {
-      console.warn('Failed to fetch existing profile, will use updates only:', getError)
-      // Continue with empty existingProfile - we'll just save the updates
-    }
-    
-    // Merge existing with updates (updates take precedence)
-    const mergedProfile = { ...existingProfile, ...profileUpdates }
-    
-    console.log('After merge:', {
-      mergedFieldCount: Object.keys(mergedProfile).length,
-      mergedFields: Object.keys(mergedProfile),
-      sampleMergedValues: {
-        destinationCountry: mergedProfile.destinationCountry,
-        universityName: mergedProfile.universityName,
-        studyLevel: mergedProfile.studyLevel,
-      },
-    })
-    
-    // Remove any fields that are explicitly set to empty string or undefined
-    // but keep false and 0 values
-    const cleanedProfile: Record<string, any> = {}
-    Object.entries(mergedProfile).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        cleanedProfile[key] = value
-      }
-    })
-    
-    console.log('After cleaning:', {
-      cleanedFieldCount: Object.keys(cleanedProfile).length,
-      cleanedFields: Object.keys(cleanedProfile),
-      sampleCleanedValues: {
-        destinationCountry: cleanedProfile.destinationCountry,
-        universityName: cleanedProfile.universityName,
-        studyLevel: cleanedProfile.studyLevel,
-      },
-    })
-    
-    const putParams = {
-      TableName: process.env.USER_PROFILE_TABLE_NAME!,
-      Item: marshall({
-        userId,
-        ...cleanedProfile,
-        updatedAt: new Date().toISOString(),
-      }),
-    }
-    
-    console.log('Saving to DynamoDB with item:', {
-      userId,
-      fieldCount: Object.keys(cleanedProfile).length + 2, // +2 for userId and updatedAt
-      fields: ['userId', ...Object.keys(cleanedProfile), 'updatedAt'],
-    })
-    
-    await dynamoClient.send(new PutItemCommand(putParams))
-    
-    console.log('✓ Successfully saved profile to DynamoDB for userId:', userId)
-  } catch (error) {
-    console.error('✗ Error saving user profile:', error)
-    console.error('PutItem error details:', {
-      message: error instanceof Error ? error.message : String(error),
-      userId,
-      tableName: process.env.USER_PROFILE_TABLE_NAME,
-      profileKeysAttempted: Object.keys(profileUpdates || {}),
-    })
-    throw error
+async function saveUserProfile(userId: string, updates: UserProfile): Promise<void> {
+  if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+    throw new Error('Profile updates must be a non-array object')
   }
+
+  // Merge with existing profile so partial updates don't erase other fields
+  const existing = await getUserProfile(userId)
+  const merged = { ...existing, ...updates }
+
+  // Remove empty-string / null / undefined values (keep false and 0)
+  const cleaned: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(merged)) {
+    if (value !== undefined && value !== null && value !== '') {
+      cleaned[key] = value
+    }
+  }
+
+  await dynamo.send(
+    new PutItemCommand({
+      TableName: TABLE.profiles,
+      Item: marshall({ userId, ...cleaned, updatedAt: new Date().toISOString() }),
+    })
+  )
 }
 
 async function getUserProgress(userId: string): Promise<StepProgress[]> {
-  const params = {
-    TableName: process.env.USER_PROGRESS_TABLE_NAME!,
-    KeyConditionExpression: 'userId = :userId',
-    ExpressionAttributeValues: marshall({
-      ':userId': userId,
-    }),
-  }
-
-  try {
-    const response = await dynamoClient.send(new QueryCommand(params))
-    if (response.Items) {
-      return response.Items.map((item) => unmarshall(item) as StepProgress)
-    }
-    return []
-  } catch (error) {
-    console.error('Error getting user progress:', error)
-    throw error
-  }
+  const { Items } = await dynamo.send(
+    new QueryCommand({
+      TableName: TABLE.progress,
+      KeyConditionExpression: 'userId = :uid',
+      ExpressionAttributeValues: marshall({ ':uid': userId }),
+    })
+  )
+  return (Items ?? []).map((item) => unmarshall(item) as StepProgress)
 }
 
 async function saveStepProgress(
   userId: string,
   stepKey: string,
-  completed: boolean
+  completed: boolean,
 ): Promise<void> {
-  const params = {
-    TableName: process.env.USER_PROGRESS_TABLE_NAME!,
-    Item: marshall({
-      userId,
-      stepKey,
-      completed,
-      completedAt: completed ? new Date().toISOString() : null,
-      updatedAt: new Date().toISOString(),
-    }),
-  }
-
-  try {
-    await dynamoClient.send(new PutItemCommand(params))
-  } catch (error) {
-    console.error('Error saving step progress:', error)
-    throw error
-  }
+  await dynamo.send(
+    new PutItemCommand({
+      TableName: TABLE.progress,
+      Item: marshall({
+        userId,
+        stepKey,
+        completed,
+        completedAt: completed ? new Date().toISOString() : null,
+        updatedAt: new Date().toISOString(),
+      }),
+    })
+  )
 }
 
 async function saveFeedback(userId: string, message: string): Promise<void> {
-  const feedbackId = uuidv4()
-  const timestamp = Date.now()
-  
-  const params = {
-    TableName: process.env.FEEDBACK_TABLE_NAME!,
-    Item: marshall({
-      feedbackId,
-      userId,
-      message,
-      timestamp,
-      createdAt: new Date().toISOString(),
-    }),
-  }
-
-  try {
-    await dynamoClient.send(new PutItemCommand(params))
-    console.log('Feedback saved to DynamoDB:', { feedbackId, userId })
-  } catch (error) {
-    console.error('Error saving feedback to DynamoDB:', error)
-    throw error
-  }
+  await dynamo.send(
+    new PutItemCommand({
+      TableName: TABLE.feedback,
+      Item: marshall({
+        feedbackId: uuidv4(),
+        userId,
+        message,
+        timestamp: Date.now(),
+        createdAt: new Date().toISOString(),
+      }),
+    })
+  )
 }
 
 async function sendFeedbackEmail(userId: string, message: string): Promise<void> {
-  const feedbackEmail = process.env.FEEDBACK_EMAIL || 'tijn@eendenburg.eu'
-  
-  console.log('Attempting to send feedback email to:', feedbackEmail)
-  
-  const emailParams = {
-    Source: feedbackEmail,
-    Destination: {
-      ToAddresses: [feedbackEmail],
-    },
-    Message: {
-      Subject: {
-        Data: `[Leavs Feedback] New user feedback from ${userId}`,
-      },
-      Body: {
-        Text: {
-          Data: `User ID: ${userId}\n\nFeedback Message:\n${message}`,
-        },
-      },
-    },
-  }
-
   try {
-    const result = await sesClient.send(new SendEmailCommand(emailParams))
-    console.log('✅ Feedback email sent successfully to:', feedbackEmail, 'MessageId:', result.$metadata?.requestId)
+    await ses.send(
+      new SendEmailCommand({
+        Source: FEEDBACK_EMAIL,
+        Destination: { ToAddresses: [FEEDBACK_EMAIL] },
+        Message: {
+          Subject: { Data: `[Leavs Feedback] New feedback from ${userId}` },
+          Body: { Text: { Data: `User ID: ${userId}\n\nMessage:\n${message}` } },
+        },
+      })
+    )
   } catch (error) {
-    console.error('❌ Error sending feedback email:', {
-      errorName: error instanceof Error ? error.name : 'Unknown',
-      errorMessage: error instanceof Error ? error.message : String(error),
-      errorCode: (error as any)?.Code || 'No error code',
-      feedbackEmail,
-      userId,
-    })
-    // Don't throw - we want to keep the feedback even if email fails
-    console.log('Feedback was saved to database despite email delivery issue. Check SES settings.')
+    // Log but don't throw - feedback is already persisted in DynamoDB
+    console.error('Failed to send feedback email (SES):', error)
   }
 }
 
 async function getUserDeadlines(userId: string): Promise<Deadline[]> {
-  const params = {
-    TableName: process.env.DEADLINES_TABLE_NAME!,
-    KeyConditionExpression: 'userId = :userId',
-    ExpressionAttributeValues: marshall({
-      ':userId': userId,
-    }),
-  }
-
-  try {
-    console.log('Getting deadlines for userId:', userId)
-    const response = await dynamoClient.send(new QueryCommand(params))
-    
-    if (response.Items) {
-      const deadlines = response.Items.map((item) => unmarshall(item) as Deadline)
-      console.log('Retrieved deadlines:', { userId, count: deadlines.length })
-      return deadlines
-    }
-    return []
-  } catch (error) {
-    console.error('Error getting user deadlines:', error)
-    throw error
-  }
+  const { Items } = await dynamo.send(
+    new QueryCommand({
+      TableName: TABLE.deadlines,
+      KeyConditionExpression: 'userId = :uid',
+      ExpressionAttributeValues: marshall({ ':uid': userId }),
+    })
+  )
+  return (Items ?? []).map((item) => unmarshall(item) as Deadline)
 }
 
 async function createDeadline(
@@ -416,13 +256,11 @@ async function createDeadline(
   title: string,
   dueDate: string,
   sendReminder: boolean,
-  note?: string
+  note?: string,
 ): Promise<Deadline> {
-  const deadlineId = uuidv4()
   const now = new Date().toISOString()
-  
   const deadline: Deadline = {
-    deadlineId,
+    deadlineId: uuidv4(),
     userId,
     title,
     dueDate,
@@ -431,355 +269,113 @@ async function createDeadline(
     createdAt: now,
     updatedAt: now,
   }
-  
-  const params = {
-    TableName: process.env.DEADLINES_TABLE_NAME!,
-    Item: marshall(deadline, { removeUndefinedValues: true }),
-  }
-
-  try {
-    console.log('Creating deadline:', { userId, deadlineId, title, dueDate })
-    await dynamoClient.send(new PutItemCommand(params))
-    console.log('Deadline created successfully')
-    return deadline
-  } catch (error) {
-    console.error('Error creating deadline:', error)
-    throw error
-  }
+  await dynamo.send(
+    new PutItemCommand({
+      TableName: TABLE.deadlines,
+      Item: marshall(deadline, { removeUndefinedValues: true }),
+    })
+  )
+  return deadline
 }
 
+// ─── Route Handlers ──────────────────────────────────────────────────────────
+
+async function handleGetUser(userId: string): Promise<ApiResponse> {
+  const [profile, progress] = await Promise.all([
+    getUserProfile(userId),
+    getUserProgress(userId),
+  ])
+  return ok({ profile: profile ?? {}, progress: progress ?? [] })
+}
+
+async function handlePutUser(userId: string, event: any): Promise<ApiResponse> {
+  const body = parseBody(event)
+  await saveUserProfile(userId, body as UserProfile)
+  return ok({ message: 'Profile saved' })
+}
+
+async function handlePutProgress(userId: string, event: any): Promise<ApiResponse> {
+  const { stepKey, completed } = parseBody(event)
+  if (!stepKey) return fail(400, 'stepKey is required')
+  await saveStepProgress(userId, stepKey, completed)
+  return ok({ message: 'Progress saved' })
+}
+
+async function handleGetDeadlines(userId: string): Promise<ApiResponse> {
+  const deadlines = await getUserDeadlines(userId)
+  return ok({ deadlines })
+}
+
+async function handlePostDeadline(userId: string, event: any): Promise<ApiResponse> {
+  const { title, dueDate, sendReminder, note } = parseBody(event)
+
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    return fail(400, 'Title is required and must be a non-empty string')
+  }
+  if (!dueDate || typeof dueDate !== 'string') {
+    return fail(400, 'Due date is required and must be a valid date string')
+  }
+  const dueDateObj = new Date(dueDate)
+  if (isNaN(dueDateObj.getTime())) return fail(400, 'Invalid date format')
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  if (dueDateObj < today) return fail(400, 'Due date cannot be in the past')
+
+  if (typeof sendReminder !== 'boolean') {
+    return fail(400, 'sendReminder must be a boolean')
+  }
+
+  const deadline = await createDeadline(userId, title.trim(), dueDate, sendReminder, note?.trim())
+  return ok({ deadline }, 201)
+}
+
+async function handlePostFeedback(event: any): Promise<ApiResponse> {
+  const { message } = parseBody(event)
+
+  if (!message || typeof message !== 'string' || !message.trim()) {
+    return fail(400, 'Message is required and must be a non-empty string')
+  }
+
+  const guestId = `guest-${Date.now()}`
+  const trimmed = message.trim()
+
+  await Promise.all([saveFeedback(guestId, trimmed), sendFeedbackEmail(guestId, trimmed)])
+  return ok({ message: 'Feedback received' })
+}
+
+// ─── Router ──────────────────────────────────────────────────────────────────
+
 export async function handler(event: any): Promise<ApiResponse> {
-  console.log('Event:', event)
+  const { method, path } = extractRoute(event)
 
-  // Determine API Gateway version and extract method and path accordingly
-  const isHttpApi = !!event.requestContext?.http
-  const method = isHttpApi 
-    ? event.requestContext.http.method 
-    : event.requestContext?.httpMethod || event.httpMethod || 'UNKNOWN'
-  const path = isHttpApi 
-    ? event.requestContext.http.path 
-    : event.requestContext?.resourcePath || event.path || event.rawPath || 'UNKNOWN'
+  // CORS preflight
+  if (method === 'OPTIONS') return ok({ message: 'OK' })
 
-  console.log('API Gateway version:', isHttpApi ? 'HTTP API (v2)' : 'REST API (v1)')
-  console.log('Method:', method)
-  console.log('Path:', path)
-
-  // Handle CORS preflight
-  if (method === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: corsHeaders(),
-      body: JSON.stringify({ message: 'OK' }),
-    }
-  }
-
-  // Check if this is a feedback endpoint (doesn't require authentication)
+  // Public route (no auth required)
   if (method === 'POST' && path === '/feedback') {
-    let body
     try {
-      body = typeof event.body === 'string' ? JSON.parse(event.body) : (event.body || {})
-    } catch (parseError) {
-      console.error('Error parsing feedback request body:', parseError, 'Raw body:', event.body)
-      return {
-        statusCode: 400,
-        headers: corsHeaders(),
-        body: JSON.stringify({ error: 'Invalid JSON in request body' }),
-      }
-    }
-
-    const { message } = body
-
-    if (!message || typeof message !== 'string' || !message.trim()) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders(),
-        body: JSON.stringify({ error: 'Message is required and must be a non-empty string' }),
-      }
-    }
-
-    // Use 'guest' as userId for unauthenticated users
-    const feedbackUserId = 'guest-' + Date.now()
-
-    try {
-      // Save feedback to database and send email in parallel
-      await Promise.all([
-        saveFeedback(feedbackUserId, message.trim()),
-        sendFeedbackEmail(feedbackUserId, message.trim()),
-      ])
-
-      console.log('POST /feedback - Feedback processed successfully for userId:', feedbackUserId)
-      return {
-        statusCode: 200,
-        headers: corsHeaders(),
-        body: JSON.stringify({ message: 'Feedback received and will be processed' }),
-      }
-    } catch (feedbackError) {
-      console.error('POST /feedback - Error processing feedback:', feedbackError)
-      return {
-        statusCode: 500,
-        headers: corsHeaders(),
-        body: JSON.stringify({ 
-          error: feedbackError instanceof Error ? feedbackError.message : 'Failed to process feedback',
-        }),
-      }
+      return await handlePostFeedback(event)
+    } catch (err) {
+      console.error('POST /feedback error:', err)
+      return fail(500, 'Failed to process feedback')
     }
   }
 
-  // Extract userId from Cognito claims for other authenticated endpoints
-  // Note: REST API v1 with Cognito authorizer puts claims directly on authorizer object
-  // HTTP API v2 puts them under authorizer.claims
-  const authorizer = event.requestContext?.authorizer || event.authorizer
-
-  // For REST API v1: authorizer.sub
-  // For HTTP API v2 or others: authorizer.claims.sub
-  let userId = authorizer?.sub || authorizer?.claims?.sub
-
-  console.log('Authorizer structure:', {
-    hasAuthorizer: !!authorizer,
-    hasDirectSub: !!authorizer?.sub,
-    hasClaimsSub: !!authorizer?.claims?.sub,
-    extractedUserId: userId,
-    authorizerKeys: authorizer ? Object.keys(authorizer) : [],
-  })
-
-  if (!userId) {
-    console.log('Authorization check failed: Could not extract userId')
-    return {
-      statusCode: 401,
-      headers: corsHeaders(),
-      body: JSON.stringify({ error: 'Unauthorized - userId not found' }),
-    }
-  }
-
-  console.log('Authenticated user:', userId)
+  // Authenticated routes
+  const userId = extractUserId(event)
+  if (!userId) return fail(401, 'Unauthorized')
 
   try {
-    // GET /user/me - get user profile and progress
-    if (method === 'GET' && path === '/user/me') {
-      console.log('GET /user/me - fetching profile for userId:', userId)
-      const profile = await getUserProfile(userId)
-      const progress = await getUserProgress(userId)
+    if (method === 'GET'  && path === '/user/me')   return await handleGetUser(userId)
+    if (method === 'PUT'  && path === '/user/me')   return await handlePutUser(userId, event)
+    if (method === 'PUT'  && path === '/progress')   return await handlePutProgress(userId, event)
+    if (method === 'GET'  && path === '/deadlines')  return await handleGetDeadlines(userId)
+    if (method === 'POST' && path === '/deadlines')  return await handlePostDeadline(userId, event)
 
-      const response = {
-        profile: profile || {},
-        progress: progress || [],
-      }
-
-      console.log('GET /user/me - returning response:', {
-        hasProfile: !!profile,
-        profileKeys: Object.keys(response.profile).length,
-        progressItems: response.progress.length,
-        sampleProfileFields: {
-          destinationCountry: response.profile.destinationCountry,
-          universityName: response.profile.universityName,
-          studyLevel: response.profile.studyLevel,
-        },
-        responseStringLength: JSON.stringify(response).length,
-      })
-      
-      const responseBody = JSON.stringify(response)
-      console.log('GET /user/me - response body preview:', responseBody.substring(0, 500))
-
-      return {
-        statusCode: 200,
-        headers: corsHeaders(),
-        body: responseBody,
-      }
-    }
-
-    // PUT /user/me - save user profile
-    if (method === 'PUT' && path === '/user/me') {
-      let body
-      try {
-        body = typeof event.body === 'string' ? JSON.parse(event.body) : (event.body || {})
-      } catch (parseError) {
-        console.error('Error parsing request body:', parseError, 'Raw body:', event.body)
-        return {
-          statusCode: 400,
-          headers: corsHeaders(),
-          body: JSON.stringify({ error: 'Invalid JSON in request body' }),
-        }
-      }
-      
-      console.log('PUT /user/me - received request for userId:', userId)
-      console.log('PUT /user/me - received body structure:', {
-        keys: Object.keys(body || {}),
-        keyCount: Object.keys(body || {}).length,
-        nonEmptyKeys: Object.keys(body).filter(k => body[k] !== undefined && body[k] !== ''),
-        bodyDataLength: JSON.stringify(body).length,
-        bodyType: typeof body,
-        bodyIsArray: Array.isArray(body),
-        sampleFields: {
-          destinationCountry: body.destinationCountry,
-          universityName: body.universityName,
-          studyLevel: body.studyLevel,
-          nationality: body.nationality,
-        },
-      })
-      
-      try {
-        await saveUserProfile(userId, body)
-        console.log('PUT /user/me - profile saved successfully for userId:', userId)
-      } catch (saveError) {
-        console.error('PUT /user/me - Error saving profile:', saveError)
-        return {
-          statusCode: 500,
-          headers: corsHeaders(),
-          body: JSON.stringify({ 
-            error: saveError instanceof Error ? saveError.message : 'Failed to save profile',
-            details: saveError instanceof Error ? saveError.stack : String(saveError)
-          }),
-        }
-      }
-
-      return {
-        statusCode: 200,
-        headers: corsHeaders(),
-        body: JSON.stringify({ message: 'Profile saved' }),
-      }
-    }
-
-    // PUT /progress - save step progress
-    if (method === 'PUT' && path === '/progress') {
-      const body = JSON.parse(event.body || '{}')
-      const { stepKey, completed } = body
-
-      if (!stepKey) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders(),
-          body: JSON.stringify({ error: 'stepKey is required' }),
-        }
-      }
-
-      await saveStepProgress(userId, stepKey, completed)
-
-      return {
-        statusCode: 200,
-        headers: corsHeaders(),
-        body: JSON.stringify({ message: 'Progress saved' }),
-      }
-    }
-
-    // GET /deadlines - get all deadlines for user
-    if (method === 'GET' && path === '/deadlines') {
-      console.log('GET /deadlines - fetching deadlines for userId:', userId)
-      const deadlines = await getUserDeadlines(userId)
-
-      return {
-        statusCode: 200,
-        headers: corsHeaders(),
-        body: JSON.stringify({ deadlines }),
-      }
-    }
-
-    // POST /deadlines - create a new deadline
-    if (method === 'POST' && path === '/deadlines') {
-      let body
-      try {
-        body = typeof event.body === 'string' ? JSON.parse(event.body) : (event.body || {})
-      } catch (parseError) {
-        console.error('Error parsing request body:', parseError)
-        return {
-          statusCode: 400,
-          headers: corsHeaders(),
-          body: JSON.stringify({ error: 'Invalid JSON in request body' }),
-        }
-      }
-
-      const { title, dueDate, sendReminder, note } = body
-
-      // Validation
-      if (!title || typeof title !== 'string' || !title.trim()) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders(),
-          body: JSON.stringify({ error: 'Title is required and must be a non-empty string' }),
-        }
-      }
-
-      if (!dueDate || typeof dueDate !== 'string') {
-        return {
-          statusCode: 400,
-          headers: corsHeaders(),
-          body: JSON.stringify({ error: 'Due date is required and must be a valid date string' }),
-        }
-      }
-
-      // Validate date is not in the past
-      const dueDateObj = new Date(dueDate)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      
-      if (isNaN(dueDateObj.getTime())) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders(),
-          body: JSON.stringify({ error: 'Invalid date format' }),
-        }
-      }
-
-      if (dueDateObj < today) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders(),
-          body: JSON.stringify({ error: 'Due date cannot be in the past' }),
-        }
-      }
-
-      if (typeof sendReminder !== 'boolean') {
-        return {
-          statusCode: 400,
-          headers: corsHeaders(),
-          body: JSON.stringify({ error: 'Send reminder must be a boolean' }),
-        }
-      }
-
-      try {
-        const deadline = await createDeadline(
-          userId,
-          title.trim(),
-          dueDate,
-          sendReminder,
-          note?.trim()
-        )
-
-        return {
-          statusCode: 201,
-          headers: corsHeaders(),
-          body: JSON.stringify({ deadline }),
-        }
-      } catch (saveError) {
-        console.error('POST /deadlines - Error saving deadline:', saveError)
-        return {
-          statusCode: 500,
-          headers: corsHeaders(),
-          body: JSON.stringify({
-            error: saveError instanceof Error ? saveError.message : 'Failed to save deadline',
-          }),
-        }
-      }
-    }
-
-    return {
-      statusCode: 404,
-      headers: corsHeaders(),
-      body: JSON.stringify({ error: 'Not found' }),
-    }
+    return fail(404, 'Not found')
   } catch (error) {
-    console.error('Handler error:', error)
-    console.error('Error details:', {
-      name: error instanceof Error ? error.name : 'Unknown',
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    })
-
-    return {
-      statusCode: 500,
-      headers: corsHeaders(),
-      body: JSON.stringify({
-        error: error instanceof Error ? error.message : 'Internal server error',
-      }),
-    }
+    console.error(`${method} ${path} error:`, error)
+    return fail(500, 'Internal server error')
   }
 }

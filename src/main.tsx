@@ -195,6 +195,9 @@ async function initializeApp() {
       loginWith,
     }
 
+    // Strip trailing slash from endpoint to prevent double-slash in URLs
+    const cleanEndpoint = apiEndpoint.replace(/\/+$/, '')
+
     const amplifyConfig = {
       Auth: {
         Cognito: cognitoConfig,
@@ -202,7 +205,7 @@ async function initializeApp() {
       API: {
         REST: {
           [apiName]: {
-            endpoint: apiEndpoint,
+            endpoint: cleanEndpoint,
             region: apiRegion,
           },
         },

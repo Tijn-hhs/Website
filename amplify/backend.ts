@@ -190,6 +190,26 @@ deadlinesResource.addMethod('POST', lambdaIntegration, {
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
 
+// Add Gateway Responses so that 4XX/5XX errors from API Gateway
+// (e.g. Cognito authorizer 401) include CORS headers.
+restApi.addGatewayResponse('Default4XX', {
+  type: apigateway.ResponseType.DEFAULT_4XX,
+  responseHeaders: {
+    'Access-Control-Allow-Origin': "'*'",
+    'Access-Control-Allow-Headers': "'Content-Type,Authorization'",
+    'Access-Control-Allow-Methods': "'GET,POST,PUT,OPTIONS'",
+  },
+})
+
+restApi.addGatewayResponse('Default5XX', {
+  type: apigateway.ResponseType.DEFAULT_5XX,
+  responseHeaders: {
+    'Access-Control-Allow-Origin': "'*'",
+    'Access-Control-Allow-Headers': "'Content-Type,Authorization'",
+    'Access-Control-Allow-Methods': "'GET,POST,PUT,OPTIONS'",
+  },
+})
+
 // Add outputs for frontend
 backend.addOutput({
   custom: {
