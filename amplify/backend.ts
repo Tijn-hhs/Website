@@ -14,8 +14,14 @@ const backend = defineBackend({
 // Get the stack from the Lambda function construct (implicit stack)
 const apiStack = Stack.of(backend.userApi.resources.lambda)
 
-// Create DynamoDB tables
+// Environment identifier for table naming:
+// - Branch deployments (CI/CD): AWS_BRANCH is set (e.g. "main", "prod")
+// - Sandbox: falls back to "dev"
+const env = process.env.AWS_BRANCH || 'dev'
+
+// Create DynamoDB tables with explicit, human-readable physical names
 const userProfileTable = new dynamodb.Table(apiStack, 'UserProfileTable', {
+  tableName: `leavs-${env}-user-profiles`,
   partitionKey: {
     name: 'userId',
     type: dynamodb.AttributeType.STRING,
@@ -25,6 +31,7 @@ const userProfileTable = new dynamodb.Table(apiStack, 'UserProfileTable', {
 })
 
 const userProgressTable = new dynamodb.Table(apiStack, 'UserProgressTable', {
+  tableName: `leavs-${env}-user-progress`,
   partitionKey: {
     name: 'userId',
     type: dynamodb.AttributeType.STRING,
@@ -38,6 +45,7 @@ const userProgressTable = new dynamodb.Table(apiStack, 'UserProgressTable', {
 })
 
 const feedbackTable = new dynamodb.Table(apiStack, 'FeedbackTable', {
+  tableName: `leavs-${env}-feedback`,
   partitionKey: {
     name: 'feedbackId',
     type: dynamodb.AttributeType.STRING,
@@ -50,10 +58,25 @@ const feedbackTable = new dynamodb.Table(apiStack, 'FeedbackTable', {
   removalPolicy: RemovalPolicy.DESTROY,
 })
 
+const deadlinesTable = new dynamodb.Table(apiStack, 'DeadlinesTable', {
+  tableName: `leavs-${env}-deadlines`,
+  partitionKey: {
+    name: 'userId',
+    type: dynamodb.AttributeType.STRING,
+  },
+  sortKey: {
+    name: 'deadlineId',
+    type: dynamodb.AttributeType.STRING,
+  },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
 // Grant Lambda function access to DynamoDB tables
 userProfileTable.grantReadWriteData(backend.userApi.resources.lambda)
 userProgressTable.grantReadWriteData(backend.userApi.resources.lambda)
 feedbackTable.grantReadWriteData(backend.userApi.resources.lambda)
+deadlinesTable.grantReadWriteData(backend.userApi.resources.lambda)
 
 // Grant Lambda permission to send emails via SES
 backend.userApi.resources.lambda.addToRolePolicy(
@@ -78,14 +101,18 @@ backend.userApi.resources.lambda.addEnvironment(
   feedbackTable.tableName
 )
 backend.userApi.resources.lambda.addEnvironment(
+  'DEADLINES_TABLE_NAME',
+  deadlinesTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
   'FEEDBACK_EMAIL',
   'tijn@eendenburg.eu'
 )
 
 // Create REST API
-const restApi = new apigateway.RestApi(apiStack, 'LiveCityRestApi', {
-  restApiName: 'LiveCityRestApi',
-  description: 'LiveCity user profile and progress API',
+const restApi = new apigateway.RestApi(apiStack, 'LeavsRestApi', {
+  restApiName: 'LeavsRestApi',
+  description: 'Leavs user profile and progress API',
   defaultCorsPreflightOptions: {
     allowOrigins: apigateway.Cors.ALL_ORIGINS,
     allowMethods: apigateway.Cors.ALL_METHODS,
@@ -148,13 +175,28 @@ feedbackResource.addMethod('POST', lambdaIntegration, {
   ],
 })
 
+// Create /deadlines resource
+const deadlinesResource = restApi.root.addResource('deadlines')
+
+// GET /deadlines
+deadlinesResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// POST /deadlines
+deadlinesResource.addMethod('POST', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
 // Add outputs for frontend
 backend.addOutput({
   custom: {
     API: {
       endpoint: restApi.url,
       region: Stack.of(apiStack).region,
-      apiName: 'livecityRest',
+      apiName: 'leavsRest',
     },
   },
 })

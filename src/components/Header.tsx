@@ -41,7 +41,7 @@ export default function Header() {
             <img
               // Vite-imported asset avoids production path issues on AWS.
               src={logo}
-              alt="LiveCity"
+              alt="Leavs"
               className="h-9 w-auto"
             />
           </Link>

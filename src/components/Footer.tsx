@@ -7,13 +7,13 @@ export default function Footer() {
     { label: 'How it works', to: '/' },
     { label: 'Dashboard', to: '/dashboard' },
     { label: 'My Situation', to: '/my-situation' },
-    { label: 'Support', href: 'mailto:support@livecity.com' },
+    { label: 'Support', href: 'mailto:support@leavs.com' },
   ]
 
   const companyLinks = [
     { label: 'Privacy Policy', to: '/privacy' },
     { label: 'Terms', to: '/terms' },
-    { label: 'Contact', href: 'mailto:hello@livecity.com' },
+    { label: 'Contact', href: 'mailto:hello@leavs.com' },
   ]
 
   return (
@@ -27,7 +27,7 @@ export default function Footer() {
               to="/"
               className="inline-block text-2xl font-bold text-slate-900 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
             >
-              LiveCity
+              Leavs
             </Link>
             <p className="text-sm text-slate-600 leading-relaxed max-w-xs">
               Your international student journey, simplified.
@@ -95,7 +95,7 @@ export default function Footer() {
         {/* Bottom Row - Copyright */}
         <div className="pt-8 border-t border-slate-200">
           <p className="text-sm text-slate-500 text-center">
-            © {currentYear} LiveCity. All rights reserved.
+            © {currentYear} Leavs. All rights reserved.
           </p>
         </div>
       </div>

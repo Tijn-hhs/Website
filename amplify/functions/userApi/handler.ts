@@ -68,6 +68,17 @@ interface StepProgress {
   completedAt?: string
 }
 
+interface Deadline {
+  deadlineId: string
+  userId: string
+  title: string
+  dueDate: string
+  sendReminder: boolean
+  note?: string
+  createdAt: string
+  updatedAt: string
+}
+
 interface ApiResponse {
   statusCode: number
   headers: Record<string, string>
@@ -85,7 +96,7 @@ function corsHeaders() {
 
 async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const params = {
-    TableName: process.env.USER_PROFILE_TABLE_NAME || 'UserProfileTable',
+    TableName: process.env.USER_PROFILE_TABLE_NAME!,
     Key: marshall({ userId }),
   }
 
@@ -183,7 +194,7 @@ async function saveUserProfile(userId: string, profileUpdates: UserProfile): Pro
     // This prevents overwriting fields that aren't in the update
     let existingProfile: Record<string, any> = {}
     const getParams = {
-      TableName: process.env.USER_PROFILE_TABLE_NAME || 'UserProfileTable',
+      TableName: process.env.USER_PROFILE_TABLE_NAME!,
       Key: marshall({ userId }),
     }
     
@@ -239,7 +250,7 @@ async function saveUserProfile(userId: string, profileUpdates: UserProfile): Pro
     })
     
     const putParams = {
-      TableName: process.env.USER_PROFILE_TABLE_NAME || 'UserProfileTable',
+      TableName: process.env.USER_PROFILE_TABLE_NAME!,
       Item: marshall({
         userId,
         ...cleanedProfile,
@@ -270,7 +281,7 @@ async function saveUserProfile(userId: string, profileUpdates: UserProfile): Pro
 
 async function getUserProgress(userId: string): Promise<StepProgress[]> {
   const params = {
-    TableName: process.env.USER_PROGRESS_TABLE_NAME || 'UserProgressTable',
+    TableName: process.env.USER_PROGRESS_TABLE_NAME!,
     KeyConditionExpression: 'userId = :userId',
     ExpressionAttributeValues: marshall({
       ':userId': userId,
@@ -295,7 +306,7 @@ async function saveStepProgress(
   completed: boolean
 ): Promise<void> {
   const params = {
-    TableName: process.env.USER_PROGRESS_TABLE_NAME || 'UserProgressTable',
+    TableName: process.env.USER_PROGRESS_TABLE_NAME!,
     Item: marshall({
       userId,
       stepKey,
@@ -318,7 +329,7 @@ async function saveFeedback(userId: string, message: string): Promise<void> {
   const timestamp = Date.now()
   
   const params = {
-    TableName: process.env.FEEDBACK_TABLE_NAME || 'FeedbackTable',
+    TableName: process.env.FEEDBACK_TABLE_NAME!,
     Item: marshall({
       feedbackId,
       userId,
@@ -349,7 +360,7 @@ async function sendFeedbackEmail(userId: string, message: string): Promise<void>
     },
     Message: {
       Subject: {
-        Data: `[LiveCity Feedback] New user feedback from ${userId}`,
+        Data: `[Leavs Feedback] New user feedback from ${userId}`,
       },
       Body: {
         Text: {
@@ -372,6 +383,68 @@ async function sendFeedbackEmail(userId: string, message: string): Promise<void>
     })
     // Don't throw - we want to keep the feedback even if email fails
     console.log('Feedback was saved to database despite email delivery issue. Check SES settings.')
+  }
+}
+
+async function getUserDeadlines(userId: string): Promise<Deadline[]> {
+  const params = {
+    TableName: process.env.DEADLINES_TABLE_NAME!,
+    KeyConditionExpression: 'userId = :userId',
+    ExpressionAttributeValues: marshall({
+      ':userId': userId,
+    }),
+  }
+
+  try {
+    console.log('Getting deadlines for userId:', userId)
+    const response = await dynamoClient.send(new QueryCommand(params))
+    
+    if (response.Items) {
+      const deadlines = response.Items.map((item) => unmarshall(item) as Deadline)
+      console.log('Retrieved deadlines:', { userId, count: deadlines.length })
+      return deadlines
+    }
+    return []
+  } catch (error) {
+    console.error('Error getting user deadlines:', error)
+    throw error
+  }
+}
+
+async function createDeadline(
+  userId: string,
+  title: string,
+  dueDate: string,
+  sendReminder: boolean,
+  note?: string
+): Promise<Deadline> {
+  const deadlineId = uuidv4()
+  const now = new Date().toISOString()
+  
+  const deadline: Deadline = {
+    deadlineId,
+    userId,
+    title,
+    dueDate,
+    sendReminder,
+    note: note || undefined,
+    createdAt: now,
+    updatedAt: now,
+  }
+  
+  const params = {
+    TableName: process.env.DEADLINES_TABLE_NAME!,
+    Item: marshall(deadline, { removeUndefinedValues: true }),
+  }
+
+  try {
+    console.log('Creating deadline:', { userId, deadlineId, title, dueDate })
+    await dynamoClient.send(new PutItemCommand(params))
+    console.log('Deadline created successfully')
+    return deadline
+  } catch (error) {
+    console.error('Error creating deadline:', error)
+    throw error
   }
 }
 
@@ -585,6 +658,106 @@ export async function handler(event: any): Promise<ApiResponse> {
         statusCode: 200,
         headers: corsHeaders(),
         body: JSON.stringify({ message: 'Progress saved' }),
+      }
+    }
+
+    // GET /deadlines - get all deadlines for user
+    if (method === 'GET' && path === '/deadlines') {
+      console.log('GET /deadlines - fetching deadlines for userId:', userId)
+      const deadlines = await getUserDeadlines(userId)
+
+      return {
+        statusCode: 200,
+        headers: corsHeaders(),
+        body: JSON.stringify({ deadlines }),
+      }
+    }
+
+    // POST /deadlines - create a new deadline
+    if (method === 'POST' && path === '/deadlines') {
+      let body
+      try {
+        body = typeof event.body === 'string' ? JSON.parse(event.body) : (event.body || {})
+      } catch (parseError) {
+        console.error('Error parsing request body:', parseError)
+        return {
+          statusCode: 400,
+          headers: corsHeaders(),
+          body: JSON.stringify({ error: 'Invalid JSON in request body' }),
+        }
+      }
+
+      const { title, dueDate, sendReminder, note } = body
+
+      // Validation
+      if (!title || typeof title !== 'string' || !title.trim()) {
+        return {
+          statusCode: 400,
+          headers: corsHeaders(),
+          body: JSON.stringify({ error: 'Title is required and must be a non-empty string' }),
+        }
+      }
+
+      if (!dueDate || typeof dueDate !== 'string') {
+        return {
+          statusCode: 400,
+          headers: corsHeaders(),
+          body: JSON.stringify({ error: 'Due date is required and must be a valid date string' }),
+        }
+      }
+
+      // Validate date is not in the past
+      const dueDateObj = new Date(dueDate)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (isNaN(dueDateObj.getTime())) {
+        return {
+          statusCode: 400,
+          headers: corsHeaders(),
+          body: JSON.stringify({ error: 'Invalid date format' }),
+        }
+      }
+
+      if (dueDateObj < today) {
+        return {
+          statusCode: 400,
+          headers: corsHeaders(),
+          body: JSON.stringify({ error: 'Due date cannot be in the past' }),
+        }
+      }
+
+      if (typeof sendReminder !== 'boolean') {
+        return {
+          statusCode: 400,
+          headers: corsHeaders(),
+          body: JSON.stringify({ error: 'Send reminder must be a boolean' }),
+        }
+      }
+
+      try {
+        const deadline = await createDeadline(
+          userId,
+          title.trim(),
+          dueDate,
+          sendReminder,
+          note?.trim()
+        )
+
+        return {
+          statusCode: 201,
+          headers: corsHeaders(),
+          body: JSON.stringify({ deadline }),
+        }
+      } catch (saveError) {
+        console.error('POST /deadlines - Error saving deadline:', saveError)
+        return {
+          statusCode: 500,
+          headers: corsHeaders(),
+          body: JSON.stringify({
+            error: saveError instanceof Error ? saveError.message : 'Failed to save deadline',
+          }),
+        }
       }
     }
 

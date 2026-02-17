@@ -5,7 +5,7 @@ import { UserProfile } from '../types/user'
 import { createDefaultDraft } from './defaultDraft'
 import { OnboardingDraft } from './types'
 
-const LOCAL_KEY = 'livecity:onboardingDraft'
+const LOCAL_KEY = 'leavs:onboardingDraft'
 const SAVE_DEBOUNCE_MS = 600
 
 const parseDraft = (value: string | null): OnboardingDraft | null => {

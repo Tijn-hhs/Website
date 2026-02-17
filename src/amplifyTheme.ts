@@ -1,7 +1,7 @@
 import { createTheme } from '@aws-amplify/ui-react'
 
 export const amplifyTheme = createTheme({
-  name: 'livecity-theme',
+  name: 'leavs-theme',
   tokens: {
     colors: {
       brand: {

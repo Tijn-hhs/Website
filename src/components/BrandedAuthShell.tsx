@@ -11,10 +11,10 @@ export default function BrandedAuthShell({ children }: BrandedAuthShellProps) {
       <div className="mb-8 flex items-center gap-2">
         <img
           src="/assets/Logo.png"
-          alt="LiveCity Logo"
+          alt="Leavs Logo"
           className="h-8 w-8 object-contain"
         />
-        <span className="text-lg font-semibold text-slate-900">LiveCity</span>
+        <span className="text-lg font-semibold text-slate-900">Leavs</span>
       </div>
 
       {/* Branded card container */}
@@ -36,7 +36,7 @@ export default function BrandedAuthShell({ children }: BrandedAuthShellProps) {
       {/* Footer text */}
       <div className="mt-8 text-center text-xs text-slate-500 max-w-md">
         <p>
-          By signing in, you agree to LiveCity's{' '}
+          By signing in, you agree to Leavs'{' '}
           <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
             Terms of Service
           </a>{' '}

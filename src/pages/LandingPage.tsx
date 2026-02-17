@@ -35,7 +35,7 @@ export default function LandingPage() {
             <div className="flex flex-col justify-center space-y-6">
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase">
-                  Welcome to LiveCity
+                  Welcome to Leavs
                 </p>
                 <h1 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-slate-900 leading-tight">
                   Your international student journey, simplified.
@@ -43,7 +43,7 @@ export default function LandingPage() {
               </div>
               
               <p className="text-lg text-slate-600 leading-relaxed max-w-lg">
-                From choosing the right university to settling into your new city LiveCity guides you through every step of your relocation.
+                From choosing the right university to settling into your new city Leavs guides you through every step of your relocation.
               </p>
 
               {/* Free for students badge */}

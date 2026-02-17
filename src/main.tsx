@@ -139,7 +139,7 @@ async function initializeApp() {
       console.error('Parsed amplify_outputs.json:', typedOutputs)
       throw new Error(
         '❌ REST API name missing or invalid in amplify_outputs.json\n\n' +
-        'Expected: custom.API.apiName = "livecityRest"\n' +
+        'Expected: custom.API.apiName = "leavsRest"\n' +
         `Found: ${apiName || 'undefined'}\n\n` +
         'Run: npx amplify sandbox (to regenerate configuration)'
       )

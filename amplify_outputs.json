@@ -30,7 +30,7 @@
     "API": {
       "endpoint": "https://fb1al1mz2f.execute-api.eu-north-1.amazonaws.com/prod/",
       "region": "eu-north-1",
-      "apiName": "livecityRest"
+      "apiName": "leavsRest"
     }
   }
 }

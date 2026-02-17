@@ -4,7 +4,7 @@ import { UserProfile, UserData, StepProgress } from '../types/user'
 
 // IMPORTANT: Must match amplify_outputs.json.custom.API.apiName
 // This value is read from amplify_outputs.json and registered in src/main.tsx
-const API_NAME = 'livecityRest'
+const API_NAME = 'leavsRest'
 
 /**
  * Get authorization headers from the current Amplify session.
@@ -298,3 +298,106 @@ export async function submitFeedback(message: string): Promise<boolean> {
     throw error
   }
 }
+
+export interface Deadline {
+  deadlineId: string
+  userId: string
+  title: string
+  dueDate: string
+  sendReminder: boolean
+  note?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export async function fetchDeadlines(): Promise<Deadline[]> {
+  try {
+    const headers = await getAuthHeaders()
+    
+    console.log('[API] Calling fetchDeadlines with API_NAME:', API_NAME)
+    
+    const restOperation = get({
+      apiName: API_NAME,
+      path: '/deadlines',
+      options: {
+        headers,
+      },
+    })
+
+    const response = await restOperation.response
+    const json = await response.body.json()
+    
+    if (!json || typeof json !== 'object') {
+      throw new Error('Empty response from GET /deadlines')
+    }
+    
+    const jsonObj = json as Record<string, unknown>
+    const deadlines = (jsonObj.deadlines as Deadline[]) || []
+    
+    console.log('[API] fetchDeadlines response:', { count: deadlines.length })
+    
+    return deadlines
+  } catch (error) {
+    console.error('[API] Error in fetchDeadlines:', error)
+    
+    if (error instanceof Error && error.message.includes('API name is invalid')) {
+      throw new Error(
+        `InvalidApiName: Amplify cannot find REST API '${API_NAME}'. ` +
+        `Check that Amplify.configure() registers this API name.`
+      )
+    }
+    
+    throw error
+  }
+}
+
+export async function createDeadline(
+  title: string,
+  dueDate: string,
+  sendReminder: boolean,
+  note?: string
+): Promise<Deadline> {
+  try {
+    const headers = await getAuthHeaders()
+    
+    console.log('[API] Calling createDeadline:', { title, dueDate, sendReminder })
+    
+    const restOperation = post({
+      apiName: API_NAME,
+      path: '/deadlines',
+      options: {
+        body: { title, dueDate, sendReminder, note },
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+      },
+    })
+
+    const response = await restOperation.response
+    const json = await response.body.json()
+    
+    if (!json || typeof json !== 'object') {
+      throw new Error('Empty response from POST /deadlines')
+    }
+    
+    const jsonObj = json as Record<string, unknown>
+    const deadline = jsonObj.deadline as Deadline
+    
+    console.log('[API] createDeadline response:', { deadlineId: deadline.deadlineId })
+    
+    return deadline
+  } catch (error) {
+    console.error('[API] Error in createDeadline:', error)
+    
+    if (error instanceof Error && error.message.includes('API name is invalid')) {
+      throw new Error(
+        `InvalidApiName: Amplify cannot find REST API '${API_NAME}'. ` +
+        `Check that Amplify.configure() registers this API name.`
+      )
+    }
+    
+    throw error
+  }
+}
+

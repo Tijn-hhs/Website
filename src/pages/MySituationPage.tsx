@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Header from '../components/Header'
+import DashboardLayout from '../components/DashboardLayout'
 import { fetchMe, saveProfile } from '../lib/api'
 import { UserProfile } from '../types/user'
 import type { OnboardingDraft } from '../onboarding/types'
@@ -191,7 +191,7 @@ export default function MySituationPage() {
       
       // Fallback: if profile is empty, try to load from localStorage draft
       if (!hasProfileData && typeof window !== 'undefined') {
-        const draftJson = window.localStorage.getItem('livecity:onboardingDraft')
+        const draftJson = window.localStorage.getItem('leavs:onboardingDraft')
         if (draftJson) {
           try {
             const draft = JSON.parse(draftJson) as OnboardingDraft
@@ -320,7 +320,7 @@ export default function MySituationPage() {
         isArray: Array.isArray(profile),
         constructor: profile.constructor?.name,
         firstTenKeys: Object.keys(profile).slice(0, 10),
-        keysWithValues: Object.entries(profile).filter(([k, v]) => v !== undefined && v !== '' && v !== null).slice(0, 10),
+        keysWithValues: Object.entries(profile).filter(([, v]) => v !== undefined && v !== '' && v !== null).slice(0, 10),
         allKeysSample: Object.keys(profile).slice(0, 50),
       })
       
@@ -387,125 +387,122 @@ export default function MySituationPage() {
     ) : null
 
   return (
-    <>
-      <Header />
-      <main className="bg-gradient-to-b from-blue-50 to-white pt-8 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">My Situation</h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Tell us about your plans so we can personalize your LiveCity journey.
-            </p>
+    <DashboardLayout>
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">My Situation</h1>
+        <p className="text-sm text-gray-600 mt-1">
+          Tell us about your plans so we can personalize your Leavs journey.
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p className="text-slate-600">Loading your information...</p>
+        </div>
+      ) : loadError ? (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">{loadError}</p>
+          <button
+            onClick={() => {
+              setIsLoading(true)
+              loadProfile()
+            }}
+            className="mt-3 text-sm text-red-600 hover:text-red-800 font-medium underline"
+          >
+            Try again
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Student Profile</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="firstName">
+                  First name
+            </label>
+            <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  placeholder="e.g., Amina"
+                  value={formData.firstName || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
           </div>
-
-          {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-slate-600">Loading your information...</p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="lastName">
+                  Last name
+            </label>
+            <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="e.g., Rossi"
+                  value={formData.lastName || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nationality">
+                  Nationality <span className="text-red-500">*</span>
+            </label>
+            <input
+                  id="nationality"
+                  name="nationality"
+                  type="text"
+                  placeholder="e.g., Canadian"
+                  value={formData.nationality || ''}
+                  onChange={handleChange}
+                  className={getInputClass('nationality')}
+                  aria-required="true"
+                />
+                {renderError('nationality')}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="dateOfBirth">
+                  Date of birth
+            </label>
+            <input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
+          </div>
             </div>
-          ) : loadError ? (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              <p className="font-medium">{loadError}</p>
-              <button
-                onClick={() => {
-                  setIsLoading(true)
-                  loadProfile()
-                }}
-                className="mt-3 text-sm text-red-600 hover:text-red-800 font-medium underline"
-              >
-                Try again
-              </button>
+          </section>
+
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Citizenship & Visa Status</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="isEuCitizen">
+                  Are you an EU citizen?
+            </label>
+            <select
+                  id="isEuCitizen"
+                  name="isEuCitizen"
+                  value={formData.isEuCitizen || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select an option</option>
+                  <option value="yes">Yes, I am an EU citizen</option>
+                  <option value="no">No, I am not an EU citizen</option>
+                  <option value="unknown">I am not sure yet</option>
+            </select>
+          </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Student Profile</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="firstName">
-                      First name
-                    </label>
-                    <input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      placeholder="e.g., Amina"
-                      value={formData.firstName || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="lastName">
-                      Last name
-                    </label>
-                    <input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      placeholder="e.g., Rossi"
-                      value={formData.lastName || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nationality">
-                      Nationality <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="nationality"
-                      name="nationality"
-                      type="text"
-                      placeholder="e.g., Canadian"
-                      value={formData.nationality || ''}
-                      onChange={handleChange}
-                      className={getInputClass('nationality')}
-                      aria-required="true"
-                    />
-                    {renderError('nationality')}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="dateOfBirth">
-                      Date of birth
-                    </label>
-                    <input
-                      id="dateOfBirth"
-                      name="dateOfBirth"
-                      type="date"
-                      value={formData.dateOfBirth || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-                </div>
-              </section>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Citizenship & Visa Status</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="isEuCitizen">
-                      Are you an EU citizen?
-                    </label>
-                    <select
-                      id="isEuCitizen"
-                      name="isEuCitizen"
-                      value={formData.isEuCitizen || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select an option</option>
-                      <option value="yes">Yes, I am an EU citizen</option>
-                      <option value="no">No, I am not an EU citizen</option>
-                      <option value="unknown">I am not sure yet</option>
-                    </select>
-                  </div>
-                </div>
-              </section>
-
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">University & Admission</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">University & Admission</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label
                       className="block text-sm font-medium text-gray-700 mb-1"
@@ -653,12 +650,12 @@ export default function MySituationPage() {
                       <option value="planning">Planning</option>
                     </select>
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Visa & Legal Entry</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Visa & Legal Entry</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="visaType">
                       Visa type
@@ -706,12 +703,12 @@ export default function MySituationPage() {
                       className={inputBase}
                     />
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Budget & Funding</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Budget & Funding</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="monthlyBudgetRange">
                       Monthly budget range
@@ -768,12 +765,12 @@ export default function MySituationPage() {
                       <option value="unknown">Not sure yet</option>
                     </select>
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Pre-Departure Preparation</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pre-Departure Preparation</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="travelDate">
                       Planned travel date
@@ -814,12 +811,12 @@ export default function MySituationPage() {
                       className={textAreaBase}
                     />
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Immigration & Registration (Post-Arrival)</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Immigration & Registration (Post-Arrival)</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="registrationStatus">
                       Registration status
@@ -850,12 +847,12 @@ export default function MySituationPage() {
                       Residence permit required
                     </label>
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Housing</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Housing</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="accommodationType">
                       Accommodation type
@@ -935,12 +932,12 @@ export default function MySituationPage() {
                       I need help finding housing
                     </label>
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Banking, Legal & Insurance</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Banking, Legal & Insurance</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 pt-6">
                     <input
                       id="bankAccountNeeded"
@@ -981,12 +978,12 @@ export default function MySituationPage() {
                       Legal documents prepared
                     </label>
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Healthcare</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Healthcare</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="healthCoverage">
                       Health coverage
@@ -1018,12 +1015,12 @@ export default function MySituationPage() {
                       className={inputBase}
                     />
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Arrival & Daily Life</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Arrival & Daily Life</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="arrivalDate">
                       Arrival date
@@ -1069,12 +1066,12 @@ export default function MySituationPage() {
                       className={textAreaBase}
                     />
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Cost of Living & Budgeting</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Cost of Living & Budgeting</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="monthlyBudget">
                       Monthly budget
@@ -1121,12 +1118,12 @@ export default function MySituationPage() {
                       className={textAreaBase}
                     />
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Community & Support</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Community & Support</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="communityInterest">
                       Community interests
@@ -1155,10 +1152,10 @@ export default function MySituationPage() {
                       className={textAreaBase}
                     />
                   </div>
-                </div>
-              </section>
+            </div>
+          </section>
 
-              <div className="flex items-center justify-end gap-4">
+          <div className="flex items-center justify-end gap-4">
                 {saveStatus === 'success' && (
                   <span className="text-sm font-medium text-green-600">✓ Saved successfully</span>
                 )}
@@ -1167,18 +1164,16 @@ export default function MySituationPage() {
                     {Object.keys(validationErrors).length > 0 ? '✗ Please fix errors above' : '✗ Failed to save'}
                   </span>
                 )}
-                <button
+            <button
                   type="submit"
                   disabled={isSaving || isLoading || !isDirty}
                   className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white rounded-full bg-gradient-to-r from-blue-600 to-purple-600 shadow-md hover:shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? 'Saving...' : isDirty ? 'Save changes' : 'No changes'}
-                </button>
-              </div>
+            </button>
+          </div>
             </form>
           )}
-        </div>
-      </main>
-    </>
+    </DashboardLayout>
   )
 }

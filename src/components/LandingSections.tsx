@@ -70,7 +70,7 @@ export default function LandingSections() {
                 Your personalized relocation plan.
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed">
-                LiveCity creates a step-by-step timeline based on your nationality, destination, university and start date.
+                Leavs creates a step-by-step timeline based on your nationality, destination, university and start date.
               </p>
               
               <ul className="space-y-3">
@@ -115,7 +115,7 @@ export default function LandingSections() {
             <div className="flex justify-center lg:justify-end">
               <img
                 src="/assets/dashboard-mock.png"
-                alt="LiveCity dashboard preview"
+                alt="Leavs dashboard preview"
                 className="w-full h-auto rounded-lg shadow-2xl max-w-2xl"
                 style={{ border: 'none', outline: 'none' }}
               />
@@ -129,7 +129,7 @@ export default function LandingSections() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900">
-              How LiveCity works
+              How Leavs works
             </h2>
           </div>
 
@@ -229,10 +229,10 @@ export default function LandingSections() {
               </ul>
             </div>
 
-            {/* LiveCity Column */}
+            {/* Leavs Column */}
             <div className="p-8 rounded-xl border-2 border-blue-700 bg-blue-50">
               <h3 className="text-xl font-semibold text-slate-900 mb-6 text-center">
-                LiveCity
+                Leavs
               </h3>
               <ul className="space-y-4">
                 <li className="flex items-start">

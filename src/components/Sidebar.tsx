@@ -147,6 +147,10 @@ export default function Sidebar() {
   const isHomeActive = location.pathname === '/'
   const isMySituationActive = location.pathname === '/my-situation'
 
+  // Determine home button navigation
+  // If on dashboard home page (/dashboard), go to homepage (/). Otherwise, go to dashboard.
+  const homeButtonPath = location.pathname === '/dashboard' ? '/' : '/dashboard'
+
   return (
     // Enhanced sidebar container with floating effect (margin, border-radius, shadow)
     <aside
@@ -166,7 +170,7 @@ export default function Sidebar() {
             aria-label="Go to dashboard"
             className="inline-flex flex-shrink-0 transition-opacity duration-75 ease-in-out"
           >
-            <img src="/assets/Logo.png" alt="LiveCity Logo" className="w-24 h-auto" />
+            <img src="/assets/Logo.png" alt="Leavs Logo" className="w-24 h-auto" />
           </Link>
         )}
 
@@ -364,7 +368,7 @@ export default function Sidebar() {
 
         {/* Home Link */}
         <Link
-          to="/"
+          to={homeButtonPath}
           className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 ${
             isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
           } ${

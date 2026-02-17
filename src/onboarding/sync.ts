@@ -1,6 +1,6 @@
 import { fetchMe, saveProfile } from '../lib/api'
 
-const DRAFT_LOCAL_KEY = 'livecity:onboardingDraft'
+const DRAFT_LOCAL_KEY = 'leavs:onboardingDraft'
 
 /**
  * Sync onboarding draft from localStorage to backend profile.

@@ -14,7 +14,7 @@ export const blogPosts: BlogPost[] = [
     id: 'italian-coffee-culture',
     title: 'The Art of Italian Coffee: A Student\'s Guide to Caffè Culture',
     date: '2026-02-16',
-    author: 'LiveCity Team',
+    author: 'Leavs Team',
     excerpt: 'Moving to Italy as an international student? Welcome to the country where coffee isn\'t just a drink—it\'s a way of life. Learn the essentials of Italian coffee culture.',
     imageUrl: '/assets/Blog_1.jpg',
     content: `
@@ -62,7 +62,7 @@ export const blogPosts: BlogPost[] = [
     id: 'aperitivo-culture-italy',
     title: 'Aperitivo Culture: Italy\'s Best Social Tradition for Students',
     date: '2026-02-14',
-    author: 'LiveCity Team',
+    author: 'Leavs Team',
     excerpt: 'Discover the Italian aperitivo tradition—the perfect blend of socializing, snacking, and unwinding. Learn how to navigate this beloved pre-dinner ritual on a student budget.',
     imageUrl: '/assets/Blog_2.jpg',
     content: `
@@ -119,5 +119,136 @@ export const blogPosts: BlogPost[] = [
       <p>So grab some friends, find a cozy bar, order a Spritz, and immerse yourself in this wonderful tradition. Salute!</p>
     `,
     metadata: 'Italian Culture, Aperitivo, Social Life, Student Life, Food and Drink',
+  },
+  {
+    id: 'restaurant-culture-italy',
+    title: 'Italian Restaurant Culture: How to Dine Like a Local',
+    date: '2026-02-16',
+    author: 'Leavs Team',
+    excerpt: 'From table service and cover charges to the multi-course flow of a traditional meal, learn the unspoken rules of dining out in Italy and enjoy restaurants with confidence.',
+    imageUrl: '/assets/Blog_3.jpg',
+    content: `
+      <p>Eating out in Italy is a ritual, not a rush. Whether you are grabbing a casual pizza or celebrating with a long multi-course meal, understanding restaurant culture will help you feel at home and avoid common misunderstandings.</p>
+      <br />
+      <h2>Table Service and the Role of the Waiter</h2>
+      <p>In most Italian restaurants, you will be seated by staff and served at your table. There is no counter ordering. Waiters are not expected to check on you constantly, so do not interpret a slower pace as bad service. If you need them, make eye contact or give a small wave and say "scusi" to get attention.</p>
+      <br />
+      <h2>Coperto and Pane</h2>
+      <p>Many restaurants charge a small <strong>coperto</strong> (cover charge), usually €1-€3, which includes bread and table setting. This is normal and not a tip. It will appear on the bill, so do not be surprised.</p>
+      <br />
+      <h2>The Structure of a Meal</h2>
+      <p>Traditional Italian dining follows a clear sequence. You can order as much or as little as you want, but knowing the flow helps:</p>
+      <br />
+      <p><strong>Antipasto:</strong> Starters like cured meats, cheeses, or vegetables.</p>
+      <br />
+      <p><strong>Primo:</strong> Pasta, risotto, or soup.</p>
+      <br />
+      <p><strong>Secondo:</strong> Meat or fish, often with sides.</p>
+      <br />
+      <p><strong>Contorno:</strong> Side dishes like salad or grilled vegetables, ordered separately.</p>
+      <br />
+      <p><strong>Dolce:</strong> Dessert, plus coffee or digestivi to finish.</p>
+      <br />
+      <h2>Sharing and Customizing</h2>
+      <p>Sharing plates is common for antipasti and sometimes pizzas. Pasta is usually ordered as a full portion per person. Heavy customization (like swapping sauces) is less common than in some countries, but simple requests are fine. If you have dietary needs, mention them early and politely.</p>
+      <br />
+      <h2>Water and Bread Etiquette</h2>
+      <p>When seated, you will usually be asked if you want sparkling or still water. Bottled water is standard and not free. Bread is often placed on the table; it is included in the coperto.</p>
+      <br />
+      <h2>Pace, Reservations, and Timing</h2>
+      <p>Dinner starts later than in many countries. Restaurants often open around 7:30 PM or 8 PM, and locals linger. It is normal to spend 1.5-2 hours at the table. Reservations are common, especially on weekends or for popular places. Call ahead or use online booking when available.</p>
+      <br />
+      <h2>Paying the Bill</h2>
+      <p>Ask for the check by saying "il conto, per favore." The bill is usually brought to the table, and you can pay there or at the register. Splitting is possible, but keep it simple by dividing evenly if you can. Tipping is not required; leaving a few euros for excellent service is appreciated but optional.</p>
+      <br />
+      <h2>Student-Friendly Tips</h2>
+      <p>Look for <strong>trattorie</strong> and <strong>osterie</strong> for authentic, affordable meals. Fixed-price menus at lunchtime are great value. Pizzerie are usually budget-friendly and perfect for groups. If you want to try a restaurant on a tighter budget, choose just a primo and water.</p>
+      <br />
+      <h2>Final Thoughts</h2>
+      <p>Italian restaurant culture is built on patience, conversation, and enjoying food without rushing. Once you embrace the rhythm, dining out becomes one of the best parts of living in Italy.</p>
+    `,
+    metadata: 'Italian Culture, Restaurants, Dining Etiquette, Food and Drink, Student Life',
+  },
+  {
+    id: 'essential-italian-words',
+    title: 'The Most Important Italian Words: A Survival Guide for Students',
+    date: '2026-02-16',
+    author: 'Leavs Team',
+    excerpt: 'From greetings and politeness to transport and daily life, these essential Italian words and phrases will help you navigate Italy with confidence.',
+    imageUrl: '/assets/Blog_4.jpg',
+    content: `
+      <p>Learning Italian takes time, but a small set of high-impact words can make daily life much easier. Here is a practical list of essentials every student in Italy should know.</p>
+      <br />
+      <h2>Greetings and Polite Basics</h2>
+      <p><strong>Ciao:</strong> Hi/bye (informal).</p>
+      <br />
+      <p><strong>Buongiorno:</strong> Good morning/hello (formal).</p>
+      <br />
+      <p><strong>Buonasera:</strong> Good evening.</p>
+      <br />
+      <p><strong>Per favore:</strong> Please.</p>
+      <br />
+      <p><strong>Grazie:</strong> Thank you.</p>
+      <br />
+      <p><strong>Prego:</strong> You are welcome / please (as in “after you”).</p>
+      <br />
+      <p><strong>Scusi:</strong> Excuse me (formal).</p>
+      <br />
+      <p><strong>Mi dispiace:</strong> I am sorry.</p>
+      <br />
+      <h2>Getting Help</h2>
+      <p><strong>Parla inglese?</strong> Do you speak English?</p>
+      <br />
+      <p><strong>Non capisco:</strong> I do not understand.</p>
+      <br />
+      <p><strong>Puoi ripetere?</strong> Can you repeat?</p>
+      <br />
+      <p><strong>Un momento, per favore:</strong> One moment, please.</p>
+      <br />
+      <h2>Eating Out</h2>
+      <p><strong>Un tavolo per due, per favore:</strong> A table for two, please.</p>
+      <br />
+      <p><strong>Il menu, per favore:</strong> The menu, please.</p>
+      <br />
+      <p><strong>Il conto, per favore:</strong> The check, please.</p>
+      <br />
+      <p><strong>Senza:</strong> Without (useful for allergies).</p>
+      <br />
+      <p><strong>Acqua frizzante / naturale:</strong> Sparkling / still water.</p>
+      <br />
+      <h2>Shopping and Daily Life</h2>
+      <p><strong>Quanto costa?</strong> How much does it cost?</p>
+      <br />
+      <p><strong>Posso pagare con carta?</strong> Can I pay by card?</p>
+      <br />
+      <p><strong>Aperto / chiuso:</strong> Open / closed.</p>
+      <br />
+      <p><strong>Bagno:</strong> Bathroom.</p>
+      <br />
+      <h2>Transport</h2>
+      <p><strong>Biglietto:</strong> Ticket.</p>
+      <br />
+      <p><strong>Stazione:</strong> Station.</p>
+      <br />
+      <p><strong>Fermata:</strong> Stop (bus/tram).</p>
+      <br />
+      <p><strong>Binario:</strong> Platform.</p>
+      <br />
+      <h2>Student Life</h2>
+      <p><strong>Universita:</strong> University.</p>
+      <br />
+      <p><strong>Lezione:</strong> Class/lecture.</p>
+      <br />
+      <p><strong>Esame:</strong> Exam.</p>
+      <br />
+      <p><strong>Appunti:</strong> Notes.</p>
+      <br />
+      <h2>Quick Tips</h2>
+      <p>Italians appreciate effort. Even a simple "buongiorno" can change the tone of an interaction. If you forget a word, smile and try anyway—most people will meet you halfway.</p>
+      <br />
+      <h2>Final Thoughts</h2>
+      <p>Master these essentials first, then build from there. A little Italian goes a long way, especially in smaller cities. Start with this list, practice daily, and you will feel more confident in no time.</p>
+    `,
+    metadata: 'Italian Language, Survival Italian, Student Life, Daily Life in Italy, Tips',
   },
 ]

@@ -202,7 +202,7 @@ export default function DashboardHome() {
   return (
     <section className="space-y-8">
       <div>
-        <p className="text-sm font-semibold text-blue-600">LiveCity</p>
+        <p className="text-sm font-semibold text-blue-600">Leavs</p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">Dashboard</h1>
         <p className="mt-2 text-base text-slate-600">
           Your relocation journey at a glance.
