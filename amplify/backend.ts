@@ -159,6 +159,15 @@ progressResource.addMethod('PUT', lambdaIntegration, {
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
 
+// Create /progress/start resource
+const progressStartResource = progressResource.addResource('start')
+
+// PUT /progress/start
+progressStartResource.addMethod('PUT', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
 // Create /feedback resource
 const feedbackResource = restApi.root.addResource('feedback')
 
