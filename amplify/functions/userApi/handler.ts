@@ -64,6 +64,8 @@ interface StepProgress {
   stepKey: string
   completed: boolean
   completedAt?: string
+  started?: boolean
+  startedAt?: string
 }
 
 interface Deadline {
@@ -207,6 +209,25 @@ async function saveStepProgress(
   )
 }
 
+async function markStepStarted(
+  userId: string,
+  stepKey: string,
+): Promise<void> {
+  await dynamo.send(
+    new PutItemCommand({
+      TableName: TABLE.progress,
+      Item: marshall({
+        userId,
+        stepKey,
+        started: true,
+        startedAt: new Date().toISOString(),
+        completed: false,
+        updatedAt: new Date().toISOString(),
+      }),
+    })
+  )
+}
+
 async function saveFeedback(userId: string, message: string): Promise<void> {
   await dynamo.send(
     new PutItemCommand({
@@ -301,6 +322,13 @@ async function handlePutProgress(userId: string, event: any): Promise<ApiRespons
   return ok({ message: 'Progress saved' })
 }
 
+async function handlePutProgressStart(userId: string, event: any): Promise<ApiResponse> {
+  const { stepKey } = parseBody(event)
+  if (!stepKey) return fail(400, 'stepKey is required')
+  await markStepStarted(userId, stepKey)
+  return ok({ message: 'Step started', stepKey, started: true })
+}
+
 async function handleGetDeadlines(userId: string): Promise<ApiResponse> {
   const deadlines = await getUserDeadlines(userId)
   return ok({ deadlines })
@@ -348,6 +376,7 @@ async function handlePostFeedback(event: any): Promise<ApiResponse> {
 
 export async function handler(event: any): Promise<ApiResponse> {
   const { method, path } = extractRoute(event)
+  console.log(`[Handler] Received request: ${method} ${path}`)
 
   // CORS preflight
   if (method === 'OPTIONS') return ok({ message: 'OK' })
@@ -370,9 +399,11 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/user/me')   return await handleGetUser(userId)
     if (method === 'PUT'  && path === '/user/me')   return await handlePutUser(userId, event)
     if (method === 'PUT'  && path === '/progress')   return await handlePutProgress(userId, event)
+    if (method === 'PUT'  && path === '/progress/start')   return await handlePutProgressStart(userId, event)
     if (method === 'GET'  && path === '/deadlines')  return await handleGetDeadlines(userId)
     if (method === 'POST' && path === '/deadlines')  return await handlePostDeadline(userId, event)
 
+    console.error(`[Handler] No route matched for ${method} ${path}`)
     return fail(404, 'Not found')
   } catch (error) {
     console.error(`${method} ${path} error:`, error)
