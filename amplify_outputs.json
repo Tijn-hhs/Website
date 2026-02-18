@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "eu-north-1_9KfhjbI3Z",
+    "user_pool_id": "eu-north-1_zAQnVHJYZ",
     "aws_region": "eu-north-1",
-    "user_pool_client_id": "2csjpjofuub1ha7o4j9b1ie6oc",
-    "identity_pool_id": "eu-north-1:400b64c1-44e5-4861-97a8-cc6be6b00ae4",
+    "user_pool_client_id": "a5dk0ckblju2g7p4d0l5hhj01",
+    "identity_pool_id": "eu-north-1:f447a672-7d49-4b68-94ea-498ab8c46c2e",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -28,7 +28,7 @@
   "version": "1.4",
   "custom": {
     "API": {
-      "endpoint": "https://ltnepnyvci.execute-api.eu-north-1.amazonaws.com/prod/",
+      "endpoint": "https://xodu8npz05.execute-api.eu-north-1.amazonaws.com/prod/",
       "region": "eu-north-1",
       "apiName": "leavsRest"
     }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { isSignedIn } from '../lib/auth'
+import BlogGallery from './BlogGallery'
 
 export default function LandingSections() {
   const navigate = useNavigate()
@@ -313,6 +314,9 @@ export default function LandingSections() {
           </div>
         </div>
       </section>
+
+      {/* Blog Gallery Section */}
+      <BlogGallery />
 
       {/* Section 6 - Final CTA */}
       <section className="py-16 sm:py-20 lg:py-24 bg-blue-700">

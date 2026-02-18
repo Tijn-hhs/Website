@@ -36,6 +36,11 @@ export default function App() {
         <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        
+        {/* Public Blog Routes */}
+        <Route path="/blog" element={<BlogOverviewPage />} />
+        <Route path="/blog/:postId" element={<BlogPostPage />} />
+        
         <Route
           path="/dashboard"
           element={

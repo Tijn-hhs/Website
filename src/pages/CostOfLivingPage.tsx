@@ -3,20 +3,39 @@ import { Link } from 'react-router-dom'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
-import UserInfoBox from '../components/UserInfoBox'
 import CostSlider from '../components/CostSlider'
 import BigMacInfo from '../components/BigMacInfo'
 import MonthlyCostsSummary from '../components/MonthlyCostsSummary'
+import StepIntroModal from '../components/StepIntroModal'
+import { useStepIntro } from '../hooks/useStepIntro'
 import { getCityConfig } from '../lib/cityConfig'
 import { fetchMe, saveProfile } from '../lib/api'
+import { getStepRequirements } from '../onboarding/stepRequirements'
 import type { UserProfile } from '../types/user'
 import type { CostSliderConfig } from '../lib/cityConfig'
 
+const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:cost-of-living'
+
 export default function CostOfLivingPage() {
+  const { showModal, handleConfirm, handleBack } = useStepIntro('cost-of-living')
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
+  // Load checklist state from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem(CHECKLIST_STORAGE_KEY)
+      if (saved) {
+        try {
+          setChecklistState(JSON.parse(saved))
+        } catch {
+          setChecklistState({})
+        }
+      }
+    }
+  }, [])
   
   // Housing type selection
   const [housingType, setHousingType] = useState<string>('shared-room')
@@ -186,12 +205,43 @@ export default function CostOfLivingPage() {
     return cityConfig.rent
   }
 
+  // Get checklist items from step requirements
+  const requirements = getStepRequirements('cost-of-living') || []
+  const checklistItems = requirements.map((req) => ({
+    ...req,
+    completed: checklistState[req.id] || false,
+  }))
+
+  // Handle checklist item toggle
+  const handleChecklistToggle = (id: string, completed: boolean) => {
+    const newState = {
+      ...checklistState,
+      [id]: completed,
+    }
+    setChecklistState(newState)
+
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(newState))
+    }
+  }
+
   return (
     <>
+      {showModal && (
+        <StepIntroModal
+          stepTitle="Cost of Living"
+          stepDescription="Understand expenses and budget for your stay."
+          onConfirm={handleConfirm}
+          onBack={handleBack}
+        />
+      )}
       <FeedbackWidget />
       <DashboardLayout>
         <StepPageLayout
-        stepLabel="Step 12"
+        stepNumber={12}
+        totalSteps={12}
+        stepLabel="STEP 12"
         title="Cost of Living"
         subtitle={
           <div className="flex items-center gap-2">
@@ -207,19 +257,16 @@ export default function CostOfLivingPage() {
             )}
           </div>
         }
-        checklistPageType="cost-of-living"
-        infoBox={
-          <UserInfoBox
-            title="Your Budget Information"
-            fields={[
-              { key: 'destinationCity', label: 'City' },
-              { key: 'monthlyBudget', label: 'Monthly Budget' },
-              { key: 'budgetCurrency', label: 'Currency' },
-              { key: 'housingBudget', label: 'Housing Budget' },
-              { key: 'accommodationType', label: 'Housing Type' },
-            ]}
-          />
-        }
+        userInfoTitle="Your Budget Information"
+        userInfoFields={[
+          { key: 'destinationCity', label: 'City' },
+          { key: 'monthlyBudget', label: 'Monthly Budget' },
+          { key: 'budgetCurrency', label: 'Currency' },
+          { key: 'housingBudget', label: 'Housing Budget' },
+          { key: 'accommodationType', label: 'Housing Type' },
+        ]}
+        checklistItems={checklistItems}
+        onChecklistItemToggle={handleChecklistToggle}
       >
         {/* Vaste maandelijkse kosten sectie */}
         {isLoading ? (

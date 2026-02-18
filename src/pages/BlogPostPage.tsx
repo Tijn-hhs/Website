@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
-import DashboardLayout from '../components/DashboardLayout'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 import FeedbackWidget from '../components/FeedbackWidget'
 import { Calendar, User, Tag, ArrowLeft } from 'lucide-react'
 import { blogPosts, type BlogPost } from '../data/blogPosts'
@@ -19,7 +20,7 @@ export default function BlogPostPage() {
 
   // If no postId provided, redirect to blog overview
   if (!postId) {
-    return <Navigate to="/dashboard/blog" replace />
+    return <Navigate to="/blog" replace />
   }
 
   // Still loading
@@ -29,14 +30,16 @@ export default function BlogPostPage() {
 
   // If post not found, redirect to blog overview
   if (blogPost === null) {
-    return <Navigate to="/dashboard/blog" replace />
+    return <Navigate to="/blog" replace />
   }
 
   return (
     <>
       <FeedbackWidget />
-      <DashboardLayout>
-        <article className="max-w-4xl mx-auto space-y-8">
+      <div className="bg-white min-h-screen">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <article className="max-w-4xl mx-auto space-y-8">
           {/* Hero Image */}
           {blogPost.imageUrl && (
             <div className="w-full h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-lg">
@@ -104,24 +107,26 @@ export default function BlogPostPage() {
             </div>
           )}
 
-          {/* Back to Dashboard Button */}
+          {/* Back to Blog Button */}
           <div className="pt-8 pb-12 flex gap-3">
             <Link
-              to="/dashboard/blog"
+              to="/blog"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-150 hover:bg-slate-50 hover:shadow-md"
             >
               <ArrowLeft size={16} />
               Back to Blog
             </Link>
             <Link
-              to="/dashboard"
+              to="/"
               className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-150 hover:bg-slate-50 hover:shadow-md"
             >
-              Dashboard
+              Home
             </Link>
           </div>
         </article>
-      </DashboardLayout>
+        </div>
+        <Footer />
+      </div>
     </>
   )
 }

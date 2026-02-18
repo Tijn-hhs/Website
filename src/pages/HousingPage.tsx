@@ -2,14 +2,34 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
-import UserInfoBox from '../components/UserInfoBox'
 import FindYourNeighborhood from '../components/FindYourNeighborhood'
+import StepIntroModal from '../components/StepIntroModal'
+import { useStepIntro } from '../hooks/useStepIntro'
 import { fetchMe } from '../lib/api'
+import { getStepRequirements } from '../onboarding/stepRequirements'
 import type { UserProfile } from '../types/user'
 
+const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:housing'
+
 export default function HousingPage() {
+  const { showModal, handleConfirm, handleBack } = useStepIntro('housing')
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
+
+  // Load checklist state from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem(CHECKLIST_STORAGE_KEY)
+      if (saved) {
+        try {
+          setChecklistState(JSON.parse(saved))
+        } catch {
+          setChecklistState({})
+        }
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -26,28 +46,56 @@ export default function HousingPage() {
     loadUserData()
   }, [])
 
+  // Get checklist items from step requirements
+  const requirements = getStepRequirements('housing') || []
+  const checklistItems = requirements.map((req) => ({
+    ...req,
+    completed: checklistState[req.id] || false,
+  }))
+
+  // Handle checklist item toggle
+  const handleChecklistToggle = (id: string, completed: boolean) => {
+    const newState = {
+      ...checklistState,
+      [id]: completed,
+    }
+    setChecklistState(newState)
+
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(newState))
+    }
+  }
+
   return (
     <>
+      {showModal && (
+        <StepIntroModal
+          stepTitle="Find your apartment"
+          stepDescription="Find and secure accommodation for your stay. Get personalized neighborhood recommendations and housing resources."
+          onConfirm={handleConfirm}
+          onBack={handleBack}
+        />
+      )}
       <FeedbackWidget />
       <DashboardLayout>
         <StepPageLayout
-        stepLabel="Step 6"
+        stepNumber={6}
+        totalSteps={12}
+        stepLabel="STEP 6"
         title="Find your apartment"
         subtitle="Discover the perfect neighborhood and secure a place to live."
-        checklistPageType="housing"
-        infoBox={
-          <UserInfoBox
-            title="Your Housing Information"
-            fields={[
-              { key: 'destinationCity', label: 'City' },
-              { key: 'universityName', label: 'University' },
-              { key: 'accommodationType', label: 'Housing Type' },
-              { key: 'housingBudget', label: 'Budget' },
-              { key: 'leaseStart', label: 'Lease Start', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
-              { key: 'startDate', label: 'Program Start', formatter: (val) => val ? new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Not set' },
-            ]}
-          />
-        }
+        userInfoTitle="Your Housing Information"
+        userInfoFields={[
+          { key: 'destinationCity', label: 'City' },
+          { key: 'universityName', label: 'University' },
+          { key: 'accommodationType', label: 'Housing Type' },
+          { key: 'housingBudget', label: 'Budget' },
+          { key: 'leaseStart', label: 'Lease Start', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
+          { key: 'startDate', label: 'Program Start', formatter: (val) => val ? new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Not set' },
+        ]}
+        checklistItems={checklistItems}
+        onChecklistItemToggle={handleChecklistToggle}
       >
         {isLoading ? (
           <div className="col-span-full">

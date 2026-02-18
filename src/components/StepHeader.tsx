@@ -1,7 +1,9 @@
+import { ReactNode } from 'react'
+
 type StepHeaderProps = {
   stepLabel: string
   title: string
-  subtitle: string
+  subtitle: string | ReactNode
 }
 
 export default function StepHeader({
@@ -17,7 +19,7 @@ export default function StepHeader({
       <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
         {title}
       </h1>
-      <p className="text-base text-slate-600">{subtitle}</p>
+      <div className="text-base text-slate-600">{subtitle}</div>
     </header>
   )
 }

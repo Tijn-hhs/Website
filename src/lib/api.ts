@@ -260,7 +260,42 @@ export async function saveStepProgress(
       )
     }
     
-    throw error
+    return false
+  }
+}
+
+export async function markStepStarted(stepKey: string): Promise<boolean> {
+  try {
+    const headers = await getAuthHeaders()
+    
+    console.log('[API] Calling markStepStarted with API_NAME:', API_NAME, 'stepKey:', stepKey)
+    
+    const restOperation = put({
+      apiName: API_NAME,
+      path: '/progress/start',
+      options: {
+        body: { stepKey },
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+      },
+    })
+
+    await restOperation.response
+    return true
+  } catch (error) {
+    console.error('[API] Error in markStepStarted:', error)
+    
+    // Re-throw with more context if it's an Amplify InvalidApiName error
+    if (error instanceof Error && error.message.includes('API name is invalid')) {
+      throw new Error(
+        `InvalidApiName: Amplify cannot find REST API '${API_NAME}'. ` +
+        `Check that Amplify.configure() registers this API name.`
+      )
+    }
+    
+    return false
   }
 }
 

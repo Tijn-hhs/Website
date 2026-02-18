@@ -3,12 +3,32 @@ import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import InfoCard from '../components/InfoCard'
 import StepPageLayout from '../components/StepPageLayout'
-import UserInfoBox from '../components/UserInfoBox'
+import StepIntroModal from '../components/StepIntroModal'
+import { useStepIntro } from '../hooks/useStepIntro'
 import { fetchMe } from '../lib/api'
+import { getStepRequirements } from '../onboarding/stepRequirements'
 import type { OnboardingDraft } from '../onboarding/types'
 
+const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:student-visa'
+
 export default function StudentVisaPage() {
+  const { showModal, handleConfirm, handleBack } = useStepIntro('student-visa')
   const [isEuCitizen, setIsEuCitizen] = useState(false)
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
+
+  // Load checklist state from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem(CHECKLIST_STORAGE_KEY)
+      if (saved) {
+        try {
+          setChecklistState(JSON.parse(saved))
+        } catch {
+          setChecklistState({})
+        }
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const checkEuCitizenStatus = async () => {
@@ -26,17 +46,49 @@ export default function StudentVisaPage() {
     checkEuCitizenStatus()
   }, [])
 
+  // Get checklist items from step requirements
+  const requirements = getStepRequirements('student-visa') || []
+  const checklistItems = requirements.map((req) => ({
+    ...req,
+    completed: checklistState[req.id] || false,
+  }))
+
+  // Handle checklist item toggle
+  const handleChecklistToggle = (id: string, completed: boolean) => {
+    const newState = {
+      ...checklistState,
+      [id]: completed,
+    }
+    setChecklistState(newState)
+
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(newState))
+    }
+  }
+
   if (isEuCitizen) {
     return (
       <>
+        {showModal && (
+          <StepIntroModal
+            stepTitle="Student Visa"
+            stepDescription="Apply for your student visa and prepare all required documentation."
+            onConfirm={handleConfirm}
+            onBack={handleBack}
+          />
+        )}
         <FeedbackWidget />
         <DashboardLayout>
           <StepPageLayout
-            stepLabel="Step 2"
+            stepNumber={2}
+            totalSteps={12}
+            stepLabel="STEP 2"
             title="Student Visa"
             subtitle="Prepare, apply, and track your visa with confidence."
+            checklistItems={checklistItems}
+            onChecklistItemToggle={handleChecklistToggle}
           >
-            <StepChecklist pageType="student-visa" />
 
             <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold text-amber-900 mb-2">Not applicable for EU citizens</h3>
@@ -53,27 +105,33 @@ export default function StudentVisaPage() {
 
   return (
     <>
+      {showModal && (
+        <StepIntroModal
+          stepTitle="Student Visa"
+          stepDescription="Apply for your student visa and prepare all required documentation."
+          onConfirm={handleConfirm}
+          onBack={handleBack}
+        />
+      )}
       <FeedbackWidget />
       <DashboardLayout>
         <StepPageLayout
-          stepLabel="Step 2"
+          stepNumber={2}
+          totalSteps={12}
+          stepLabel="STEP 2"
           title="Student Visa"
           subtitle="Prepare, apply, and track your visa with confidence."
-          checklistPageType="student-visa"
-          secondaryActionLabel="Save for later"
-        infoBox={
-          <UserInfoBox
-            title="Your Visa Information"
-            fields={[
-              { key: 'nationality', label: 'Nationality' },
-              { key: 'destinationCountry', label: 'Destination' },
-              { key: 'visaType', label: 'Visa Type' },
-              { key: 'passportExpiry', label: 'Passport Expiry', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
-              { key: 'visaAppointmentDate', label: 'Appointment', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
-            ]}
-          />
-        }
-      >
+          userInfoTitle="Your Visa Information"
+          userInfoFields={[
+            { key: 'nationality', label: 'Nationality' },
+            { key: 'destinationCountry', label: 'Destination' },
+            { key: 'visaType', label: 'Visa Type' },
+            { key: 'passportExpiry', label: 'Passport Expiry', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
+            { key: 'visaAppointmentDate', label: 'Appointment', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
+          ]}
+          checklistItems={checklistItems}
+          onChecklistItemToggle={handleChecklistToggle}
+        >
         <InfoCard title="Overview">
           <p>
             Understand your consulate jurisdiction, timeline, and required

@@ -62,6 +62,8 @@ export interface StepProgress {
   completed: boolean
   completedAt?: string
   updatedAt?: string
+  started?: boolean
+  startedAt?: string
 }
 
 export interface UserData {

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import DashboardLayout from '../components/DashboardLayout'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 import FeedbackWidget from '../components/FeedbackWidget'
 import { Calendar, User, ArrowRight } from 'lucide-react'
 import { blogPosts } from '../data/blogPosts'
@@ -8,8 +9,10 @@ export default function BlogOverviewPage() {
   return (
     <>
       <FeedbackWidget />
-      <DashboardLayout>
-        <section className="space-y-8">
+      <div className="bg-white min-h-screen">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <section className="space-y-8">
           {/* Header */}
           <header className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
@@ -23,13 +26,13 @@ export default function BlogOverviewPage() {
             </p>
           </header>
 
-          {/* Back to Dashboard Link */}
+          {/* Back to Home Link */}
           <div>
             <Link
-              to="/dashboard"
+              to="/"
               className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50"
             >
-              Back to Dashboard
+              Back to Home
             </Link>
           </div>
 
@@ -38,7 +41,7 @@ export default function BlogOverviewPage() {
             {blogPosts.map((post) => (
               <Link
                 key={post.id}
-                to={`/dashboard/blog/${post.id}`}
+                to={`/blog/${post.id}`}
                 className="group rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-200 overflow-hidden block"
               >
                 {/* Hero Image */}
@@ -98,7 +101,9 @@ export default function BlogOverviewPage() {
             </div>
           )}
         </section>
-      </DashboardLayout>
+        </div>
+        <Footer />
+      </div>
     </>
   )
 }

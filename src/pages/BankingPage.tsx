@@ -1,49 +1,84 @@
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import Accordion from '../components/Accordion'
 import CalloutCard from '../components/CalloutCard'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import InfoSectionCard from '../components/InfoSectionCard'
-import StepHeader from '../components/StepHeader'
-import UserInfoBox from '../components/UserInfoBox'
-import StepChecklist from '../onboarding/components/StepChecklist'
+import StepPageLayout from '../components/StepPageLayout'
+import StepIntroModal from '../components/StepIntroModal'
+import { useStepIntro } from '../hooks/useStepIntro'
+import { getStepRequirements } from '../onboarding/stepRequirements'
+
+const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:banking'
 
 export default function BankingPage() {
+  const { showModal, handleConfirm, handleBack } = useStepIntro('banking')
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
+
+  // Load checklist state from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem(CHECKLIST_STORAGE_KEY)
+      if (saved) {
+        try {
+          setChecklistState(JSON.parse(saved))
+        } catch {
+          setChecklistState({})
+        }
+      }
+    }
+  }, [])
+
+  // Get checklist items from step requirements
+  const requirements = getStepRequirements('banking') || []
+  const checklistItems = requirements.map((req) => ({
+    ...req,
+    completed: checklistState[req.id] || false,
+  }))
+
+  // Handle checklist item toggle
+  const handleChecklistToggle = (id: string, completed: boolean) => {
+    const newState = {
+      ...checklistState,
+      [id]: completed,
+    }
+    setChecklistState(newState)
+
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(newState))
+    }
+  }
+
   return (
     <>
+      {showModal && (
+        <StepIntroModal
+          stepTitle="Banking"
+          stepDescription="Set up bank accounts and manage financial essentials."
+          onConfirm={handleConfirm}
+          onBack={handleBack}
+        />
+      )}
       <FeedbackWidget />
       <DashboardLayout>
-        <section className="space-y-8">
-          <StepHeader
-            stepLabel="STEP 7"
-            title="Banking"
-            subtitle="Set up bank accounts and manage financial essentials."
-          />
+        <StepPageLayout
+          stepNumber={7}
+          totalSteps={12}
+          stepLabel="STEP 7"
+          title="Banking"
+          subtitle="Set up bank accounts and manage financial essentials."
+          userInfoTitle="Your Banking Status"
+          userInfoFields={[
+            { key: 'destinationCountry', label: 'Country' },
+            { key: 'destinationCity', label: 'City' },
+            { key: 'bankAccountNeeded', label: 'Bank Account Needed' },
+          ]}
+          checklistItems={checklistItems}
+          onChecklistItemToggle={handleChecklistToggle}
+        >
 
-          <UserInfoBox
-            title="Your Banking Status"
-            fields={[
-              { key: 'destinationCountry', label: 'Country' },
-              { key: 'destinationCity', label: 'City' },
-              { key: 'bankAccountNeeded', label: 'Bank Account Needed' },
-            ]}
-          />
-
-          <div className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50 whitespace-nowrap"
-              >
-                Back to Dashboard
-              </Link>
-              <div className="w-full relative">
-                <StepChecklist pageType="banking" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="col-span-full rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm font-semibold text-slate-900">On this page</p>
             <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-600 sm:grid-cols-2 lg:grid-cols-3">
               <a className="hover:text-blue-700" href="#banking-options-overview">
@@ -73,7 +108,6 @@ export default function BankingPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <InfoSectionCard
               id="banking-options-overview"
               title="Banking options overview"
@@ -269,7 +303,7 @@ export default function BankingPage() {
               </Accordion>
             </InfoSectionCard>
 
-            <div className="lg:col-span-2">
+            <div className="col-span-full lg:col-span-2">
               <CalloutCard
                 id="banking-tips"
                 title="Quick tips for success"
@@ -283,8 +317,7 @@ export default function BankingPage() {
                 ]}
               />
             </div>
-          </div>
-        </section>
+        </StepPageLayout>
       </DashboardLayout>
     </>
   )
