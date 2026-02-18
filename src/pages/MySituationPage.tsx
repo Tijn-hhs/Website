@@ -10,49 +10,18 @@ const inputBase =
   'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-blue-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
 const selectBase =
   'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-blue-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-const textAreaBase =
-  'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-blue-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-
-// Helper to convert profile data back to onboarding draft format
-function syncProfileToDraft(profile: UserProfile): string {
-  const draft: Partial<OnboardingDraft> = {
-    destinationCountry: profile.destinationCountry || '',
-    destinationCity: profile.destinationCity || '',
-    destinationUniversity: profile.universityName || '',
-    nationality: profile.nationality || '',
-    residenceCountry: profile.residenceCountry || '',
-    isEuCitizen: (profile.isEuCitizen as 'yes' | 'no' | 'unknown') || 'unknown',
-    degreeType: (profile.studyLevel as 'bachelor' | 'master' | 'phd' | 'exchange' | 'other' | '') || '',
-    fieldOfStudy: profile.programName || '',
-    programStartMonth: profile.startDate ? profile.startDate.substring(0, 7) : '',
-    admissionStatus: (profile.admissionStatus as 'exploring' | 'applying' | 'accepted' | 'enrolled' | '') || '',
-    deadlinesKnown: 'unknown',
-    passportExpiry: profile.passportExpiry || '',
-    visaType: profile.visaType || '',
-    visaAppointmentNeeded: 'unknown',
-    monthlyBudgetRange: (profile.monthlyBudgetRange as 'lt500' | '500-900' | '900-1300' | '1300+' | 'unknown') || 'unknown',
-    scholarshipNeed: (profile.scholarshipNeed as 'yes' | 'no' | 'maybe') || 'maybe',
-    fundingSource: (profile.fundingSource as 'parents' | 'savings' | 'work' | 'scholarship' | 'mixed' | 'unknown') || 'unknown',
-    housingPreference: (profile.housingPreference as 'dorm' | 'private' | 'roommates' | 'unknown') || 'unknown',
-    moveInWindow: '',
-    housingSupportNeeded: (profile.housingSupportNeeded as 'yes' | 'no' | 'unknown') || 'unknown',
-    lastCompletedStep: 0,
-  }
-  
-  return JSON.stringify(draft)
-}
 
 // Helper to convert onboarding draft to profile format
 function convertDraftToProfile(draft: OnboardingDraft): Partial<UserProfile> {
   return {
     destinationCountry: draft.destinationCountry || undefined,
     destinationCity: draft.destinationCity || undefined,
-    universityName: draft.destinationUniversity || undefined,
+    destinationUniversity: draft.destinationUniversity || undefined,
     nationality: draft.nationality || undefined,
     residenceCountry: draft.residenceCountry || undefined,
-    studyLevel: draft.degreeType || undefined,
-    programName: draft.fieldOfStudy || undefined,
-    startDate: draft.programStartMonth ? `${draft.programStartMonth}-01` : undefined,
+    degreeType: draft.degreeType || undefined,
+    fieldOfStudy: draft.fieldOfStudy || undefined,
+    programStartMonth: draft.programStartMonth || undefined,
     passportExpiry: draft.passportExpiry || undefined,
     visaType: draft.visaType || undefined,
   }
@@ -60,43 +29,19 @@ function convertDraftToProfile(draft: OnboardingDraft): Partial<UserProfile> {
 
 // EDITABLE_KEYS: whitelisted keys from UserProfile that can be saved
 const EDITABLE_KEYS: (keyof UserProfile)[] = [
-  'firstName',
-  'lastName',
   'nationality',
   'residenceCountry',
-  'dateOfBirth',
   'destinationCountry',
   'destinationCity',
-  'universityName',
-  'programName',
-  'studyLevel',
-  'startDate',
+  'destinationUniversity',
+  'degreeType',
+  'fieldOfStudy',
+  'programStartMonth',
   'admissionStatus',
   'isEuCitizen',
   'visaType',
   'passportExpiry',
-  'visaAppointmentDate',
-  'travelDate',
-  'flightsBooked',
-  'packingNotes',
-  'registrationStatus',
-  'residencePermitNeeded',
-  'accommodationType',
   'housingBudget',
-  'leaseStart',
-  'bankAccountNeeded',
-  'insuranceProvider',
-  'legalDocsReady',
-  'healthCoverage',
-  'doctorPreference',
-  'arrivalDate',
-  'localTransport',
-  'dailyLifeNotes',
-  'monthlyBudget',
-  'budgetCurrency',
-  'budgetingNotes',
-  'communityInterest',
-  'supportNeeds',
   'monthlyBudgetRange',
   'scholarshipNeed',
   'fundingSource',
@@ -105,9 +50,8 @@ const EDITABLE_KEYS: (keyof UserProfile)[] = [
 ]
 
 const createEmptyProfile = (): UserProfile => {
-  const booleanKeys = new Set(['flightsBooked', 'residencePermitNeeded', 'bankAccountNeeded', 'legalDocsReady'])
   return Object.fromEntries(
-    EDITABLE_KEYS.map((key) => [key, booleanKeys.has(key) ? false : ''])
+    EDITABLE_KEYS.map((key) => [key, ''])
   ) as UserProfile
 }
 
@@ -121,14 +65,11 @@ const buildSavePayload = (formData: UserProfile): UserProfile => {
     }
   })
   
-  // Sync the profile data back to onboarding draft JSON
-  payload.onboardingDraftJson = syncProfileToDraft(formData)
-  
   console.log('[MySituation] buildSavePayload - included keys:', Object.keys(payload))
   console.log('[MySituation] buildSavePayload - sample values:', {
     destinationCountry: payload.destinationCountry,
-    universityName: payload.universityName,
-    studyLevel: payload.studyLevel,
+    destinationUniversity: payload.destinationUniversity,
+    degreeType: payload.degreeType,
     isEuCitizen: payload.isEuCitizen,
   })
   return payload as UserProfile
@@ -174,16 +115,16 @@ export default function MySituationPage() {
       // Check if profile has any of the key onboarding fields
       const hasProfileData = !!(
         profile.destinationCountry ||
-        profile.universityName ||
+        profile.destinationUniversity ||
         profile.nationality ||
-        profile.studyLevel
+        profile.degreeType
       )
       
       console.log('[MySituation] loadProfile - Profile fields:', {
         destinationCountry: profile.destinationCountry,
-        universityName: profile.universityName,
+        destinationUniversity: profile.destinationUniversity,
         nationality: profile.nationality,
-        studyLevel: profile.studyLevel,
+        degreeType: profile.degreeType,
         hasProfileData,
       })
       
@@ -217,17 +158,17 @@ export default function MySituationPage() {
       console.log('[MySituation] full profile data:', {
         destinationCountry: merged.destinationCountry,
         destinationCity: merged.destinationCity,
-        universityName: merged.universityName,
-        programName: merged.programName,
-        studyLevel: merged.studyLevel,
-        startDate: merged.startDate,
+        destinationUniversity: merged.destinationUniversity,
+        fieldOfStudy: merged.fieldOfStudy,
+        degreeType: merged.degreeType,
+        programStartMonth: merged.programStartMonth,
         nationality: merged.nationality,
-        admissionStatus: merged.admissionStatus,
-        passportExpiry: merged.passportExpiry,
-        visaType: merged.visaType,
-        monthlyBudget: merged.monthlyBudget,
-        accommodationType: merged.accommodationType,
-        leaseStart: merged.leaseStart,
+        residenceCountry: merged.residenceCountry,
+        isEuCitizen: merged.isEuCitizen,
+        hasVisa: merged.hasVisa,
+        monthlyBudgetRange: merged.monthlyBudgetRange,
+        housingPreference: merged.housingPreference,
+        lastCompletedStep: merged.lastCompletedStep,
       })
     } catch (error) {
       console.error('[MySituation] loadProfile error:', error)
@@ -254,11 +195,11 @@ export default function MySituationPage() {
     if (!formData.destinationCity?.trim()) {
       errors.destinationCity = 'Destination city is required'
     }
-    if (!formData.studyLevel?.trim()) {
-      errors.studyLevel = 'Study level is required'
+    if (!formData.degreeType?.trim()) {
+      errors.degreeType = 'Degree type is required'
     }
-    if (!formData.startDate?.trim()) {
-      errors.startDate = 'Program start date is required'
+    if (!formData.programStartMonth?.trim()) {
+      errors.programStartMonth = 'Program start month is required'
     }
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
@@ -269,11 +210,6 @@ export default function MySituationPage() {
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target
-    setFormData((prev) => ({ ...prev, [name]: checked }))
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -294,8 +230,8 @@ export default function MySituationPage() {
       console.log('[MySituation] saving payload keys', Object.keys(payload))
       console.log('[MySituation] sample payload data:', {
         destinationCountry: payload.destinationCountry,
-        universityName: payload.universityName,
-        studyLevel: payload.studyLevel,
+        destinationUniversity: payload.destinationUniversity,
+        degreeType: payload.degreeType,
         nationality: payload.nationality,
       })
 
@@ -344,15 +280,15 @@ export default function MySituationPage() {
       console.log('[MySituation] After save, re-fetched profile from backend')
       console.log('[MySituation] Re-fetched profile data:', {
         destinationCountry: profile.destinationCountry,
-        universityName: profile.universityName,
-        studyLevel: profile.studyLevel,
+        destinationUniversity: profile.destinationUniversity,
+        degreeType: profile.degreeType,
         nationality: profile.nationality,
         allKeys: Object.keys(profile),
       })
       console.log('[MySituation] Verified (merged with emptyProfile):', {
         destinationCountry: verified.destinationCountry,
-        universityName: verified.universityName,
-        studyLevel: verified.studyLevel,
+        destinationUniversity: verified.destinationUniversity,
+        degreeType: verified.degreeType,
         nationality: verified.nationality,
         allKeys: Object.keys(verified).filter(k => verified[k as keyof UserProfile] !== ''),
       })
@@ -418,29 +354,15 @@ export default function MySituationPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Student Profile</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="firstName">
-                  First name
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="preferredName">
+                  Preferred name
             </label>
             <input
-                  id="firstName"
-                  name="firstName"
+                  id="preferredName"
+                  name="preferredName"
                   type="text"
-                  placeholder="e.g., Amina"
-                  value={formData.firstName || ''}
-                  onChange={handleChange}
-                  className={inputBase}
-                />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="lastName">
-                  Last name
-            </label>
-            <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="e.g., Rossi"
-                  value={formData.lastName || ''}
+                  placeholder="e.g., Alex"
+                  value={formData.preferredName || ''}
                   onChange={handleChange}
                   className={inputBase}
                 />
@@ -460,19 +382,6 @@ export default function MySituationPage() {
                   aria-required="true"
                 />
                 {renderError('nationality')}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="dateOfBirth">
-                  Date of birth
-            </label>
-            <input
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth || ''}
-                  onChange={handleChange}
-                  className={inputBase}
-                />
           </div>
             </div>
           </section>
@@ -546,14 +455,14 @@ export default function MySituationPage() {
                   <div>
                     <label
                       className="block text-sm font-medium text-gray-700 mb-1"
-                      htmlFor="universityName"
+                      htmlFor="destinationUniversity"
                     >
                       University name
                     </label>
                     <select
-                      id="universityName"
-                      name="universityName"
-                      value={formData.universityName || ''}
+                      id="destinationUniversity"
+                      name="destinationUniversity"
+                      value={formData.destinationUniversity || ''}
                       onChange={handleChange}
                       className={selectBase}
                     >
@@ -574,16 +483,16 @@ export default function MySituationPage() {
                   <div>
                     <label
                       className="block text-sm font-medium text-gray-700 mb-1"
-                      htmlFor="programName"
+                      htmlFor="fieldOfStudy"
                     >
-                      Program name
+                      Field of study
                     </label>
                     <input
-                      id="programName"
-                      name="programName"
+                      id="fieldOfStudy"
+                      name="fieldOfStudy"
                       type="text"
-                      placeholder="e.g., MSc in Finance"
-                      value={formData.programName || ''}
+                      placeholder="e.g., Finance, Computer Science"
+                      value={formData.fieldOfStudy || ''}
                       onChange={handleChange}
                       className={inputBase}
                     />
@@ -591,64 +500,43 @@ export default function MySituationPage() {
                   <div>
                     <label
                       className="block text-sm font-medium text-gray-700 mb-1"
-                      htmlFor="studyLevel"
+                      htmlFor="degreeType"
                     >
-                      Study level <span className="text-red-500">*</span>
+                      Degree type <span className="text-red-500">*</span>
                     </label>
                     <select
-                      id="studyLevel"
-                      name="studyLevel"
-                      value={formData.studyLevel || ''}
+                      id="degreeType"
+                      name="degreeType"
+                      value={formData.degreeType || ''}
                       onChange={handleChange}
-                      className={getSelectClass('studyLevel')}
+                      className={getSelectClass('degreeType')}
                       aria-required="true"
                     >
-                      <option value="">Select study level</option>
+                      <option value="">Select degree type</option>
                       <option value="bachelor">Bachelor</option>
                       <option value="master">Master</option>
                       <option value="phd">PhD</option>
                       <option value="exchange">Exchange</option>
                     </select>
-                    {renderError('studyLevel')}
+                    {renderError('degreeType')}
                   </div>
                   <div>
                     <label
                       className="block text-sm font-medium text-gray-700 mb-1"
-                      htmlFor="startDate"
+                      htmlFor="programStartMonth"
                     >
-                      Program start date <span className="text-red-500">*</span>
+                      Program start month <span className="text-red-500">*</span>
                     </label>
                     <input
-                      id="startDate"
-                      name="startDate"
-                      type="date"
-                      value={formData.startDate || ''}
+                      id="programStartMonth"
+                      name="programStartMonth"
+                      type="month"
+                      value={formData.programStartMonth || ''}
                       onChange={handleChange}
-                      className={getInputClass('startDate')}
+                      className={getInputClass('programStartMonth')}
                       aria-required="true"
                     />
-                    {renderError('startDate')}
-                  </div>
-                  <div>
-                    <label
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                      htmlFor="admissionStatus"
-                    >
-                      Admission status
-                    </label>
-                    <select
-                      id="admissionStatus"
-                      name="admissionStatus"
-                      value={formData.admissionStatus || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select status</option>
-                      <option value="accepted">Accepted</option>
-                      <option value="conditional">Conditional</option>
-                      <option value="applied">Applied</option>
-                      <option value="planning">Planning</option>
-                    </select>
+                    {renderError('programStartMonth')}
                   </div>
             </div>
           </section>
@@ -656,52 +544,21 @@ export default function MySituationPage() {
           <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Visa & Legal Entry</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="visaType">
-                      Visa type
-                    </label>
-                    <select
-                      id="visaType"
-                      name="visaType"
-                      value={formData.visaType || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select visa type</option>
-                      <option value="student">Student visa</option>
-                      <option value="research">Research visa</option>
-                      <option value="exchange">Exchange visa</option>
-                      <option value="none">Not required</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="passportExpiry">
-                      Passport expiry date
-                    </label>
+                  <div className="flex items-center gap-3 pt-6">
                     <input
-                      id="passportExpiry"
-                      name="passportExpiry"
-                      type="date"
-                      value={formData.passportExpiry || ''}
-                      onChange={handleChange}
-                      className={inputBase}
+                      id="hasVisa"
+                      name="hasVisa"
+                      type="checkbox"
+                      checked={formData.hasVisa === 'yes'}
+                      onChange={(e) => {
+                        const value = e.target.checked ? 'yes' : 'no'
+                        handleChange({ target: { name: 'hasVisa', value } } as any)
+                      }}
+                      className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
                     />
-                  </div>
-                  <div>
-                    <label
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                      htmlFor="visaAppointmentDate"
-                    >
-                      Visa appointment date
+                    <label className="text-sm font-medium text-gray-700" htmlFor="hasVisa">
+                      I have my visa
                     </label>
-                    <input
-                      id="visaAppointmentDate"
-                      name="visaAppointmentDate"
-                      type="date"
-                      value={formData.visaAppointmentDate || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
                   </div>
             </div>
           </section>
@@ -768,136 +625,11 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pre-Departure Preparation</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="travelDate">
-                      Planned travel date
-                    </label>
-                    <input
-                      id="travelDate"
-                      name="travelDate"
-                      type="date"
-                      value={formData.travelDate || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-                  <div className="flex items-center gap-3 pt-6">
-                    <input
-                      id="flightsBooked"
-                      name="flightsBooked"
-                      type="checkbox"
-                      checked={formData.flightsBooked || false}
-                      onChange={handleCheckboxChange}
-                      className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
-                    />
-                    <label className="text-sm font-medium text-gray-700" htmlFor="flightsBooked">
-                      Flights booked
-                    </label>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="packingNotes">
-                      Packing checklist notes
-                    </label>
-                    <textarea
-                      id="packingNotes"
-                      name="packingNotes"
-                      rows={3}
-                      placeholder="e.g., need winter coat, adapters, medications"
-                      value={formData.packingNotes || ''}
-                      onChange={handleChange}
-                      className={textAreaBase}
-                    />
-                  </div>
-            </div>
-          </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Immigration & Registration (Post-Arrival)</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="registrationStatus">
-                      Registration status
-                    </label>
-                    <select
-                      id="registrationStatus"
-                      name="registrationStatus"
-                      value={formData.registrationStatus || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select status</option>
-                      <option value="not-started">Not started</option>
-                      <option value="in-progress">In progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-3 pt-6">
-                    <input
-                      id="residencePermitNeeded"
-                      name="residencePermitNeeded"
-                      type="checkbox"
-                      checked={formData.residencePermitNeeded || false}
-                      onChange={handleCheckboxChange}
-                      className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
-                    />
-                    <label className="text-sm font-medium text-gray-700" htmlFor="residencePermitNeeded">
-                      Residence permit required
-                    </label>
-                  </div>
-            </div>
-          </section>
 
           <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Housing</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="accommodationType">
-                      Accommodation type
-                    </label>
-                    <select
-                      id="accommodationType"
-                      name="accommodationType"
-                      value={formData.accommodationType || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select type</option>
-                      <option value="dorm">Dormitory</option>
-                      <option value="shared">Shared apartment</option>
-                      <option value="studio">Studio</option>
-                      <option value="family">Host family</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="housingBudget">
-                      Monthly housing budget
-                    </label>
-                    <input
-                      id="housingBudget"
-                      name="housingBudget"
-                      type="number"
-                      placeholder="e.g., 750"
-                      value={formData.housingBudget || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="leaseStart">
-                      Lease start date
-                    </label>
-                    <input
-                      id="leaseStart"
-                      name="leaseStart"
-                      type="date"
-                      value={formData.leaseStart || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="housingPreference">
                       Housing preference
@@ -931,226 +663,6 @@ export default function MySituationPage() {
                     <label className="text-sm font-medium text-gray-700" htmlFor="housingSupportNeeded">
                       I need help finding housing
                     </label>
-                  </div>
-            </div>
-          </section>
-
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Banking, Legal & Insurance</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 pt-6">
-                    <input
-                      id="bankAccountNeeded"
-                      name="bankAccountNeeded"
-                      type="checkbox"
-                      checked={formData.bankAccountNeeded || false}
-                      onChange={handleCheckboxChange}
-                      className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
-                    />
-                    <label className="text-sm font-medium text-gray-700" htmlFor="bankAccountNeeded">
-                      Open a local bank account
-                    </label>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="insuranceProvider">
-                      Insurance provider
-                    </label>
-                    <input
-                      id="insuranceProvider"
-                      name="insuranceProvider"
-                      type="text"
-                      placeholder="e.g., Allianz"
-                      value={formData.insuranceProvider || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-                  <div className="flex items-center gap-3 pt-6">
-                    <input
-                      id="legalDocsReady"
-                      name="legalDocsReady"
-                      type="checkbox"
-                      checked={formData.legalDocsReady || false}
-                      onChange={handleCheckboxChange}
-                      className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
-                    />
-                    <label className="text-sm font-medium text-gray-700" htmlFor="legalDocsReady">
-                      Legal documents prepared
-                    </label>
-                  </div>
-            </div>
-          </section>
-
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Healthcare</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="healthCoverage">
-                      Health coverage
-                    </label>
-                    <select
-                      id="healthCoverage"
-                      name="healthCoverage"
-                      value={formData.healthCoverage || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select coverage</option>
-                      <option value="public">Public</option>
-                      <option value="private">Private</option>
-                      <option value="both">Both</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="doctorPreference">
-                      Doctor preference
-                    </label>
-                    <input
-                      id="doctorPreference"
-                      name="doctorPreference"
-                      type="text"
-                      placeholder="e.g., English-speaking GP"
-                      value={formData.doctorPreference || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-            </div>
-          </section>
-
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Arrival & Daily Life</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="arrivalDate">
-                      Arrival date
-                    </label>
-                    <input
-                      id="arrivalDate"
-                      name="arrivalDate"
-                      type="date"
-                      value={formData.arrivalDate || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="localTransport">
-                      Local transport
-                    </label>
-                    <select
-                      id="localTransport"
-                      name="localTransport"
-                      value={formData.localTransport || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select option</option>
-                      <option value="public">Public transport</option>
-                      <option value="bike">Bike</option>
-                      <option value="walk">Walk</option>
-                      <option value="ride-share">Ride share</option>
-                    </select>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="dailyLifeNotes">
-                      Daily life notes
-                    </label>
-                    <textarea
-                      id="dailyLifeNotes"
-                      name="dailyLifeNotes"
-                      rows={3}
-                      placeholder="e.g., preferred neighborhoods, gym access, grocery options"
-                      value={formData.dailyLifeNotes || ''}
-                      onChange={handleChange}
-                      className={textAreaBase}
-                    />
-                  </div>
-            </div>
-          </section>
-
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Cost of Living & Budgeting</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="monthlyBudget">
-                      Monthly budget
-                    </label>
-                    <input
-                      id="monthlyBudget"
-                      name="monthlyBudget"
-                      type="number"
-                      placeholder="e.g., 1200"
-                      value={formData.monthlyBudget || ''}
-                      onChange={handleChange}
-                      className={inputBase}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="budgetCurrency">
-                      Currency
-                    </label>
-                    <select
-                      id="budgetCurrency"
-                      name="budgetCurrency"
-                      value={formData.budgetCurrency || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select currency</option>
-                      <option value="eur">EUR</option>
-                      <option value="usd">USD</option>
-                      <option value="gbp">GBP</option>
-                      <option value="cad">CAD</option>
-                    </select>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="budgetingNotes">
-                      Budgeting notes
-                    </label>
-                    <textarea
-                      id="budgetingNotes"
-                      name="budgetingNotes"
-                      rows={3}
-                      placeholder="e.g., expected rent, tuition payments, meal plan"
-                      value={formData.budgetingNotes || ''}
-                      onChange={handleChange}
-                      className={textAreaBase}
-                    />
-                  </div>
-            </div>
-          </section>
-
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Community & Support</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="communityInterest">
-                      Community interests
-                    </label>
-                    <textarea
-                      id="communityInterest"
-                      name="communityInterest"
-                      rows={3}
-                      placeholder="e.g., clubs, sports, language exchange"
-                      value={formData.communityInterest || ''}
-                      onChange={handleChange}
-                      className={textAreaBase}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="supportNeeds">
-                      Support needs
-                    </label>
-                    <textarea
-                      id="supportNeeds"
-                      name="supportNeeds"
-                      rows={3}
-                      placeholder="e.g., housing guidance, visa checklists, mentorship"
-                      value={formData.supportNeeds || ''}
-                      onChange={handleChange}
-                      className={textAreaBase}
-                    />
                   </div>
             </div>
           </section>

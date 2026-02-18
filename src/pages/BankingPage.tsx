@@ -63,11 +63,12 @@ export default function BankingPage() {
       <FeedbackWidget />
       <DashboardLayout>
         <StepPageLayout
-          stepNumber={7}
-          totalSteps={12}
-          stepLabel="STEP 7"
+          stepNumber={8}
+          totalSteps={13}
+          stepLabel="STEP 8"
           title="Banking"
           subtitle="Set up bank accounts and manage financial essentials."
+          useGradientBar={true}
           userInfoTitle="Your Banking Status"
           userInfoFields={[
             { key: 'destinationCountry', label: 'Country' },

@@ -15,10 +15,56 @@ export async function syncOnboardingDraftToProfileIfPresent(): Promise<boolean> 
       return true // No draft to sync, no error
     }
 
-    // Only save the onboardingDraftJson field
-    // Backend will merge this with existing profile data
+    // Parse the draft and save individual fields
+    const draft = JSON.parse(draftJson)
     await saveProfile({
-      onboardingDraftJson: draftJson,
+      preferredName: draft.preferredName,
+      destinationCountry: draft.destinationCountry,
+      destinationCity: draft.destinationCity,
+      destinationUniversity: draft.destinationUniversity,
+      destinationUnknownCountry: draft.destinationUnknownCountry,
+      destinationUnknownCity: draft.destinationUnknownCity,
+      destinationUnknownUniversity: draft.destinationUnknownUniversity,
+      nationality: draft.nationality,
+      residenceCountry: draft.residenceCountry,
+      isEuCitizen: draft.isEuCitizen,
+      degreeType: draft.degreeType,
+      fieldOfStudy: draft.fieldOfStudy,
+      fieldOfStudyUnknown: draft.fieldOfStudyUnknown,
+      programStartMonth: draft.programStartMonth,
+      programStartMonthUnknown: draft.programStartMonthUnknown,
+      programApplied: draft.programApplied,
+      programAccepted: draft.programAccepted,
+      hasGmatOrEntranceTest: draft.hasGmatOrEntranceTest,
+      gmatScore: draft.gmatScore,
+      hasEnglishTest: draft.hasEnglishTest,
+      englishTestType: draft.englishTestType,
+      englishTestScore: draft.englishTestScore,
+      hasRecommendationLetters: draft.hasRecommendationLetters,
+      hasCv: draft.hasCv,
+      admissionStatus: draft.admissionStatus,
+      deadlinesKnown: draft.deadlinesKnown,
+      passportExpiry: draft.passportExpiry,
+      visaType: draft.visaType,
+      visaAppointmentNeeded: draft.visaAppointmentNeeded,
+      hasVisa: draft.hasVisa,
+      hasCodiceFiscale: draft.hasCodiceFiscale,
+      hasResidencePermit: draft.hasResidencePermit,
+      hasHousing: draft.hasHousing,
+      needsBankAccount: draft.needsBankAccount,
+      hasBankAccount: draft.hasBankAccount,
+      needsPhoneNumber: draft.needsPhoneNumber,
+      hasPhoneNumber: draft.hasPhoneNumber,
+      hasTravelInsurance: draft.hasTravelInsurance,
+      hasHealthInsurance: draft.hasHealthInsurance,
+      monthlyBudgetRange: draft.monthlyBudgetRange,
+      scholarshipNeed: draft.scholarshipNeed,
+      fundingSource: draft.fundingSource,
+      housingPreference: draft.housingPreference,
+      moveInWindow: draft.moveInWindow,
+      housingSupportNeeded: draft.housingSupportNeeded,
+      lastCompletedStep: draft.lastCompletedStep,
+      checklistItems: draft.checklistItems,
     } as any)
 
     // Keep draft in localStorage until onboarding is fully complete

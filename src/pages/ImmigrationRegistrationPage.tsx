@@ -50,7 +50,7 @@ export default function ImmigrationRegistrationPage() {
     <>
       {showModal && (
         <StepIntroModal
-          stepTitle="Immigration & Registration"
+          stepTitle="Residence Permit"
           stepDescription="Complete immigration procedures and register with local authorities."
           onConfirm={handleConfirm}
           onBack={handleBack}
@@ -59,18 +59,17 @@ export default function ImmigrationRegistrationPage() {
       <FeedbackWidget />
       <DashboardLayout>
       <StepPageLayout
-        stepNumber={4}
-        totalSteps={12}
-        stepLabel="STEP 4"
-        title="Immigration & Registration"
+        stepNumber={5}
+        totalSteps={13}
+        stepLabel="STEP 5"
+        title="Residence Permit"
         subtitle="Complete local registrations and immigration formalities after arrival."
+        useGradientBar={true}
         userInfoTitle="Your Registration Status"
         userInfoFields={[
           { key: 'destinationCountry', label: 'Country' },
           { key: 'destinationCity', label: 'City' },
-          { key: 'arrivalDate', label: 'Arrival Date', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
-          { key: 'registrationStatus', label: 'Registration Status' },
-          { key: 'residencePermitNeeded', label: 'Residence Permit Needed' },
+          { key: 'hasResidencePermit', label: 'Residence Permit', formatter: (val) => val ? 'Yes' : 'No' },
         ]}
         checklistItems={checklistItems}
         onChecklistItemToggle={handleChecklistToggle}

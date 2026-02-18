@@ -72,10 +72,55 @@ export function useOnboardingDraft() {
       const isAuthenticated = await isUserAuthenticated()
       
       if (isAuthenticated) {
-        // Only save the onboardingDraftJson field
-        // Don't spread currentProfile to avoid sending system fields
+        // Save each onboarding field individually to the profile
         await saveProfile({
-          onboardingDraftJson: JSON.stringify(nextDraft),
+          preferredName: nextDraft.preferredName,
+          destinationCountry: nextDraft.destinationCountry,
+          destinationCity: nextDraft.destinationCity,
+          destinationUniversity: nextDraft.destinationUniversity,
+          destinationUnknownCountry: nextDraft.destinationUnknownCountry,
+          destinationUnknownCity: nextDraft.destinationUnknownCity,
+          destinationUnknownUniversity: nextDraft.destinationUnknownUniversity,
+          nationality: nextDraft.nationality,
+          residenceCountry: nextDraft.residenceCountry,
+          isEuCitizen: nextDraft.isEuCitizen,
+          degreeType: nextDraft.degreeType,
+          fieldOfStudy: nextDraft.fieldOfStudy,
+          fieldOfStudyUnknown: nextDraft.fieldOfStudyUnknown,
+          programStartMonth: nextDraft.programStartMonth,
+          programStartMonthUnknown: nextDraft.programStartMonthUnknown,
+          programApplied: nextDraft.programApplied,
+          programAccepted: nextDraft.programAccepted,
+          hasGmatOrEntranceTest: nextDraft.hasGmatOrEntranceTest,
+          gmatScore: nextDraft.gmatScore,
+          hasEnglishTest: nextDraft.hasEnglishTest,
+          englishTestType: nextDraft.englishTestType,
+          englishTestScore: nextDraft.englishTestScore,
+          hasRecommendationLetters: nextDraft.hasRecommendationLetters,
+          hasCv: nextDraft.hasCv,
+          admissionStatus: nextDraft.admissionStatus,
+          deadlinesKnown: nextDraft.deadlinesKnown,
+          passportExpiry: nextDraft.passportExpiry,
+          visaType: nextDraft.visaType,
+          visaAppointmentNeeded: nextDraft.visaAppointmentNeeded,
+          hasVisa: nextDraft.hasVisa,
+          hasCodiceFiscale: nextDraft.hasCodiceFiscale,
+          hasResidencePermit: nextDraft.hasResidencePermit,
+          hasHousing: nextDraft.hasHousing,
+          needsBankAccount: nextDraft.needsBankAccount,
+          hasBankAccount: nextDraft.hasBankAccount,
+          needsPhoneNumber: nextDraft.needsPhoneNumber,
+          hasPhoneNumber: nextDraft.hasPhoneNumber,
+          hasTravelInsurance: nextDraft.hasTravelInsurance,
+          hasHealthInsurance: nextDraft.hasHealthInsurance,
+          monthlyBudgetRange: nextDraft.monthlyBudgetRange,
+          scholarshipNeed: nextDraft.scholarshipNeed,
+          fundingSource: nextDraft.fundingSource,
+          housingPreference: nextDraft.housingPreference,
+          moveInWindow: nextDraft.moveInWindow,
+          housingSupportNeeded: nextDraft.housingSupportNeeded,
+          lastCompletedStep: nextDraft.lastCompletedStep,
+          checklistItems: nextDraft.checklistItems,
         } as UserProfile)
       }
       // If not authenticated, data stays in localStorage
@@ -94,12 +139,62 @@ export function useOnboardingDraft() {
 
       try {
         if (isAuthenticated) {
-          // User is logged in - prioritize backend data
+          // User is logged in - read from individual profile fields
           const data = await fetchMe()
           const profile = data.profile || {}
           profileRef.current = profile
 
-          const profileDraft = parseDraft(profile.onboardingDraftJson ?? null)
+          // Build draft from individual profile fields
+          const profileDraft: OnboardingDraft = {
+            preferredName: profile.preferredName || '',
+            destinationCountry: profile.destinationCountry || '',
+            destinationCity: profile.destinationCity || '',
+            destinationUniversity: profile.destinationUniversity || '',
+            destinationUnknownCountry: profile.destinationUnknownCountry || false,
+            destinationUnknownCity: profile.destinationUnknownCity || false,
+            destinationUnknownUniversity: profile.destinationUnknownUniversity || false,
+            nationality: profile.nationality || '',
+            residenceCountry: profile.residenceCountry || '',
+            isEuCitizen: (profile.isEuCitizen as 'yes' | 'no' | 'unknown') || 'unknown',
+            degreeType: (profile.degreeType as any) || '',
+            fieldOfStudy: profile.fieldOfStudy || '',
+            fieldOfStudyUnknown: profile.fieldOfStudyUnknown || false,
+            programStartMonth: profile.programStartMonth || '',
+            programStartMonthUnknown: profile.programStartMonthUnknown || false,
+            programApplied: (profile.programApplied as any) || '',
+            programAccepted: (profile.programAccepted as any) || '',
+            hasGmatOrEntranceTest: (profile.hasGmatOrEntranceTest as any) || '',
+            gmatScore: profile.gmatScore || '',
+            hasEnglishTest: (profile.hasEnglishTest as any) || '',
+            englishTestType: profile.englishTestType || '',
+            englishTestScore: profile.englishTestScore || '',
+            hasRecommendationLetters: (profile.hasRecommendationLetters as any) || '',
+            hasCv: (profile.hasCv as any) || '',
+            admissionStatus: (profile.admissionStatus as any) || '',
+            deadlinesKnown: (profile.deadlinesKnown as any) || 'unknown',
+            passportExpiry: profile.passportExpiry || '',
+            visaType: profile.visaType || '',
+            visaAppointmentNeeded: (profile.visaAppointmentNeeded as any) || 'unknown',
+            hasVisa: (profile.hasVisa as any) || '',
+            hasCodiceFiscale: (profile.hasCodiceFiscale as any) || '',
+            hasResidencePermit: (profile.hasResidencePermit as any) || '',
+            hasHousing: (profile.hasHousing as any) || '',
+            needsBankAccount: (profile.needsBankAccount as any) || '',
+            hasBankAccount: (profile.hasBankAccount as any) || '',
+            needsPhoneNumber: (profile.needsPhoneNumber as any) || '',
+            hasPhoneNumber: (profile.hasPhoneNumber as any) || '',
+            hasTravelInsurance: (profile.hasTravelInsurance as any) || '',
+            hasHealthInsurance: (profile.hasHealthInsurance as any) || '',
+            monthlyBudgetRange: (profile.monthlyBudgetRange as any) || 'unknown',
+            scholarshipNeed: (profile.scholarshipNeed as any) || 'maybe',
+            fundingSource: (profile.fundingSource as any) || 'unknown',
+            housingPreference: (profile.housingPreference as any) || 'unknown',
+            moveInWindow: profile.moveInWindow || '',
+            housingSupportNeeded: (profile.housingSupportNeeded as any) || 'unknown',
+            lastCompletedStep: profile.lastCompletedStep || 0,
+            checklistItems: profile.checklistItems || {},
+          }
+
           const mergedDraft = pickLatestDraft(profileDraft, localDraft) || defaultDraft
 
           if (isMounted) {
@@ -167,7 +262,7 @@ export function useOnboardingDraft() {
 
   const getResumePath = useCallback(() => {
     if (!draft.lastCompletedStep || draft.lastCompletedStep < 1) {
-      return '/onboarding/1'
+      return '/onboarding/0'
     }
     if (draft.lastCompletedStep >= 8) {
       return '/onboarding/8'

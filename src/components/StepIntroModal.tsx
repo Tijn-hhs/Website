@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, CheckCircle } from 'lucide-react'
 
 interface StepIntroModalProps {
@@ -15,6 +15,16 @@ export default function StepIntroModal({
   onBack,
 }: StepIntroModalProps) {
   const [isLoading, setIsLoading] = useState(false)
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [])
 
   const handleConfirm = async () => {
     setIsLoading(true)

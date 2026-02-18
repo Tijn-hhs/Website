@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Authenticator } from '@aws-amplify/ui-react'
 import OnboardingLayout from '../OnboardingLayout'
 import { cardBase } from '../ui'
-import { getPrevEnabledStepId, getStepConfig } from '../steps'
+import { getPrevEnabledStepId, getStepConfig, stepIdToRoute } from '../steps'
 import { useOnboardingDraft } from '../useOnboardingDraft'
 import { fetchMe, saveProfile } from '../../lib/api'
 import { UserProfile } from '../../types/user'
@@ -15,19 +15,6 @@ const formatValue = (value: string | boolean | undefined) => {
   if (value === true) return 'Yes'
   if (value === false) return 'No'
   return value
-}
-
-const formatMonthToDate = (value: string) => (value ? `${value}-01` : '')
-
-const cleanProfile = (profile: UserProfile): UserProfile => {
-  const cleaned: Partial<UserProfile> = {}
-  Object.entries(profile).forEach(([key, value]) => {
-    // Keep non-empty values, including false and 0
-    if (value !== undefined && value !== '' && value !== null) {
-      cleaned[key as keyof UserProfile] = value as any
-    }
-  })
-  return cleaned as UserProfile
 }
 
 export default function Step8ReviewFinish() {
@@ -49,7 +36,10 @@ export default function Step8ReviewFinish() {
     }
   }, [])
 
-  const handleBack = () => navigate(`/onboarding/${prevStepId}`)
+  const handleBack = () => {
+    const routePath = stepIdToRoute(prevStepId)
+    navigate(`/onboarding/${routePath}`)
+  }
 
   const handleFinish = async () => {
     setIsSaving(true)
@@ -65,7 +55,17 @@ export default function Step8ReviewFinish() {
         nationality: draft.nationality,
         degreeType: draft.degreeType,
         fieldOfStudy: draft.fieldOfStudy,
+        fieldOfStudyUnknown: draft.fieldOfStudyUnknown,
         programStartMonth: draft.programStartMonth,
+        programStartMonthUnknown: draft.programStartMonthUnknown,
+        programApplied: draft.programApplied,
+        programAccepted: draft.programAccepted,
+        hasVisa: draft.hasVisa,
+        hasCodiceFiscale: draft.hasCodiceFiscale,
+        hasResidencePermit: draft.hasResidencePermit,
+        hasHousing: draft.hasHousing,
+        hasTravelInsurance: draft.hasTravelInsurance,
+        hasHealthInsurance: draft.hasHealthInsurance,
       })
 
       // Fetch current profile (for userId and other required fields)
@@ -88,7 +88,7 @@ export default function Step8ReviewFinish() {
         profileToSave.destinationCity = draft.destinationCity
       }
       if (draft.destinationUniversity && !draft.destinationUnknownUniversity) {
-        profileToSave.universityName = draft.destinationUniversity
+        profileToSave.destinationUniversity = draft.destinationUniversity
       }
       if (draft.nationality) {
         profileToSave.nationality = draft.nationality
@@ -96,69 +96,102 @@ export default function Step8ReviewFinish() {
       if (draft.residenceCountry) {
         profileToSave.residenceCountry = draft.residenceCountry
       }
+      if (draft.isEuCitizen) {
+        profileToSave.isEuCitizen = draft.isEuCitizen
+      }
       if (draft.degreeType) {
-        profileToSave.studyLevel = draft.degreeType
+        profileToSave.degreeType = draft.degreeType
       }
-      if (draft.fieldOfStudy) {
-        profileToSave.programName = draft.fieldOfStudy
+      if (draft.fieldOfStudy && !draft.fieldOfStudyUnknown) {
+        profileToSave.fieldOfStudy = draft.fieldOfStudy
       }
-      if (draft.programStartMonth) {
-        profileToSave.startDate = formatMonthToDate(draft.programStartMonth)
+      if (draft.programStartMonth && !draft.programStartMonthUnknown) {
+        profileToSave.programStartMonth = draft.programStartMonth
       }
-      if (draft.admissionStatus) {
-        const mappedStatus = mapAdmissionStatus(draft.admissionStatus)
-        if (mappedStatus) {
-          profileToSave.admissionStatus = mappedStatus
-        }
+      if (draft.programApplied) {
+        profileToSave.programApplied = draft.programApplied
       }
-      if (draft.passportExpiry) {
-        profileToSave.passportExpiry = draft.passportExpiry
+      if (draft.programAccepted) {
+        profileToSave.programAccepted = draft.programAccepted
       }
-      if (draft.visaType) {
-        profileToSave.visaType = draft.visaType
+      if (draft.hasGmatOrEntranceTest) {
+        profileToSave.hasGmatOrEntranceTest = draft.hasGmatOrEntranceTest
       }
-      if (draft.monthlyBudgetRange) {
-        const mappedBudget = mapBudgetRange(draft.monthlyBudgetRange)
-        if (mappedBudget) {
-          profileToSave.monthlyBudget = mappedBudget
-        }
+      if (draft.gmatScore) {
+        profileToSave.gmatScore = draft.gmatScore
       }
-      if (draft.housingPreference) {
-        const mappedHousing = mapHousingPreference(draft.housingPreference)
-        if (mappedHousing) {
-          profileToSave.accommodationType = mappedHousing
-        }
+      if (draft.hasEnglishTest) {
+        profileToSave.hasEnglishTest = draft.hasEnglishTest
       }
-      if (draft.moveInWindow) {
-        profileToSave.leaseStart = formatMonthToDate(draft.moveInWindow)
+      if (draft.englishTestType) {
+        profileToSave.englishTestType = draft.englishTestType
       }
-
-      // Clear draft JSON field
-      profileToSave.onboardingDraftJson = ''
+      if (draft.englishTestScore) {
+        profileToSave.englishTestScore = draft.englishTestScore
+      }
+      if (draft.hasRecommendationLetters) {
+        profileToSave.hasRecommendationLetters = draft.hasRecommendationLetters
+      }
+      if (draft.hasCv) {
+        profileToSave.hasCv = draft.hasCv
+      }
+      if (draft.hasVisa) {
+        profileToSave.hasVisa = draft.hasVisa
+      }
+      if (draft.hasCodiceFiscale) {
+        profileToSave.hasCodiceFiscale = draft.hasCodiceFiscale
+      }
+      if (draft.hasResidencePermit) {
+        profileToSave.hasResidencePermit = draft.hasResidencePermit
+      }
+      if (draft.hasHousing) {
+        profileToSave.hasHousing = draft.hasHousing
+      }
+      if (draft.needsBankAccount) {
+        profileToSave.needsBankAccount = draft.needsBankAccount
+      }
+      if (draft.hasBankAccount) {
+        profileToSave.hasBankAccount = draft.hasBankAccount
+      }
+      if (draft.needsPhoneNumber) {
+        profileToSave.needsPhoneNumber = draft.needsPhoneNumber
+      }
+      if (draft.hasPhoneNumber) {
+        profileToSave.hasPhoneNumber = draft.hasPhoneNumber
+      }
+      if (draft.hasTravelInsurance) {
+        profileToSave.hasTravelInsurance = draft.hasTravelInsurance
+      }
+      if (draft.hasHealthInsurance) {
+        profileToSave.hasHealthInsurance = draft.hasHealthInsurance
+      }
 
       const cleanedProfile = profileToSave as UserProfile
 
       console.log('[Onboarding] Profile to save:', {
         destinationCountry: cleanedProfile.destinationCountry,
         destinationCity: cleanedProfile.destinationCity,
-        universityName: cleanedProfile.universityName,
+        destinationUniversity: cleanedProfile.destinationUniversity,
         nationality: cleanedProfile.nationality,
-        studyLevel: cleanedProfile.studyLevel,
-        programName: cleanedProfile.programName,
-        startDate: cleanedProfile.startDate,
-        admissionStatus: cleanedProfile.admissionStatus,
-        passportExpiry: cleanedProfile.passportExpiry,
-        visaType: cleanedProfile.visaType,
-        monthlyBudget: cleanedProfile.monthlyBudget,
-        accommodationType: cleanedProfile.accommodationType,
-        leaseStart: cleanedProfile.leaseStart,
+        residenceCountry: cleanedProfile.residenceCountry,
+        isEuCitizen: cleanedProfile.isEuCitizen,
+        degreeType: cleanedProfile.degreeType,
+        fieldOfStudy: cleanedProfile.fieldOfStudy,
+        programStartMonth: cleanedProfile.programStartMonth,
+        programApplied: cleanedProfile.programApplied,
+        programAccepted: cleanedProfile.programAccepted,
+        hasVisa: cleanedProfile.hasVisa,
+        hasCodiceFiscale: cleanedProfile.hasCodiceFiscale,
+        hasResidencePermit: cleanedProfile.hasResidencePermit,
+        hasHousing: cleanedProfile.hasHousing,
+        needsBankAccount: cleanedProfile.needsBankAccount,
+        hasBankAccount: cleanedProfile.hasBankAccount,
+        needsPhoneNumber: cleanedProfile.needsPhoneNumber,
+        hasPhoneNumber: cleanedProfile.hasPhoneNumber,
+        hasTravelInsurance: cleanedProfile.hasTravelInsurance,
+        hasHealthInsurance: cleanedProfile.hasHealthInsurance,
         allKeys: Object.keys(cleanedProfile),
       })
-
-       // Delete onboardingDraftJson if empty to avoid backend issues
-       if (cleanedProfile.onboardingDraftJson === '') {
-         delete cleanedProfile.onboardingDraftJson
-       }
 
        // Save to backend
        console.log('[Onboarding] Calling saveProfile...')
@@ -178,17 +211,23 @@ export default function Step8ReviewFinish() {
       console.log('[Onboarding] Verification - saved data retrieved:', {
         destinationCountry: verifiedProfile.destinationCountry,
         destinationCity: verifiedProfile.destinationCity,
-        universityName: verifiedProfile.universityName,
+        destinationUniversity: verifiedProfile.destinationUniversity,
         nationality: verifiedProfile.nationality,
-        studyLevel: verifiedProfile.studyLevel,
-        programName: verifiedProfile.programName,
-        startDate: verifiedProfile.startDate,
-        admissionStatus: verifiedProfile.admissionStatus,
-        passportExpiry: verifiedProfile.passportExpiry,
-        visaType: verifiedProfile.visaType,
-        monthlyBudget: verifiedProfile.monthlyBudget,
-        accommodationType: verifiedProfile.accommodationType,
-        leaseStart: verifiedProfile.leaseStart,
+        degreeType: verifiedProfile.degreeType,
+        fieldOfStudy: verifiedProfile.fieldOfStudy,
+        programStartMonth: verifiedProfile.programStartMonth,
+        programApplied: verifiedProfile.programApplied,
+        programAccepted: verifiedProfile.programAccepted,
+        hasVisa: verifiedProfile.hasVisa,
+        hasCodiceFiscale: verifiedProfile.hasCodiceFiscale,
+        hasResidencePermit: verifiedProfile.hasResidencePermit,
+        hasHousing: verifiedProfile.hasHousing,
+        needsBankAccount: verifiedProfile.needsBankAccount,
+        hasBankAccount: verifiedProfile.hasBankAccount,
+        needsPhoneNumber: verifiedProfile.needsPhoneNumber,
+        hasPhoneNumber: verifiedProfile.hasPhoneNumber,
+        hasTravelInsurance: verifiedProfile.hasTravelInsurance,
+        hasHealthInsurance: verifiedProfile.hasHealthInsurance,
       })
 
       clearLocalDraft()
@@ -256,58 +295,93 @@ export default function Step8ReviewFinish() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className={cardBase}>
-          <h2 className="text-sm font-semibold text-slate-800">Destination</h2>
-          <div className="mt-3 space-y-2 text-sm text-slate-600">
-            <p>Country: {formatValue(draft.destinationUnknownCountry ? 'Unknown' : draft.destinationCountry)}</p>
-            <p>City: {formatValue(draft.destinationUnknownCity ? 'Unknown' : draft.destinationCity)}</p>
-            <p>University: {formatValue(draft.destinationUnknownUniversity ? 'Unknown' : draft.destinationUniversity)}</p>
+      {/* Summary Section */}
+      <div className={cardBase}>
+        <h2 className="text-lg font-bold text-slate-900 mb-6">Summary of your situation</h2>
+        
+        <div className="space-y-6">
+          {/* Destination */}
+          <div className="border-l-4 border-blue-500 pl-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">📍 Destination</h3>
+            <div className="space-y-1 text-sm text-slate-600">
+              <p><span className="font-medium">Country:</span> {formatValue(draft.destinationCountry)}</p>
+              <p><span className="font-medium">City:</span> {formatValue(draft.destinationCity)}</p>
+              <p><span className="font-medium">University:</span> {formatValue(draft.destinationUniversity)}</p>
+            </div>
           </div>
-        </div>
 
-        <div className={cardBase}>
-          <h2 className="text-sm font-semibold text-slate-800">Origin</h2>
-          <div className="mt-3 space-y-2 text-sm text-slate-600">
-            <p>Nationality: {formatValue(draft.nationality)}</p>
-            <p>Residence: {formatValue(draft.residenceCountry)}</p>
-            <p>EU citizen: {formatValue(draft.isEuCitizen)}</p>
+          {/* Origin */}
+          <div className="border-l-4 border-green-500 pl-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">🏠 Your background</h3>
+            <div className="space-y-1 text-sm text-slate-600">
+              <p><span className="font-medium">Nationality:</span> {formatValue(draft.nationality)}</p>
+              <p><span className="font-medium">Current residence:</span> {formatValue(draft.residenceCountry)}</p>
+              <p><span className="font-medium">EU citizen:</span> {formatValue(draft.isEuCitizen)}</p>
+            </div>
           </div>
-        </div>
 
-        <div className={cardBase}>
-          <h2 className="text-sm font-semibold text-slate-800">Program</h2>
-          <div className="mt-3 space-y-2 text-sm text-slate-600">
-            <p>Degree: {formatValue(draft.degreeType)}</p>
-            <p>Field: {formatValue(draft.fieldOfStudy)}</p>
-            <p>Start month: {formatValue(draft.programStartMonth)}</p>
+          {/* Program */}
+          <div className="border-l-4 border-purple-500 pl-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">🎓 Your program</h3>
+            <div className="space-y-1 text-sm text-slate-600">
+              <p><span className="font-medium">Degree type:</span> {formatValue(draft.degreeType)}</p>
+              <p><span className="font-medium">Field of study:</span> {draft.fieldOfStudyUnknown ? 'Unknown' : formatValue(draft.fieldOfStudy)}</p>
+              <p><span className="font-medium">Start month:</span> {draft.programStartMonthUnknown ? 'Unknown' : formatValue(draft.programStartMonth)}</p>
+              <p><span className="font-medium">Applied to program:</span> {formatValue(draft.programApplied)}</p>
+              {draft.programApplied === 'yes' && (
+                <p><span className="font-medium">Accepted:</span> {formatValue(draft.programAccepted)}</p>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className={cardBase}>
-          <h2 className="text-sm font-semibold text-slate-800">Admission</h2>
-          <div className="mt-3 space-y-2 text-sm text-slate-600">
-            <p>Status: {formatValue(draft.admissionStatus)}</p>
-            <p>Deadlines known: {formatValue(draft.deadlinesKnown)}</p>
-          </div>
-        </div>
+          {/* Application requirements - only if not applied */}
+          {draft.programApplied === 'no' && (
+            <div className="border-l-4 border-amber-500 pl-4">
+              <h3 className="text-sm font-semibold text-slate-700 mb-2">📝 Application requirements</h3>
+              <div className="space-y-1 text-sm text-slate-600">
+                <p><span className="font-medium">GMAT/Entrance test:</span> {formatValue(draft.hasGmatOrEntranceTest)}</p>
+                {draft.hasGmatOrEntranceTest === 'yes' && draft.gmatScore && (
+                  <p className="pl-4"><span className="font-medium">Score:</span> {draft.gmatScore}</p>
+                )}
+                <p><span className="font-medium">English test:</span> {formatValue(draft.hasEnglishTest)}</p>
+                {draft.hasEnglishTest === 'yes' && (
+                  <>
+                    {draft.englishTestType && <p className="pl-4"><span className="font-medium">Type:</span> {draft.englishTestType}</p>}
+                    {draft.englishTestScore && <p className="pl-4"><span className="font-medium">Score:</span> {draft.englishTestScore}</p>}
+                  </>
+                )}
+                <p><span className="font-medium">Recommendation letters:</span> {formatValue(draft.hasRecommendationLetters)}</p>
+                <p><span className="font-medium">CV/Resume:</span> {formatValue(draft.hasCv)}</p>
+              </div>
+            </div>
+          )}
 
-        <div className={cardBase}>
-          <h2 className="text-sm font-semibold text-slate-800">Visa and documents</h2>
-          <div className="mt-3 space-y-2 text-sm text-slate-600">
-            <p>Passport expiry: {formatValue(draft.passportExpiry)}</p>
-            <p>Visa type: {formatValue(draft.visaType)}</p>
-            <p>Appointment needed: {formatValue(draft.visaAppointmentNeeded)}</p>
-          </div>
-        </div>
+          {/* Visa - only for non-EU */}
+          {draft.isEuCitizen !== 'yes' && (
+            <div className="border-l-4 border-red-500 pl-4">
+              <h3 className="text-sm font-semibold text-slate-700 mb-2">🛂 Visa status</h3>
+              <div className="space-y-1 text-sm text-slate-600">
+                <p><span className="font-medium">Has visa for {draft.destinationCountry}:</span> {formatValue(draft.hasVisa)}</p>
+              </div>
+            </div>
+          )}
 
-        <div className={cardBase}>
-          <h2 className="text-sm font-semibold text-slate-800">Budget and housing</h2>
-          <div className="mt-3 space-y-2 text-sm text-slate-600">
-            <p>Monthly budget: {formatValue(draft.monthlyBudgetRange)}</p>
-            <p>Funding source: {formatValue(draft.fundingSource)}</p>
-            <p>Housing preference: {formatValue(draft.housingPreference)}</p>
-            <p>Move-in window: {formatValue(draft.moveInWindow)}</p>
+          {/* Current progress */}
+          <div className="border-l-4 border-teal-500 pl-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">✅ Current progress</h3>
+            <div className="space-y-1 text-sm text-slate-600">
+              <p><span className="font-medium">Codice Fiscale:</span> {formatValue(draft.hasCodiceFiscale)}</p>
+              <p><span className="font-medium">Residence Permit:</span> {formatValue(draft.hasResidencePermit)}</p>
+              <p><span className="font-medium">Housing secured:</span> {formatValue(draft.hasHousing)}</p>
+              {draft.needsBankAccount === 'yes' && (
+                <p><span className="font-medium">Local bank account:</span> {formatValue(draft.hasBankAccount)}</p>
+              )}
+              {draft.needsPhoneNumber === 'yes' && (
+                <p><span className="font-medium">Local phone number:</span> {formatValue(draft.hasPhoneNumber)}</p>
+              )}
+              <p><span className="font-medium">Travel insurance:</span> {formatValue(draft.hasTravelInsurance)}</p>
+              <p><span className="font-medium">Health insurance:</span> {formatValue(draft.hasHealthInsurance)}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -320,47 +394,3 @@ export default function Step8ReviewFinish() {
     </OnboardingLayout>
   )
 }
-
-function mapAdmissionStatus(value: string) {
-  switch (value) {
-    case 'exploring':
-      return 'planning'
-    case 'applying':
-      return 'applied'
-    case 'accepted':
-      return 'accepted'
-    case 'enrolled':
-      return 'accepted'
-    default:
-      return ''
-  }
-}
-
-function mapBudgetRange(value: string) {
-  switch (value) {
-    case 'lt500':
-      return '<500'
-    case '500-900':
-      return '500-900'
-    case '900-1300':
-      return '900-1300'
-    case '1300+':
-      return '1300+'
-    default:
-      return ''
-  }
-}
-
-function mapHousingPreference(value: string) {
-  switch (value) {
-    case 'dorm':
-      return 'dorm'
-    case 'private':
-      return 'private'
-    case 'roommates':
-      return 'roommates'
-    default:
-      return ''
-  }
-}
-

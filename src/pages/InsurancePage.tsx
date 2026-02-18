@@ -59,16 +59,17 @@ export default function InsurancePage() {
       <FeedbackWidget />
       <DashboardLayout>
       <StepPageLayout
-        stepNumber={8}
-        totalSteps={12}
+        stepNumber={9}
+        totalSteps={13}
         stepLabel="STEP 8"
         title="Insurance"
         subtitle="Arrange insurance coverage for health and personal protection."
+        useGradientBar={true}
         userInfoTitle="Your Insurance Status"
         userInfoFields={[
           { key: 'destinationCountry', label: 'Country' },
-          { key: 'insuranceProvider', label: 'Insurance Provider' },
-          { key: 'legalDocsReady', label: 'Legal Documents Ready' },
+          { key: 'hasHealthInsurance', label: 'Health Insurance', formatter: (val) => val ? 'Yes' : 'No' },
+          { key: 'hasTravelInsurance', label: 'Travel Insurance', formatter: (val) => val ? 'Yes' : 'No' },
         ]}
         checklistItems={checklistItems}
         onChecklistItemToggle={handleChecklistToggle}

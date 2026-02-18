@@ -7,7 +7,6 @@ import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
 import { fetchMe } from '../lib/api'
 import { getStepRequirements } from '../onboarding/stepRequirements'
-import type { OnboardingDraft } from '../onboarding/types'
 
 const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:student-visa'
 
@@ -34,9 +33,9 @@ export default function StudentVisaPage() {
     const checkEuCitizenStatus = async () => {
       try {
         const data = await fetchMe()
-        if (data?.profile?.onboardingDraftJson) {
-          const draft: OnboardingDraft = JSON.parse(data.profile.onboardingDraftJson)
-          setIsEuCitizen(draft.isEuCitizen === 'yes')
+        // Read from individual profile fields
+        if (data?.profile?.isEuCitizen !== undefined) {
+          setIsEuCitizen(data.profile.isEuCitizen === 'yes')
         }
       } catch (error) {
         console.error('Error fetching user data:', error)
@@ -82,12 +81,13 @@ export default function StudentVisaPage() {
         <DashboardLayout>
           <StepPageLayout
             stepNumber={2}
-            totalSteps={12}
+            totalSteps={13}
             stepLabel="STEP 2"
             title="Student Visa"
             subtitle="Prepare, apply, and track your visa with confidence."
             checklistItems={checklistItems}
             onChecklistItemToggle={handleChecklistToggle}
+            useGradientBar={true}
           >
 
             <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-6 mb-6">
@@ -117,17 +117,17 @@ export default function StudentVisaPage() {
       <DashboardLayout>
         <StepPageLayout
           stepNumber={2}
-          totalSteps={12}
+          totalSteps={13}
           stepLabel="STEP 2"
           title="Student Visa"
           subtitle="Prepare, apply, and track your visa with confidence."
+          useGradientBar={true}
           userInfoTitle="Your Visa Information"
           userInfoFields={[
             { key: 'nationality', label: 'Nationality' },
             { key: 'destinationCountry', label: 'Destination' },
-            { key: 'visaType', label: 'Visa Type' },
-            { key: 'passportExpiry', label: 'Passport Expiry', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
-            { key: 'visaAppointmentDate', label: 'Appointment', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
+            { key: 'isEuCitizen', label: 'EU Citizen', formatter: (val) => val ? 'Yes' : 'No' },
+            { key: 'hasVisa', label: 'Has Visa', formatter: (val) => val ? 'Yes' : 'No' },
           ]}
           checklistItems={checklistItems}
           onChecklistItemToggle={handleChecklistToggle}

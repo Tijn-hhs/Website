@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 import FeedbackWidget from '../components/FeedbackWidget'
 import { Calendar, User, Tag, ArrowLeft } from 'lucide-react'
 import { blogPosts, type BlogPost } from '../data/blogPosts'
@@ -125,7 +124,6 @@ export default function BlogPostPage() {
           </div>
         </article>
         </div>
-        <Footer />
       </div>
     </>
   )

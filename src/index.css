@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Reset body margin and add background */
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(to bottom, #eff6ff, #ffffff);
+}
+
 /* ============================================================
    LiveCity - Amplify Authenticator Styling
    - Single centered card (no nested Amplify card)

@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import OnboardingLayout from '../OnboardingLayout'
-import { cardBase, inputBase, labelBase, selectBase } from '../ui'
+import { cardBase, labelBase } from '../ui'
 import {
   getNextEnabledStepId,
   getPrevEnabledStepId,
   getStepConfig,
   isStepEnabled,
   isStepDisabled,
+  stepIdToRoute,
 } from '../steps'
 import { useOnboardingDraft } from '../useOnboardingDraft'
 
@@ -20,7 +21,8 @@ export default function Step5Visa() {
   useEffect(() => {
     if (!isLoading && !isStepEnabled(5, draft)) {
       const nextStepId = getNextEnabledStepId(5, draft)
-      navigate(`/onboarding/${nextStepId}`, { replace: true })
+      const routePath = stepIdToRoute(nextStepId)
+      navigate(`/onboarding/${routePath}`, { replace: true })
     }
   }, [draft, isLoading, navigate])
 
@@ -45,10 +47,14 @@ export default function Step5Visa() {
     if (!stepDisabled) {
       setLastCompletedStep(5)
     }
-    navigate(`/onboarding/${nextStepId}`)
+    const routePath = stepIdToRoute(nextStepId)
+    navigate(`/onboarding/${routePath}`)
   }
 
-  const handleBack = () => navigate(`/onboarding/${prevStepId}`)
+  const handleBack = () => {
+    const routePath = stepIdToRoute(prevStepId)
+    navigate(`/onboarding/${routePath}`)
+  }
 
   if (stepDisabled) {
     return (
@@ -73,6 +79,8 @@ export default function Step5Visa() {
     )
   }
 
+  const countryName = draft.destinationCountry || 'the country'
+
   return (
     <OnboardingLayout
       stepId={5}
@@ -83,53 +91,33 @@ export default function Step5Visa() {
       nextLabel="Next"
     >
       <div className={cardBase}>
-        <label className={labelBase} htmlFor="passportExpiry">
-          Passport expiry date (if applicable)
+        <label className={labelBase}>
+          Do you already have a visa for {countryName}?
         </label>
-        <input
-          id="passportExpiry"
-          type="date"
-          value={draft.passportExpiry}
-          onChange={(event) => updateField('passportExpiry', event.target.value)}
-          className={inputBase}
-        />
-        <p className="mt-2 text-xs text-slate-500">Leave blank if you do not know yet.</p>
-      </div>
-
-      <div className={cardBase}>
-        <label className={labelBase} htmlFor="visaType">
-          Visa type
-        </label>
-        <select
-          id="visaType"
-          value={draft.visaType}
-          onChange={(event) => updateField('visaType', event.target.value)}
-          className={selectBase}
-        >
-          <option value="">I do not know yet</option>
-          <option value="student">Student visa</option>
-          <option value="research">Research visa</option>
-          <option value="exchange">Exchange visa</option>
-          <option value="none">Not required</option>
-        </select>
-      </div>
-
-      <div className={cardBase}>
-        <label className={labelBase} htmlFor="visaAppointmentNeeded">
-          Will you need a visa appointment?
-        </label>
-        <select
-          id="visaAppointmentNeeded"
-          value={draft.visaAppointmentNeeded}
-          onChange={(event) =>
-            updateField('visaAppointmentNeeded', event.target.value as 'yes' | 'no' | 'unknown')
-          }
-          className={selectBase}
-        >
-          <option value="unknown">Not sure yet</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
-        </select>
+        <div className="flex gap-3 mt-3">
+          <button
+            type="button"
+            onClick={() => updateField('hasVisa', 'yes')}
+            className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
+              draft.hasVisa === 'yes'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            Yes
+          </button>
+          <button
+            type="button"
+            onClick={() => updateField('hasVisa', 'no')}
+            className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
+              draft.hasVisa === 'no'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            No
+          </button>
+        </div>
       </div>
     </OnboardingLayout>
   )

@@ -72,14 +72,14 @@ export default function UniversityApplicationPage() {
           userInfoFields={[
             { key: 'destinationCountry', label: 'Country' },
             { key: 'destinationCity', label: 'City' },
-            { key: 'universityName', label: 'University' },
-            { key: 'programName', label: 'Program' },
-            { key: 'studyLevel', label: 'Degree Type' },
-            { key: 'startDate', label: 'Start Date', formatter: (val) => val ? new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Not set' },
-            { key: 'admissionStatus', label: 'Status' },
+            { key: 'destinationUniversity', label: 'University' },
+            { key: 'fieldOfStudy', label: 'Program' },
+            { key: 'degreeType', label: 'Degree Type' },
+            { key: 'programStartMonth', label: 'Start Date' },
           ]}
           checklistItems={checklistItems}
           onChecklistItemToggle={handleChecklistToggle}
+          useGradientBar={true}
         >
 
         <div className="col-span-full rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

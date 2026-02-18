@@ -88,13 +88,6 @@
   </url>
   
   <url>
-    <loc>https://weleav.com/dashboard/arrival-first-days</loc>
-    <lastmod>2026-02-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weleav.com/dashboard/housing</loc>
     <lastmod>2026-02-18</lastmod>
     <changefreq>monthly</changefreq>
@@ -124,13 +117,6 @@
   
   <url>
     <loc>https://weleav.com/dashboard/information-centre</loc>
-    <lastmod>2026-02-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weleav.com/dashboard/daily-life</loc>
     <lastmod>2026-02-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

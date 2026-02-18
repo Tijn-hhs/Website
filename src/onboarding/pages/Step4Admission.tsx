@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import OnboardingLayout from '../OnboardingLayout'
 import { cardBase, labelBase, selectBase } from '../ui'
-import { getNextEnabledStepId, getPrevEnabledStepId, getStepConfig, isStepValid } from '../steps'
+import { getNextEnabledStepId, getPrevEnabledStepId, getStepConfig, isStepValid, stepIdToRoute } from '../steps'
 import { useOnboardingDraft } from '../useOnboardingDraft'
 
 export default function Step4Admission() {
@@ -30,10 +30,14 @@ export default function Step4Admission() {
   const handleNext = () => {
     if (!isValid) return
     setLastCompletedStep(4)
-    navigate(`/onboarding/${nextStepId}`)
+    const routePath = stepIdToRoute(nextStepId)
+    navigate(`/onboarding/${routePath}`)
   }
 
-  const handleBack = () => navigate(`/onboarding/${prevStepId}`)
+  const handleBack = () => {
+    const routePath = stepIdToRoute(prevStepId)
+    navigate(`/onboarding/${routePath}`)
+  }
 
   return (
     <OnboardingLayout

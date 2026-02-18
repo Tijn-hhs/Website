@@ -46,8 +46,8 @@ export default function OnboardingLayout({
   return (
     <>
       <Header />
-      <main className="bg-gradient-to-b from-blue-50 to-white pt-8 pb-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="bg-gradient-to-b from-blue-50 to-white pb-32 min-h-screen">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24">
           <div className="flex items-center justify-between text-sm text-slate-500">
             <span>Step {stepId} of {totalOnboardingSteps}</span>
             <button
@@ -73,7 +73,7 @@ export default function OnboardingLayout({
             <p className="mt-2 text-sm text-gray-600">{subtitle}</p>
           </div>
 
-          <div className="mt-6 space-y-6">
+          <div className="mt-12 space-y-6">
             {children}
           </div>
 

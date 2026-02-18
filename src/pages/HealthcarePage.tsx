@@ -59,17 +59,17 @@ export default function HealthcarePage() {
       <FeedbackWidget />
       <DashboardLayout>
       <StepPageLayout
-        stepNumber={9}
-        totalSteps={12}
+        stepNumber={10}
+        totalSteps={13}
         stepLabel="STEP 9"
         title="Healthcare"
         subtitle="Understand healthcare access, providers, and student coverage."
+        useGradientBar={true}
         userInfoTitle="Your Healthcare Information"
         userInfoFields={[
           { key: 'destinationCountry', label: 'Country' },
-          { key: 'healthCoverage', label: 'Health Coverage' },
-          { key: 'insuranceProvider', label: 'Insurance Provider' },
-          { key: 'doctorPreference', label: 'Doctor Preference' },
+          { key: 'hasHealthInsurance', label: 'Health Insurance', formatter: (val) => val ? 'Yes' : 'No' },
+          { key: 'hasTravelInsurance', label: 'Travel Insurance', formatter: (val) => val ? 'Yes' : 'No' },
         ]}
         checklistItems={checklistItems}
         onChecklistItemToggle={handleChecklistToggle}

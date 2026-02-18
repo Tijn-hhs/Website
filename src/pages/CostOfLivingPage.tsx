@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
@@ -7,9 +7,9 @@ import CostSlider from '../components/CostSlider'
 import BigMacInfo from '../components/BigMacInfo'
 import MonthlyCostsSummary from '../components/MonthlyCostsSummary'
 import StepIntroModal from '../components/StepIntroModal'
-import { useStepIntro } from '../hooks/useStepIntro'
+import CostOfLivingOnboarding from '../components/CostOfLivingOnboarding'
 import { getCityConfig } from '../lib/cityConfig'
-import { fetchMe, saveProfile } from '../lib/api'
+import { fetchMe, saveProfile, markStepStarted } from '../lib/api'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import type { UserProfile } from '../types/user'
 import type { CostSliderConfig } from '../lib/cityConfig'
@@ -17,7 +17,11 @@ import type { CostSliderConfig } from '../lib/cityConfig'
 const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:cost-of-living'
 
 export default function CostOfLivingPage() {
-  const { showModal, handleConfirm, handleBack } = useStepIntro('cost-of-living')
+  const navigate = useNavigate()
+  // Use a custom approach to prevent auto-marking as started
+  const [showIntroModal, setShowIntroModal] = useState(false)
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true)
+  const [showGuidedOnboarding, setShowGuidedOnboarding] = useState(false)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -54,6 +58,78 @@ export default function CostOfLivingPage() {
   const [clothingCost, setClothingCost] = useState(0)
   const [personalCareCost, setPersonalCareCost] = useState(0)
   const [booksCost, setBooksCost] = useState(0)
+
+  // Check if step has been started
+  useEffect(() => {
+    const checkStepStatus = async () => {
+      try {
+        const data = await fetchMe()
+        const stepProgress = data.progress?.find(p => p.stepKey === 'cost-of-living')
+        
+        // Show intro modal if step has never been started
+        if (!stepProgress || !stepProgress.started) {
+          setShowIntroModal(true)
+          // Also clear the onboarding localStorage if step wasn't actually completed
+          if (typeof window !== 'undefined') {
+            window.localStorage.removeItem('cost-of-living-onboarding-completed')
+          }
+        }
+      } catch (error) {
+        console.error('Error checking step status:', error)
+      } finally {
+        setIsCheckingStatus(false)
+      }
+    }
+    
+    checkStepStatus()
+  }, [])
+
+  // Custom confirm handler to trigger guided onboarding without marking as started yet
+  const handleConfirm = async () => {
+    setShowIntroModal(false)
+    // Always show guided onboarding when coming from the intro modal
+    setTimeout(() => {
+      setShowGuidedOnboarding(true)
+    }, 100)
+  }
+
+  const handleBack = () => {
+    window.history.back()
+  }
+
+  // Handle updates from the guided onboarding
+  const handleOnboardingUpdate = (updates: Partial<typeof profile>) => {
+    if (updates.housingType !== undefined) setHousingType(updates.housingType as string)
+    if (updates.rentCost !== undefined) setRentCost(updates.rentCost as number)
+    if (updates.utilitiesCost !== undefined) setUtilitiesCost(updates.utilitiesCost as number)
+    if (updates.internetCost !== undefined) setInternetCost(updates.internetCost as number)
+    if (updates.mobileCost !== undefined) setMobileCost(updates.mobileCost as number)
+    if (updates.transportCost !== undefined) setTransportCost(updates.transportCost as number)
+    if (updates.groceriesCost !== undefined) setGroceriesCost(updates.groceriesCost as number)
+    if (updates.diningOutCost !== undefined) setDiningOutCost(updates.diningOutCost as number)
+    if (updates.entertainmentCost !== undefined) setEntertainmentCost(updates.entertainmentCost as number)
+    if (updates.clothingCost !== undefined) setClothingCost(updates.clothingCost as number)
+    if (updates.personalCareCost !== undefined) setPersonalCareCost(updates.personalCareCost as number)
+    if (updates.booksCost !== undefined) setBooksCost(updates.booksCost as number)
+  }
+
+  // Handle completion of guided onboarding
+  const handleOnboardingComplete = async () => {
+    setShowGuidedOnboarding(false)
+    // Mark step as started only after completing the onboarding
+    try {
+      await markStepStarted('cost-of-living')
+      console.log('Cost of living step marked as started after onboarding completion')
+    } catch (error) {
+      console.error('Error marking step as started:', error)
+    }
+  }
+
+  // Handle exit without saving - redirect to dashboard
+  const handleOnboardingExit = () => {
+    setShowGuidedOnboarding(false)
+    navigate('/dashboard')
+  }
 
   // Haal user data op
   useEffect(() => {
@@ -228,7 +304,7 @@ export default function CostOfLivingPage() {
 
   return (
     <>
-      {showModal && (
+      {showIntroModal && (
         <StepIntroModal
           stepTitle="Cost of Living"
           stepDescription="Understand expenses and budget for your stay."
@@ -236,13 +312,49 @@ export default function CostOfLivingPage() {
           onBack={handleBack}
         />
       )}
+      {showGuidedOnboarding && (
+        <>
+          {city ? (
+            <CostOfLivingOnboarding
+              city={city}
+              initialValues={{
+                housingType,
+                rentCost,
+                utilitiesCost,
+                internetCost,
+                mobileCost,
+                transportCost,
+                groceriesCost,
+                diningOutCost,
+                entertainmentCost,
+                clothingCost,
+                personalCareCost,
+                booksCost,
+              }}
+              onUpdate={handleOnboardingUpdate}
+              onComplete={handleOnboardingComplete}
+              onExit={handleOnboardingExit}
+            />
+          ) : (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="bg-white rounded-xl p-8 max-w-md mx-4">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mx-auto mb-4"></div>
+                  <p className="text-slate-600">Loading your profile...</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
       <FeedbackWidget />
       <DashboardLayout>
         <StepPageLayout
-        stepNumber={12}
-        totalSteps={12}
+        stepNumber={13}
+        totalSteps={13}
         stepLabel="STEP 12"
         title="Cost of Living"
+        useGradientBar={true}
         subtitle={
           <div className="flex items-center gap-2">
             <span>Estimate expenses and build a realistic monthly budget.</span>

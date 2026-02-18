@@ -7,27 +7,26 @@ import AuthPage from './pages/AuthPage'
 import MySituationPage from './pages/MySituationPage'
 import UniversityApplicationPage from './pages/UniversityApplicationPage'
 import StudentVisaPage from './pages/StudentVisaPage'
+import CodiceFiscalePage from './pages/CodiceFiscalePage'
 import BeforeDeparturePage from './pages/BeforeDeparturePage'
 import ImmigrationRegistrationPage from './pages/ImmigrationRegistrationPage'
-import ArrivalFirstDaysPage from './pages/ArrivalFirstDaysPage'
 import HousingPage from './pages/HousingPage'
 import BankingPage from './pages/BankingPage'
 import InsurancePage from './pages/InsurancePage'
 import HealthcarePage from './pages/HealthcarePage'
 import InformationCentrePage from './pages/InformationCentrePage'
-import DailyLifePage from './pages/DailyLifePage'
 import CostOfLivingPage from './pages/CostOfLivingPage'
 import BlogOverviewPage from './pages/BlogOverviewPage'
 import BlogPostPage from './pages/BlogPostPage'
 import NotFoundPage from './pages/NotFoundPage'
 import OnboardingStart from './onboarding/pages/OnboardingStart'
+import Step0Welcome from './onboarding/pages/Step0Welcome'
 import Step1Destination from './onboarding/pages/Step1Destination'
 import Step2Origin from './onboarding/pages/Step2Origin'
 import Step3Program from './onboarding/pages/Step3Program'
-import Step4Admission from './onboarding/pages/Step4Admission'
+import Step3bApplication from './onboarding/pages/Step3bApplication'
 import Step5Visa from './onboarding/pages/Step5Visa'
 import Step6Budget from './onboarding/pages/Step6Budget'
-import Step7Housing from './onboarding/pages/Step7Housing'
 import Step8ReviewFinish from './onboarding/pages/Step8ReviewFinish'
 
 export default function App() {
@@ -67,6 +66,14 @@ export default function App() {
           }
         />
         <Route
+          path="/dashboard/codice-fiscale"
+          element={
+            <AuthGate>
+              <CodiceFiscalePage />
+            </AuthGate>
+          }
+        />
+        <Route
           path="/dashboard/before-departure"
           element={
             <AuthGate>
@@ -79,14 +86,6 @@ export default function App() {
           element={
             <AuthGate>
               <ImmigrationRegistrationPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/arrival-first-days"
-          element={
-            <AuthGate>
-              <ArrivalFirstDaysPage />
             </AuthGate>
           }
         />
@@ -131,14 +130,6 @@ export default function App() {
           }
         />
         <Route
-          path="/dashboard/daily-life"
-          element={
-            <AuthGate>
-              <DailyLifePage />
-            </AuthGate>
-          }
-        />
-        <Route
           path="/dashboard/cost-of-living"
           element={
             <AuthGate>
@@ -171,13 +162,13 @@ export default function App() {
           }
         />
         <Route path="/onboarding" element={<OnboardingStart />} />
+        <Route path="/onboarding/0" element={<Step0Welcome />} />
         <Route path="/onboarding/1" element={<Step1Destination />} />
         <Route path="/onboarding/2" element={<Step2Origin />} />
         <Route path="/onboarding/3" element={<Step3Program />} />
-        <Route path="/onboarding/4" element={<Step4Admission />} />
+        <Route path="/onboarding/3b" element={<Step3bApplication />} />
         <Route path="/onboarding/5" element={<Step5Visa />} />
         <Route path="/onboarding/6" element={<Step6Budget />} />
-        <Route path="/onboarding/7" element={<Step7Housing />} />
         <Route path="/onboarding/8" element={<Step8ReviewFinish />} />
         <Route path="*" element={<NotFoundPage />} />
         </Routes>

@@ -59,11 +59,12 @@ export default function InformationCentrePage() {
       <FeedbackWidget />
       <DashboardLayout>
       <StepPageLayout
-        stepNumber={10}
-        totalSteps={12}
+        stepNumber={11}
+        totalSteps={13}
         stepLabel="STEP 10"
         title="Information Centre"
         subtitle="Find key services, contacts, and student resources quickly."
+        useGradientBar={true}
         checklistItems={checklistItems}
         onChecklistItemToggle={handleChecklistToggle}
       >

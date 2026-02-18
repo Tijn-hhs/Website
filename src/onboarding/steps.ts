@@ -13,16 +13,21 @@ const hasValue = (value: string) => value.trim().length > 0
 
 export const onboardingSteps: StepConfig[] = [
   {
+    id: 0,
+    title: 'Welcome to Leavs',
+    subtitle: 'Let\'s get to know you!',
+    isEnabled: () => true,
+    validate: (draft) => hasValue(draft.preferredName),
+  },
+  {
     id: 1,
     title: 'Destination',
     subtitle: 'Where are you heading for your studies?',
     isEnabled: () => true,
     validate: (draft) => {
-      if (draft.destinationUnknownCountry) return true
-      if (!hasValue(draft.destinationCountry)) return false
-      if (!hasValue(draft.destinationCity) && !draft.destinationUnknownCity) return false
-      if (!hasValue(draft.destinationUniversity) && !draft.destinationUnknownUniversity) return false
-      return true
+      // Country and city are locked to Italy and Milan
+      // University selection is now required
+      return hasValue(draft.destinationUniversity)
     },
   },
   {
@@ -30,41 +35,48 @@ export const onboardingSteps: StepConfig[] = [
     title: 'Origin and citizenship',
     subtitle: 'Tell us about where you are coming from.',
     isEnabled: () => true,
-    validate: (draft) => hasValue(draft.nationality),
+    validate: (draft) => {
+      return hasValue(draft.nationality) && 
+             hasValue(draft.residenceCountry) && 
+             (draft.isEuCitizen === 'yes' || draft.isEuCitizen === 'no')
+    },
   },
   {
     id: 3,
     title: 'Program basics',
     subtitle: 'Share the program details you already know.',
     isEnabled: () => true,
-    validate: (draft) => draft.degreeType !== '',
+    validate: (draft) => {
+      if (draft.degreeType === '' || draft.programApplied === '') return false
+      // If they've applied, they must answer if they got accepted
+      if (draft.programApplied === 'yes' && draft.programAccepted === '') return false
+      return true
+    },
   },
   {
-    id: 4,
-    title: 'Admission status',
-    subtitle: 'Where are you in the application journey?',
-    isEnabled: () => true,
-    validate: (draft) => draft.admissionStatus !== '',
+    id: 3.5,
+    title: 'Application requirements',
+    subtitle: 'Let us know about your application progress.',
+    isEnabled: (draft) => draft.programApplied === 'no',
+    validate: (draft) => {
+      // Require answers for GMAT, English test, recommendation letters, and CV
+      return draft.hasGmatOrEntranceTest !== '' && 
+             draft.hasEnglishTest !== '' &&
+             draft.hasRecommendationLetters !== '' &&
+             draft.hasCv !== ''
+    },
   },
   {
     id: 5,
     title: 'Visa and documents',
     subtitle: 'Needed for non-EU students or if you are unsure.',
-    isEnabled: () => true,
-    isDisabled: (draft) => draft.isEuCitizen === 'yes',
+    isEnabled: (draft) => draft.isEuCitizen !== 'yes',
     validate: () => true,
   },
   {
     id: 6,
-    title: 'Budget and funding',
-    subtitle: 'Estimate your monthly range and support needs.',
-    isEnabled: () => true,
-    validate: () => true,
-  },
-  {
-    id: 7,
-    title: 'Housing preferences',
-    subtitle: 'Let us know what housing feels right.',
+    title: 'Current progress',
+    subtitle: 'Where are you in the process right now?',
     isEnabled: () => true,
     validate: () => true,
   },
@@ -108,4 +120,10 @@ export function getPrevEnabledStepId(currentId: number, draft: OnboardingDraft):
   const enabledSteps = onboardingSteps.filter((step) => step.isEnabled(draft))
   const currentIndex = enabledSteps.findIndex((step) => step.id === currentId)
   return enabledSteps[currentIndex - 1]?.id ?? currentId
+}
+
+// Helper function to convert step ID to route path
+export function stepIdToRoute(stepId: number): string {
+  if (stepId === 3.5) return '3b'
+  return stepId.toString()
 }

@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 import FeedbackWidget from '../components/FeedbackWidget'
 import { Calendar, User, ArrowRight } from 'lucide-react'
 import { blogPosts } from '../data/blogPosts'
@@ -102,7 +101,6 @@ export default function BlogOverviewPage() {
           )}
         </section>
         </div>
-        <Footer />
       </div>
     </>
   )

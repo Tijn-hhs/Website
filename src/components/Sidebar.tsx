@@ -6,12 +6,10 @@ import {
   FileText,
   Plane,
   ClipboardList,
-  MapPin,
   Home,
   Shield,
   Heart,
   HelpCircle,
-  Coffee,
   DollarSign,
   User,
   ChevronLeft,
@@ -19,9 +17,9 @@ import {
   LogOut,
   CreditCard,
   BookOpen,
+  Hash,
 } from 'lucide-react'
 import { fetchMe } from '../lib/api'
-import type { OnboardingDraft } from '../onboarding/types'
 
 export default function Sidebar() {
   // State for managing collapsed/expanded sidebar
@@ -44,9 +42,9 @@ export default function Sidebar() {
     const checkVisaStepStatus = async () => {
       try {
         const data = await fetchMe()
-        if (data?.profile?.onboardingDraftJson) {
-          const draft: OnboardingDraft = JSON.parse(data.profile.onboardingDraftJson)
-          setVisaStepDisabled(draft.isEuCitizen === 'yes')
+        // Read from individual profile fields
+        if (data?.profile?.isEuCitizen !== undefined) {
+          setVisaStepDisabled(data.profile.isEuCitizen === 'yes')
         }
       } catch (error) {
         console.error('Error fetching user data:', error)
@@ -79,12 +77,17 @@ export default function Sidebar() {
       icon: <FileText size={20} className="flex-shrink-0" />,
     },
     {
+      label: 'Codice Fiscale',
+      path: '/dashboard/codice-fiscale',
+      icon: <Hash size={20} className="flex-shrink-0" />,
+    },
+    {
       label: 'Before Departure',
       path: '/dashboard/before-departure',
       icon: <Plane size={20} className="flex-shrink-0" />,
     },
     {
-      label: 'Immigration & Registration',
+      label: 'Residence Permit',
       path: '/dashboard/immigration-registration',
       icon: <ClipboardList size={20} className="flex-shrink-0" />,
     },
@@ -113,19 +116,9 @@ export default function Sidebar() {
   // Tools items - General information and resources
   const toolsItems: readonly { label: string; path: string; icon: React.ReactNode }[] = [
     {
-      label: 'Arrival & First Days',
-      path: '/dashboard/arrival-first-days',
-      icon: <MapPin size={20} className="flex-shrink-0" />,
-    },
-    {
       label: 'Information Centre',
       path: '/dashboard/information-centre',
       icon: <HelpCircle size={20} className="flex-shrink-0" />,
-    },
-    {
-      label: 'Daily Life',
-      path: '/dashboard/daily-life',
-      icon: <Coffee size={20} className="flex-shrink-0" />,
     },
     {
       label: 'Cost of Living',
@@ -154,7 +147,7 @@ export default function Sidebar() {
   return (
     // Enhanced sidebar container with floating effect (margin, border-radius, shadow)
     <aside
-      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 via-blue-50 to-purple-50 shadow-lg flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${
+      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-lg flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${
         isCollapsed ? 'w-16' : 'w-60'
       }`}
       aria-label="Navigation sidebar"

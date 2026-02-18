@@ -34,8 +34,8 @@ export default function Header() {
   }
 
   return (
-    <header className="w-full bg-white border-b border-slate-200/70 shadow-sm">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full px-4 pt-4">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between bg-gradient-to-b from-white via-slate-50 to-slate-50 shadow-lg border border-slate-200/70 rounded-xl">
         <div className="flex items-center">
           <Link to="/" aria-label="Go to homepage">
             <img
@@ -68,26 +68,6 @@ export default function Header() {
               <rect x="13" y="13" width="8" height="8" rx="2" />
             </svg>
             Dashboard
-          </Link>
-
-          <Link
-            to="/my-situation"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-          >
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            My Situation
           </Link>
 
           {!isLoading && isAuthenticated && (

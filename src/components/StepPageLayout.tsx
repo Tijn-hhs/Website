@@ -28,6 +28,7 @@ interface StepPageLayoutProps {
   checklistItems: ChecklistItem[]
   onChecklistItemToggle: (id: string, completed: boolean) => void
   children: ReactNode
+  useGradientBar?: boolean
 }
 
 export default function StepPageLayout({
@@ -41,6 +42,7 @@ export default function StepPageLayout({
   checklistItems,
   onChecklistItemToggle,
   children,
+  useGradientBar = false,
 }: StepPageLayoutProps) {
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [isChecklistOpen, setIsChecklistOpen] = useState(false)
@@ -93,7 +95,7 @@ export default function StepPageLayout({
       )}
 
       {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-white shadow-md rounded-xl border border-slate-200 px-5 py-3">
+      <div className={`sticky z-10 rounded-xl px-5 py-3 ${useGradientBar ? 'top-4 bg-gradient-to-b from-white via-slate-50 to-slate-50 shadow-lg border border-slate-200/70' : 'top-0 bg-white shadow-md border border-slate-200'}`}>
         <div className="flex items-center gap-3 flex-wrap">
           {/* Back to Dashboard */}
           <Link

@@ -24,7 +24,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="bg-white">
+    <div className="bg-slate-50">
       <Header />
       
       {/* Hero Section */}

@@ -25,6 +25,14 @@ export const stepRequirements: Record<string, StepRequirement[]> = {
     { id: 'schedule-appointment', label: 'Schedule visa appointment' },
     { id: 'attend-appointment', label: 'Attend visa appointment' },
   ],
+  'codice-fiscale': [
+    { id: 'understand-cf', label: 'Understand what a codice fiscale is and why you need it' },
+    { id: 'gather-documents', label: 'Gather required documents (passport, proof of address)' },
+    { id: 'find-office', label: 'Find nearest Agenzia delle Entrate office' },
+    { id: 'visit-office', label: 'Visit office to apply (or apply at consulate before arrival)' },
+    { id: 'receive-cf', label: 'Receive your codice fiscale card' },
+    { id: 'make-copies', label: 'Make several photocopies for future use' },
+  ],
   'before-departure': [
     { id: 'arrange-accommodation', label: 'Arrange accommodation' },
     { id: 'book-flight', label: 'Book flight' },
@@ -40,14 +48,6 @@ export const stepRequirements: Record<string, StepRequirement[]> = {
     { id: 'submit-documents', label: 'Submit required documents' },
     { id: 'register-address', label: 'Register residential address' },
     { id: 'get-confirmation', label: 'Get registration confirmation' },
-  ],
-  'arrival-first-days': [
-    { id: 'collect-sim', label: 'Get local SIM card' },
-    { id: 'open-bank', label: 'Open bank account' },
-    { id: 'register-address', label: 'Register residential address' },
-    { id: 'university-registration', label: 'Complete university registration' },
-    { id: 'enroll-courses', label: 'Enroll in courses' },
-    { id: 'explore-campus', label: 'Explore campus facilities' },
   ],
   'housing': [
     { id: 'research-areas', label: 'Research neighborhoods' },
@@ -96,14 +96,6 @@ export const stepRequirements: Record<string, StepRequirement[]> = {
     { id: 'join-groups', label: 'Join student groups/clubs' },
     { id: 'attend-events', label: 'Attend orientation events' },
     { id: 'network', label: 'Network with other students' },
-  ],
-  'daily-life': [
-    { id: 'transport-pass', label: 'Get public transport pass' },
-    { id: 'find-grocery', label: 'Find grocery stores' },
-    { id: 'local-customs', label: 'Learn local customs and etiquette' },
-    { id: 'social-activities', label: 'Find social and recreational activities' },
-    { id: 'language-practice', label: 'Practice local language' },
-    { id: 'community-groups', label: 'Join community groups' },
   ],
   'cost-of-living': [
     { id: 'track-expenses', label: 'Track monthly expenses' },

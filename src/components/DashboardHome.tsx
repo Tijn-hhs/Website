@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import StepCard from './StepCard'
 import { fetchMe, saveStepProgress } from '../lib/api'
 import { StepProgress, UserProfile } from '../types/user'
-import type { OnboardingDraft } from '../onboarding/types'
 import {
   GraduationCap,
   FileText,
@@ -12,18 +11,18 @@ import {
   Home,
   Shield,
   Heart,
-  MapPin,
   HelpCircle,
-  Coffee,
   DollarSign,
   CreditCard,
+  Hash,
 } from 'lucide-react'
 
 const numberedSteps = [
   'University Application',
   'Student Visa',
+  'Codice Fiscale',
   'Before Departure',
-  'Immigration & Registration',
+  'Residence Permit',
   'Housing',
   'Banking',
   'Insurance',
@@ -31,9 +30,7 @@ const numberedSteps = [
 ]
 
 const extraInformationSteps = [
-  'Arrival & First Days',
   'Information Centre',
-  'Daily Life',
   'Cost of Living',
 ]
 
@@ -42,60 +39,56 @@ const steps = [...numberedSteps, ...extraInformationSteps]
 const stepRoutes: Record<string, string | undefined> = {
   'University Application': '/dashboard/university-application',
   'Student Visa': '/dashboard/student-visa',
+  'Codice Fiscale': '/dashboard/codice-fiscale',
   'Before Departure': '/dashboard/before-departure',
-  'Immigration & Registration': '/dashboard/immigration-registration',
-  'Arrival & First Days': '/dashboard/arrival-first-days',
+  'Residence Permit': '/dashboard/immigration-registration',
   Housing: '/dashboard/housing',
   Banking: '/dashboard/banking',
   Insurance: '/dashboard/insurance',
   Healthcare: '/dashboard/healthcare',
   'Information Centre': '/dashboard/information-centre',
-  'Daily Life': '/dashboard/daily-life',
   'Cost of Living': '/dashboard/cost-of-living',
 }
 
 const stepKeys: Record<string, string> = {
   'University Application': 'university-application',
   'Student Visa': 'student-visa',
+  'Codice Fiscale': 'codice-fiscale',
   'Before Departure': 'before-departure',
-  'Immigration & Registration': 'immigration-registration',
-  'Arrival & First Days': 'arrival-first-days',
+  'Residence Permit': 'immigration-registration',
   Housing: 'housing',
   Banking: 'banking',
   Insurance: 'insurance',
   Healthcare: 'healthcare',
   'Information Centre': 'information-centre',
-  'Daily Life': 'daily-life',
   'Cost of Living': 'cost-of-living',
 }
 
 const stepIcons: Record<string, React.ReactNode> = {
   'University Application': <GraduationCap size={20} className="flex-shrink-0" />,
   'Student Visa': <FileText size={20} className="flex-shrink-0" />,
+  'Codice Fiscale': <Hash size={20} className="flex-shrink-0" />,
   'Before Departure': <Plane size={20} className="flex-shrink-0" />,
-  'Immigration & Registration': <ClipboardList size={20} className="flex-shrink-0" />,
+  'Residence Permit': <ClipboardList size={20} className="flex-shrink-0" />,
   Housing: <Home size={20} className="flex-shrink-0" />,
   Banking: <CreditCard size={20} className="flex-shrink-0" />,
   Insurance: <Shield size={20} className="flex-shrink-0" />,
   Healthcare: <Heart size={20} className="flex-shrink-0" />,
-  'Arrival & First Days': <MapPin size={20} className="flex-shrink-0" />,
   'Information Centre': <HelpCircle size={20} className="flex-shrink-0" />,
-  'Daily Life': <Coffee size={20} className="flex-shrink-0" />,
   'Cost of Living': <DollarSign size={20} className="flex-shrink-0" />,
 }
 
 const stepDescriptions: Record<string, string> = {
   'University Application': 'Research programs, prepare documents, and submit your university applications.',
   'Student Visa': 'Apply for your student visa and prepare all required documentation.',
+  'Codice Fiscale': 'Obtain your Italian tax identification number (codice fiscale).',
   'Before Departure': 'Get vaccinations, arrange travel, and prepare for your move.',
-  'Immigration & Registration': 'Complete immigration procedures and register with local authorities.',
+  'Residence Permit': 'Complete immigration procedures and register with local authorities.',
   Housing: 'Find and secure accommodation for your stay.',
   Banking: 'Set up bank accounts and manage financial essentials.',
   Insurance: 'Arrange insurance coverage for health and personal protection.',
   Healthcare: 'Register with healthcare providers and understand the system.',
-  'Arrival & First Days': 'Navigate your arrival and settle into your new city.',
   'Information Centre': 'Access comprehensive guides and local resources.',
-  'Daily Life': 'Learn about culture, transportation, and local customs.',
   'Cost of Living': 'Understand expenses and budget for your stay.',
 }
 
@@ -104,6 +97,8 @@ export default function DashboardHome() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [visaStepDisabled, setVisaStepDisabled] = useState(false)
+  const [preferredName, setPreferredName] = useState<string>('')
+  const [destinationUniversity, setDestinationUniversity] = useState<string>('')
 
   useEffect(() => {
     loadProgress()
@@ -118,16 +113,26 @@ export default function DashboardHome() {
       })
       
       // Check if student visa is disabled for EU citizens
+      // Check if student visa is disabled for EU citizens
       let isEuCitizen = false
-      if (data?.profile?.onboardingDraftJson) {
-        const draft: OnboardingDraft = JSON.parse(data.profile.onboardingDraftJson)
-        isEuCitizen = draft.isEuCitizen === 'yes'
+      
+      // Read from individual profile fields
+      if (data?.profile?.isEuCitizen !== undefined) {
+        isEuCitizen = data.profile.isEuCitizen === 'yes'
         setVisaStepDisabled(isEuCitizen)
-        
-        // Auto-complete student visa step for EU citizens
-        if (isEuCitizen) {
-          progressMap['student-visa'] = true
-        }
+      }
+      
+      // Store user's preferred name and university from individual fields
+      if (data?.profile?.preferredName) {
+        setPreferredName(data.profile.preferredName)
+      }
+      if (data?.profile?.destinationUniversity) {
+        setDestinationUniversity(data.profile.destinationUniversity)
+      }
+      
+      // Auto-complete student visa step for EU citizens
+      if (isEuCitizen) {
+        progressMap['student-visa'] = true
       }
       
       setProgress(progressMap)
@@ -140,8 +145,9 @@ export default function DashboardHome() {
   }
 
   function calculateDaysUntilStart(): number | null {
-    if (!profile?.startDate) return null
-    const startDate = new Date(profile.startDate)
+    if (!profile?.programStartMonth) return null
+    // programStartMonth is in "YYYY-MM" format, convert to first day of month
+    const startDate = new Date(`${profile.programStartMonth}-01`)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const timeDiff = startDate.getTime() - today.getTime()
@@ -205,7 +211,15 @@ export default function DashboardHome() {
         <p className="text-sm font-semibold text-blue-600">Leavs</p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">Dashboard</h1>
         <p className="mt-2 text-base text-slate-600">
-          Your relocation journey at a glance.
+          {preferredName && (
+            <>
+              Hello, {preferredName}! 
+              {destinationUniversity && (
+                <span> We are going to get you to {destinationUniversity}.</span>
+              )}
+            </>
+          )}
+          {!preferredName && "Your relocation journey at a glance."}
         </p>
       </div>
 
@@ -232,11 +246,10 @@ export default function DashboardHome() {
             />
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            {profile?.startDate
-              ? `Program starts: ${new Date(profile.startDate).toLocaleDateString('en-US', {
+            {profile?.programStartMonth
+              ? `Program starts: ${new Date(`${profile.programStartMonth}-01`).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
-                  day: 'numeric',
                 })}`
               : 'No start date set'}
           </p>

@@ -60,18 +60,16 @@ export default function BeforeDeparturePage() {
       <FeedbackWidget />
       <DashboardLayout>
         <StepPageLayout
-          stepNumber={3}
-          totalSteps={12}
-          stepLabel="STEP 3"
+          stepNumber={4}
+          totalSteps={13}
+          stepLabel="STEP 4"
           title="Before Departure"
           subtitle="Get your plans, paperwork, and essentials ready before you fly."
+          useGradientBar={true}
           userInfoTitle="Your Travel Information"
           userInfoFields={[
             { key: 'destinationCity', label: 'Destination' },
-            { key: 'travelDate', label: 'Travel Date', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
-            { key: 'flightsBooked', label: 'Flights Booked' },
-            { key: 'arrivalDate', label: 'Arrival Date', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
-            { key: 'startDate', label: 'Program Start', formatter: (val) => val ? new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Not set' },
+            { key: 'programStartMonth', label: 'Program Start' },
           ]}
           checklistItems={checklistItems}
           onChecklistItemToggle={handleChecklistToggle}

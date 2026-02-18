@@ -80,19 +80,18 @@ export default function HousingPage() {
       <FeedbackWidget />
       <DashboardLayout>
         <StepPageLayout
-        stepNumber={6}
-        totalSteps={12}
-        stepLabel="STEP 6"
+        stepNumber={7}
+        totalSteps={13}
+        stepLabel="STEP 7"
         title="Find your apartment"
         subtitle="Discover the perfect neighborhood and secure a place to live."
+        useGradientBar={true}
         userInfoTitle="Your Housing Information"
         userInfoFields={[
           { key: 'destinationCity', label: 'City' },
-          { key: 'universityName', label: 'University' },
-          { key: 'accommodationType', label: 'Housing Type' },
-          { key: 'housingBudget', label: 'Budget' },
-          { key: 'leaseStart', label: 'Lease Start', formatter: (val) => val ? new Date(val).toLocaleDateString() : 'Not set' },
-          { key: 'startDate', label: 'Program Start', formatter: (val) => val ? new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Not set' },
+          { key: 'destinationUniversity', label: 'University' },
+          { key: 'housingPreference', label: 'Preference' },
+          { key: 'programStartMonth', label: 'Program Start' },
         ]}
         checklistItems={checklistItems}
         onChecklistItemToggle={handleChecklistToggle}

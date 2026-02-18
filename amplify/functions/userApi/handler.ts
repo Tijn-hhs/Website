@@ -11,41 +11,66 @@ import { v4 as uuidv4 } from 'uuid'
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface UserProfile {
-  firstName?: string
-  lastName?: string
+  // Personal information
+  preferredName?: string
   nationality?: string
-  dateOfBirth?: string
+  residenceCountry?: string
+  // Destination
   destinationCountry?: string
   destinationCity?: string
-  universityName?: string
-  programName?: string
-  studyLevel?: string
-  startDate?: string
+  destinationUniversity?: string
+  destinationUnknownCountry?: boolean
+  destinationUnknownCity?: boolean
+  destinationUnknownUniversity?: boolean
+  // Program details
+  degreeType?: string
+  fieldOfStudy?: string
+  fieldOfStudyUnknown?: boolean
+  programStartMonth?: string
+  programStartMonthUnknown?: boolean
+  // Application status
+  programApplied?: string
+  programAccepted?: string
   admissionStatus?: string
+  deadlinesKnown?: string
+  // Test scores
+  hasGmatOrEntranceTest?: string
+  gmatScore?: string
+  hasEnglishTest?: string
+  englishTestType?: string
+  englishTestScore?: string
+  hasRecommendationLetters?: string
+  hasCv?: string
+  // Visa and travel
+  isEuCitizen?: string
+  hasVisa?: string
   visaType?: string
   passportExpiry?: string
-  visaAppointmentDate?: string
-  travelDate?: string
-  flightsBooked?: boolean
-  packingNotes?: string
-  registrationStatus?: string
-  residencePermitNeeded?: boolean
-  accommodationType?: string
+  visaAppointmentNeeded?: string
+  // Immigration
+  hasCodiceFiscale?: string
+  hasResidencePermit?: string
+  // Housing
+  hasHousing?: string
+  housingPreference?: string
   housingBudget?: string
-  leaseStart?: string
-  bankAccountNeeded?: boolean
-  insuranceProvider?: string
-  legalDocsReady?: boolean
-  healthCoverage?: string
-  doctorPreference?: string
-  arrivalDate?: string
-  localTransport?: string
-  dailyLifeNotes?: string
-  monthlyBudget?: string
-  budgetCurrency?: string
-  budgetingNotes?: string
-  communityInterest?: string
-  supportNeeds?: string
+  moveInWindow?: string
+  housingSupportNeeded?: string
+  // Banking and phone
+  needsBankAccount?: string
+  hasBankAccount?: string
+  needsPhoneNumber?: string
+  hasPhoneNumber?: string
+  // Insurance and health
+  hasTravelInsurance?: string
+  hasHealthInsurance?: string
+  // Budget and finance
+  monthlyBudgetRange?: string
+  scholarshipNeed?: string
+  fundingSource?: string
+  lastCompletedStep?: number
+  checklistItems?: Record<number, Record<string, boolean>>
+  // Cost breakdown
   housingType?: string
   rentCost?: number
   utilitiesCost?: number
