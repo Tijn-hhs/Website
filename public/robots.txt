@@ -1,0 +1,15 @@
+# robots.txt for Student Hub
+
+# Allow all crawlers to access public content
+User-agent: *
+Allow: /
+Allow: /blog
+Allow: /blog/*
+
+# Disallow authenticated areas
+Disallow: /dashboard
+Disallow: /my-situation
+Disallow: /onboarding
+
+# Sitemap location
+Sitemap: https://weleav.com/sitemap.xml

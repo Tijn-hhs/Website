@@ -19,6 +19,7 @@ import DailyLifePage from './pages/DailyLifePage'
 import CostOfLivingPage from './pages/CostOfLivingPage'
 import BlogOverviewPage from './pages/BlogOverviewPage'
 import BlogPostPage from './pages/BlogPostPage'
+import NotFoundPage from './pages/NotFoundPage'
 import OnboardingStart from './onboarding/pages/OnboardingStart'
 import Step1Destination from './onboarding/pages/Step1Destination'
 import Step2Origin from './onboarding/pages/Step2Origin'
@@ -178,7 +179,7 @@ export default function App() {
         <Route path="/onboarding/6" element={<Step6Budget />} />
         <Route path="/onboarding/7" element={<Step7Housing />} />
         <Route path="/onboarding/8" element={<Step8ReviewFinish />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AppLayout>
     </BrowserRouter>
