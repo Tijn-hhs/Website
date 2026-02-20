@@ -18,8 +18,11 @@ import {
   CreditCard,
   BookOpen,
   Hash,
+  Search,
 } from 'lucide-react'
+import { useSearch } from '../lib/SearchContext'
 import { fetchMe } from '../lib/api'
+import { usePageSections } from '../lib/PageSectionsContext'
 
 export default function Sidebar() {
   // State for managing collapsed/expanded sidebar
@@ -136,6 +139,8 @@ export default function Sidebar() {
     },
   ]
 
+  const { openSearch } = useSearch()
+  const { sections } = usePageSections()
   const location = useLocation()
   const isHomeActive = location.pathname === '/'
   const isMySituationActive = location.pathname === '/my-situation'
@@ -182,8 +187,30 @@ export default function Sidebar() {
         </button>
       </div>
 
+      {/* Search button */}
+      <div className="px-2 pb-2">
+        <button
+          onClick={openSearch}
+          className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 focus:ring-blue-300 text-slate-500 hover:text-slate-800 bg-white/70 hover:bg-white border border-slate-200/80 shadow-sm ${
+            isCollapsed ? 'px-0 justify-center' : 'px-3 gap-2'
+          }`}
+          aria-label="Search (⌘K)"
+          title={isCollapsed ? 'Search (⌘K)' : undefined}
+        >
+          <Search size={16} className="flex-shrink-0 text-slate-400" />
+          {!isCollapsed && (
+            <>
+              <span className="flex-1 text-left text-slate-400">Search…</span>
+              <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-[10px] font-medium text-slate-400">
+                ⌘K
+              </kbd>
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Navigation Items */}
-      <nav className="flex-1 px-2 pt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+      <nav className="flex-1 px-2 pt-2 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
         <ul className="space-y-1 pb-4">
           {/* Steps Section Header */}
           {!isCollapsed && (
@@ -240,6 +267,22 @@ export default function Sidebar() {
                       {item.label}
                     </span>
                   </Link>
+                )}
+                {/* On-this-page sub-nav — shown when this item is active, sidebar expanded, and sections are registered */}
+                {isActive && !isCollapsed && !isStudentVisaDisabled && sections.length > 0 && (
+                  <ul className="mt-0.5 mb-1 ml-8 border-l border-slate-200 pl-2 space-y-0.5">
+                    {sections.map((section) => (
+                      <li key={section.id}>
+                        <a
+                          href={`#${section.id}`}
+                          className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-slate-400 hover:text-slate-700 hover:bg-white/70 transition-colors"
+                        >
+                          <span className="h-1 w-1 flex-shrink-0 rounded-full bg-slate-300" />
+                          {section.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </li>
             )

@@ -47,6 +47,11 @@ const EDITABLE_KEYS: (keyof UserProfile)[] = [
   'fundingSource',
   'housingPreference',
   'housingSupportNeeded',
+  // Application details
+  'targetApplicationRound',
+  'specificProgramName',
+  'bocconiTestStatus',
+  'previousDegreeLanguage',
 ]
 
 const createEmptyProfile = (): UserProfile => {
@@ -493,6 +498,23 @@ export default function MySituationPage() {
                       type="text"
                       placeholder="e.g., Finance, Computer Science"
                       value={formData.fieldOfStudy || ''}
+                      onChange={handleChange}
+                      className={inputBase}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                      htmlFor="specificProgramName"
+                    >
+                      Specific program name
+                    </label>
+                    <input
+                      id="specificProgramName"
+                      name="specificProgramName"
+                      type="text"
+                      placeholder="e.g., MSc Finance, BSc Economics"
+                      value={formData.specificProgramName || ''}
                       onChange={handleChange}
                       className={inputBase}
                     />

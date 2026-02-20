@@ -436,3 +436,49 @@ export async function createDeadline(
   }
 }
 
+// ─── Admin ────────────────────────────────────────────────────────────────────
+
+export interface AdminStats {
+  overview: {
+    totalUsers: number
+    activeUsers: number
+    totalFeedback: number
+    avgStepsCompleted: number
+  }
+  signupTimeline: { date: string; count: number }[]
+  stepBreakdown: { step: string; completions: number }[]
+  topDestinations: { city: string; count: number }[]
+  topNationalities: { nationality: string; count: number }[]
+  generatedAt: string
+}
+
+export async function fetchAdminStats(): Promise<AdminStats> {
+  const headers = await getAuthHeaders()
+
+  // In local dev, use the Vite proxy path (/api-proxy) to avoid CORS preflight failures.
+  // In production, use the full API endpoint from amplify_outputs.json.
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/stats'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/stats`
+  }
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  return res.json() as Promise<AdminStats>
+}

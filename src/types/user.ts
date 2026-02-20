@@ -58,6 +58,16 @@ export interface UserProfile {
   fundingSource?: string
   lastCompletedStep?: number
   checklistItems?: Record<number, Record<string, boolean>>
+  documentChecklist?: Record<string, boolean>
+  // University application details
+  targetApplicationRound?: string
+  specificProgramName?: string
+  bocconiTestStatus?: string
+  previousDegreeLanguage?: string
+  // Before departure
+  flightBooked?: string
+  departureDate?: string
+  hasEhic?: string
   // Cost of Living detailed breakdown
   housingType?: string
   rentCost?: number

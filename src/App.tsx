@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthGate } from './components/AuthGate'
+import { AdminGate } from './components/AdminGate'
 import AppLayout from './components/AppLayout'
+import AdminDashboardPage from './pages/AdminDashboardPage'
 import DashboardPage from './pages/DashboardPage'
 import LandingPage from './pages/LandingPage'
 import AuthPage from './pages/AuthPage'
@@ -161,6 +163,16 @@ export default function App() {
             </AuthGate>
           }
         />
+        {/* ── Admin (hidden from all navigation) ── */}
+        <Route
+          path="/internal/mgmt"
+          element={
+            <AdminGate>
+              <AdminDashboardPage />
+            </AdminGate>
+          }
+        />
+
         <Route path="/onboarding" element={<OnboardingStart />} />
         <Route path="/onboarding/0" element={<Step0Welcome />} />
         <Route path="/onboarding/1" element={<Step1Destination />} />

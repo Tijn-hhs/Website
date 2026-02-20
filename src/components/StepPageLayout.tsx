@@ -24,9 +24,11 @@ interface StepPageLayoutProps {
   title: string
   subtitle: string | ReactNode
   userInfoTitle?: string
+  userInfoSubtitle?: React.ReactNode
   userInfoFields?: InfoField[]
-  checklistItems: ChecklistItem[]
-  onChecklistItemToggle: (id: string, completed: boolean) => void
+  checklistItems?: ChecklistItem[]
+  onChecklistItemToggle?: (id: string, completed: boolean) => void
+  showChecklist?: boolean
   children: ReactNode
   useGradientBar?: boolean
 }
@@ -38,9 +40,11 @@ export default function StepPageLayout({
   title,
   subtitle,
   userInfoTitle = 'Your Study Plan',
+  userInfoSubtitle,
   userInfoFields = [],
-  checklistItems,
-  onChecklistItemToggle,
+  checklistItems = [],
+  onChecklistItemToggle = () => {},
+  showChecklist = true,
   children,
   useGradientBar = false,
 }: StepPageLayoutProps) {
@@ -91,7 +95,7 @@ export default function StepPageLayout({
 
       {/* User Info Box */}
       {userInfoFields.length > 0 && (
-        <UserInfoBox title={userInfoTitle} fields={userInfoFields} />
+        <UserInfoBox title={userInfoTitle} subtitle={userInfoSubtitle} fields={userInfoFields} />
       )}
 
       {/* Sticky Action Bar */}
@@ -119,7 +123,7 @@ export default function StepPageLayout({
           </Link>
 
           {/* Checklist Button */}
-          <div className="relative">
+          {showChecklist && <div className="relative">
             <button
               ref={checklistButtonRef}
               onClick={() => setIsChecklistOpen(!isChecklistOpen)}
@@ -238,7 +242,7 @@ export default function StepPageLayout({
                 </div>
               </div>
             )}
-          </div>
+          </div>}
 
           {/* Scroll to Top Button */}
           {showScrollTop && (

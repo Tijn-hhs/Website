@@ -199,6 +199,16 @@ deadlinesResource.addMethod('POST', lambdaIntegration, {
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
 
+// Create /admin/stats resource (Cognito-protected; admin check happens inside Lambda)
+const adminResource = restApi.root.addResource('admin')
+const adminStatsResource = adminResource.addResource('stats')
+
+// GET /admin/stats
+adminStatsResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
 // Add Gateway Responses so that 4XX/5XX errors from API Gateway
 // (e.g. Cognito authorizer 401) include CORS headers.
 restApi.addGatewayResponse('Default4XX', {

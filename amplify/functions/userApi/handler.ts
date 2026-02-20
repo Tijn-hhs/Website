@@ -3,6 +3,7 @@ import {
   GetItemCommand,
   PutItemCommand,
   QueryCommand,
+  ScanCommand,
 } from '@aws-sdk/client-dynamodb'
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 import { unmarshall, marshall } from '@aws-sdk/util-dynamodb'
@@ -324,6 +325,131 @@ async function createDeadline(
   return deadline
 }
 
+// ─── Admin helpers ───────────────────────────────────────────────────────────
+
+/** Scan a full table and return all unmarshalled items (handles pagination). */
+async function scanAll(tableName: string): Promise<Record<string, unknown>[]> {
+  const items: Record<string, unknown>[] = []
+  let lastKey: Record<string, any> | undefined
+  do {
+    const result = await dynamo.send(
+      new ScanCommand({
+        TableName: tableName,
+        ExclusiveStartKey: lastKey,
+      })
+    )
+    for (const item of result.Items ?? []) {
+      items.push(unmarshall(item))
+    }
+    lastKey = result.LastEvaluatedKey
+  } while (lastKey)
+  return items
+}
+
+async function handleGetAdminStats(event: any): Promise<ApiResponse> {
+  // Admin credential check: require ?secret=<ADMIN_SECRET> header as a second
+  // layer of defence on top of Cognito (simple shared secret approach).
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  if (adminSecret && providedSecret !== adminSecret) {
+    return fail(403, 'Forbidden')
+  }
+
+  const [profiles, progressItems, feedbackItems] = await Promise.all([
+    scanAll(TABLE.profiles),
+    scanAll(TABLE.progress),
+    scanAll(TABLE.feedback),
+  ])
+
+  const totalUsers = profiles.length
+
+  // Signups over time — group by calendar day using createdAt or updatedAt
+  const signupsByDay: Record<string, number> = {}
+  for (const p of profiles) {
+    const raw = (p.createdAt as string | undefined) || (p.updatedAt as string | undefined)
+    if (!raw) continue
+    const day = raw.slice(0, 10) // "YYYY-MM-DD"
+    signupsByDay[day] = (signupsByDay[day] ?? 0) + 1
+  }
+  const signupTimeline = Object.entries(signupsByDay)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, count]) => ({ date, count }))
+
+  // Step completion breakdown
+  const stepCounts: Record<string, number> = {}
+  for (const row of progressItems) {
+    if (row.completed) {
+      const key = row.stepKey as string
+      stepCounts[key] = (stepCounts[key] ?? 0) + 1
+    }
+  }
+  const stepBreakdown = Object.entries(stepCounts)
+    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .map(([step, completions]) => ({ step, completions }))
+
+  // Active users = users who have at least one progress record
+  const activeUserIds = new Set(progressItems.map((r) => r.userId as string))
+  const activeUsers = activeUserIds.size
+
+  // Destination breakdown
+  const destinationCounts: Record<string, number> = {}
+  for (const p of profiles) {
+    const city = (p.destinationCity as string | undefined) || 'Unknown'
+    destinationCounts[city] = (destinationCounts[city] ?? 0) + 1
+  }
+  const topDestinations = Object.entries(destinationCounts)
+    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .slice(0, 10)
+    .map(([city, count]) => ({ city, count }))
+
+  // Nationality breakdown
+  const nationalityCounts: Record<string, number> = {}
+  for (const p of profiles) {
+    const nat = (p.nationality as string | undefined) || 'Unknown'
+    nationalityCounts[nat] = (nationalityCounts[nat] ?? 0) + 1
+  }
+  const topNationalities = Object.entries(nationalityCounts)
+    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .slice(0, 10)
+    .map(([nationality, count]) => ({ nationality, count }))
+
+  // Feedback count
+  const totalFeedback = feedbackItems.length
+
+  // Average steps completed per user
+  const completedPerUser: Record<string, number> = {}
+  for (const row of progressItems) {
+    if (row.completed) {
+      const uid = row.userId as string
+      completedPerUser[uid] = (completedPerUser[uid] ?? 0) + 1
+    }
+  }
+  const completionValues = Object.values(completedPerUser)
+  const avgStepsCompleted =
+    completionValues.length > 0
+      ? Math.round(
+          (completionValues.reduce((s, v) => s + v, 0) / completionValues.length) * 10
+        ) / 10
+      : 0
+
+  return ok({
+    overview: {
+      totalUsers,
+      activeUsers,
+      totalFeedback,
+      avgStepsCompleted,
+    },
+    signupTimeline,
+    stepBreakdown,
+    topDestinations,
+    topNationalities,
+    generatedAt: new Date().toISOString(),
+  })
+}
+
 // ─── Route Handlers ──────────────────────────────────────────────────────────
 
 async function handleGetUser(userId: string): Promise<ApiResponse> {
@@ -427,6 +553,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'PUT'  && path === '/progress/start')   return await handlePutProgressStart(userId, event)
     if (method === 'GET'  && path === '/deadlines')  return await handleGetDeadlines(userId)
     if (method === 'POST' && path === '/deadlines')  return await handlePostDeadline(userId, event)
+    if (method === 'GET'  && path === '/admin/stats') return await handleGetAdminStats(event)
 
     console.error(`[Handler] No route matched for ${method} ${path}`)
     return fail(404, 'Not found')

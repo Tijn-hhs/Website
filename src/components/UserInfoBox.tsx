@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchMe, saveProfile } from '../lib/api'
+import type { ReactNode } from 'react'
 import type { UserProfile } from '../types/user'
 
 type InfoField = {
@@ -10,6 +11,7 @@ type InfoField = {
 
 type UserInfoBoxProps = {
   title: string
+  subtitle?: ReactNode
   fields: InfoField[]
 }
 
@@ -50,7 +52,7 @@ const formatValue = (value: any): string => {
   return String(value)
 }
 
-export default function UserInfoBox({ title, fields }: UserInfoBoxProps) {
+export default function UserInfoBox({ title, subtitle, fields }: UserInfoBoxProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -229,6 +231,9 @@ export default function UserInfoBox({ title, fields }: UserInfoBoxProps) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+            {subtitle && (
+              <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
+            )}
             
             {!hasAnyData ? (
               <p className="mt-2 text-sm text-slate-600">
