@@ -524,56 +524,48 @@ export async function fetchAdminFeedback(): Promise<FeedbackItem[]> {
   return json.feedback ?? []
 }
 
-// ─── Admin: Reddit Posts ──────────────────────────────────────────────────────
+// ─── Admin: WhatsApp Messages ─────────────────────────────────────────────────
 
-export interface RedditPost {
-  postId: string
-  subreddit: string
-  title: string
-  selftext: string
-  author: string
-  score: number
-  numComments: number
-  createdUtc: number   // Unix timestamp (seconds)
-  url: string
-  permalink: string
-  isSticky: boolean
-  fetchedAt: string
+export interface WhatsAppMessage {
+  groupId: string       // WhatsApp group JID (e.g. "120363XXXX@g.us")
+  messageId: string     // Unique message ID
+  groupName: string     // Human-readable group name (set by poller)
+  sender: string        // Sender JID
+  senderName: string    // Sender display name
+  body: string          // Message text
+  timestamp: number     // Unix timestamp (seconds)
+  fetchedAt: string     // ISO string of when we stored this
 }
 
-export interface RedditPostsResponse {
-  posts: RedditPost[]
+export interface WhatsAppMessagesResponse {
+  messages: WhatsAppMessage[]
   total: number
-  subredditCounts: Record<string, number>
+  groupCounts: Record<string, number>
   fetchedAt: string
 }
 
 /**
- * Fetch Reddit posts from the admin API.
- * Optionally filter by subreddit name (e.g. "bocconi").
- * Results are sorted newest-first by the backend.
+ * Fetch WhatsApp messages from the admin API.
+ * Optionally filter by groupId.
  */
-export async function fetchAdminRedditPosts(subreddit?: string): Promise<RedditPostsResponse> {
+export async function fetchAdminWhatsappMessages(groupId?: string): Promise<WhatsAppMessagesResponse> {
   const headers = await getAuthHeaders()
 
   const params = new URLSearchParams({ limit: '200' })
-  if (subreddit) params.set('subreddit', subreddit)
+  if (groupId) params.set('groupId', groupId)
 
   let url: string
   if (import.meta.env.DEV) {
-    url = `/api-proxy/admin/reddit-posts?${params}`
+    url = `/api-proxy/admin/whatsapp-messages?${params}`
   } else {
     const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
     const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
-    url = `${endpoint}/admin/reddit-posts?${params}`
+    url = `${endpoint}/admin/whatsapp-messages?${params}`
   }
 
   const res = await fetch(url, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
+    headers: { 'Content-Type': 'application/json', ...headers },
   })
 
   if (!res.ok) {
@@ -582,5 +574,5 @@ export async function fetchAdminRedditPosts(subreddit?: string): Promise<RedditP
     throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
   }
 
-  return res.json() as Promise<RedditPostsResponse>
+  return res.json() as Promise<WhatsAppMessagesResponse>
 }

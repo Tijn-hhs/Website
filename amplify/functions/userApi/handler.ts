@@ -122,7 +122,7 @@ const TABLE = {
   feedback: process.env.FEEDBACK_TABLE_NAME!,
   deadlines: process.env.DEADLINES_TABLE_NAME!,
   // Reddit posts fetched by the redditPoller Lambda (leavs-{env}-reddit-posts)
-  redditPosts: process.env.REDDIT_POSTS_TABLE_NAME!,
+  whatsappMessages: process.env.WHATSAPP_MESSAGES_TABLE_NAME!,
 } as const
 
 const FEEDBACK_EMAIL = process.env.FEEDBACK_EMAIL || 'tijn@eendenburg.eu'
@@ -452,68 +452,56 @@ async function handleGetAdminStats(event: any): Promise<ApiResponse> {
     generatedAt: new Date().toISOString(),
   })
 }
-// ─── Admin: Reddit Posts ───────────────────────────────────────────────────────
+// ─── Admin: WhatsApp Messages ─────────────────────────────────────────────────
 
 /**
- * GET /admin/reddit-posts
- * Returns Reddit posts stored by redditPoller, optionally filtered by subreddit.
- *
+ * GET /admin/whatsapp-messages
+ * Returns WhatsApp messages stored by the local poller script, optionally filtered by group.
  * Query params:
- *   subreddit  — filter to one subreddit (e.g. "bocconi"). Omit for all posts.
- *   limit      — max posts to return (default 100, max 500)
+ *   groupId — filter to one group JID. Omit for all groups.
+ *   limit   — max messages to return (default 200, max 1000)
  */
-async function handleGetAdminRedditPosts(event: any): Promise<ApiResponse> {
-  const subredditFilter: string | undefined = event.queryStringParameters?.subreddit
-  const limit = Math.min(parseInt(event.queryStringParameters?.limit ?? '100', 10), 500)
+async function handleGetAdminWhatsappMessages(event: any): Promise<ApiResponse> {
+  const groupFilter: string | undefined = event.queryStringParameters?.groupId
+  const limit = Math.min(parseInt(event.queryStringParameters?.limit ?? '200', 10), 1000)
 
   let items: Record<string, unknown>[] = []
 
-  if (subredditFilter) {
-    // Query by specific subreddit (uses the table's partition key — very efficient)
+  if (groupFilter) {
     const { Items } = await dynamo.send(
       new QueryCommand({
-        TableName: TABLE.redditPosts,
-        KeyConditionExpression: 'subreddit = :sub',
-        ExpressionAttributeValues: marshall({ ':sub': subredditFilter }),
-        ScanIndexForward: false, // newest first
+        TableName: TABLE.whatsappMessages,
+        KeyConditionExpression: 'groupId = :gid',
+        ExpressionAttributeValues: marshall({ ':gid': groupFilter }),
+        ScanIndexForward: false,
         Limit: limit,
       })
     )
     items = (Items ?? []).map((i) => unmarshall(i))
   } else {
-    // No filter — scan the full table (acceptable for admin use at this scale)
     let lastKey: Record<string, any> | undefined
     do {
       const result = await dynamo.send(
         new ScanCommand({
-          TableName: TABLE.redditPosts,
+          TableName: TABLE.whatsappMessages,
           ExclusiveStartKey: lastKey,
           Limit: limit,
         })
       )
-      for (const item of result.Items ?? []) {
-        items.push(unmarshall(item))
-      }
+      for (const item of result.Items ?? []) items.push(unmarshall(item))
       lastKey = result.LastEvaluatedKey
     } while (lastKey && items.length < limit)
   }
 
-  // Sort by createdUtc descending (newest first) before returning
-  items.sort((a, b) => ((b.createdUtc as number) ?? 0) - ((a.createdUtc as number) ?? 0))
+  items.sort((a, b) => ((b.timestamp as number) ?? 0) - ((a.timestamp as number) ?? 0))
 
-  // Compute per-subreddit counts for the summary header
-  const subredditCounts: Record<string, number> = {}
+  const groupCounts: Record<string, number> = {}
   for (const item of items) {
-    const sub = (item.subreddit as string) ?? 'unknown'
-    subredditCounts[sub] = (subredditCounts[sub] ?? 0) + 1
+    const gname = (item.groupName as string) ?? (item.groupId as string) ?? 'unknown'
+    groupCounts[gname] = (groupCounts[gname] ?? 0) + 1
   }
 
-  return ok({
-    posts: items,
-    total: items.length,
-    subredditCounts,
-    fetchedAt: new Date().toISOString(),
-  })
+  return ok({ messages: items, total: items.length, groupCounts, fetchedAt: new Date().toISOString() })
 }
 // ─── Route Handlers ──────────────────────────────────────────────────────────
 
@@ -636,7 +624,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/deadlines')  return await handleGetDeadlines(userId)
     if (method === 'POST' && path === '/deadlines')  return await handlePostDeadline(userId, event)
     if (method === 'GET'  && path === '/admin/stats') return await handleGetAdminStats(event)
-    if (method === 'GET'  && path === '/admin/reddit-posts') return await handleGetAdminRedditPosts(event)
+    if (method === 'GET'  && path === '/admin/whatsapp-messages') return await handleGetAdminWhatsappMessages(event)
     if (method === 'GET'  && path === '/admin/feedback') return await handleGetAdminFeedback(event)
 
     console.error(`[Handler] No route matched for ${method} ${path}`)
