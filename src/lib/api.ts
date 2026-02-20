@@ -299,7 +299,7 @@ export async function markStepStarted(stepKey: string): Promise<boolean> {
   }
 }
 
-export async function submitFeedback(message: string): Promise<boolean> {
+export async function submitFeedback(message: string, page?: string): Promise<boolean> {
   try {
     const headers = await getAuthHeaders()
     
@@ -307,9 +307,9 @@ export async function submitFeedback(message: string): Promise<boolean> {
     
     const restOperation = post({
       apiName: API_NAME,
-      path: 'feedback',
+      path: '/feedback',
       options: {
-        body: { message },
+        body: { message, page: page ?? 'unknown' },
         headers: {
           'Content-Type': 'application/json',
           ...headers,
@@ -481,6 +481,47 @@ export async function fetchAdminStats(): Promise<AdminStats> {
   }
 
   return res.json() as Promise<AdminStats>
+}
+
+// ─── Admin: Feedback ────────────────────────────────────────────────────────
+
+export interface FeedbackItem {
+  feedbackId: string
+  userId: string
+  message: string
+  page: string
+  createdAt: string
+  timestamp: number
+}
+
+export async function fetchAdminFeedback(): Promise<FeedbackItem[]> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/feedback'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/feedback`
+  }
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  const json = await res.json() as { feedback: FeedbackItem[] }
+  return json.feedback ?? []
 }
 
 // ─── Admin: Reddit Posts ──────────────────────────────────────────────────────

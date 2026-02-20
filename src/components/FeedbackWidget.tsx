@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { MessageCircle, Send, X } from 'lucide-react'
 import { submitFeedback } from '../lib/api'
 import './FeedbackWidget.css'
@@ -9,6 +10,7 @@ export default function FeedbackWidget() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const location = useLocation()
 
   const handleSubmit = async () => {
     if (!message.trim()) return
@@ -17,7 +19,7 @@ export default function FeedbackWidget() {
     setError(null)
     try {
       console.log('[FeedbackWidget] Submitting feedback:', message)
-      const success = await submitFeedback(message)
+      const success = await submitFeedback(message, location.pathname)
       console.log('[FeedbackWidget] Feedback submission result:', success)
       if (success) {
         setIsSubmitted(true)

@@ -256,7 +256,7 @@ async function markStepStarted(
   )
 }
 
-async function saveFeedback(userId: string, message: string): Promise<void> {
+async function saveFeedback(userId: string, message: string, page: string): Promise<void> {
   await dynamo.send(
     new PutItemCommand({
       TableName: TABLE.feedback,
@@ -264,6 +264,7 @@ async function saveFeedback(userId: string, message: string): Promise<void> {
         feedbackId: uuidv4(),
         userId,
         message,
+        page,
         timestamp: Date.now(),
         createdAt: new Date().toISOString(),
       }),
@@ -271,7 +272,7 @@ async function saveFeedback(userId: string, message: string): Promise<void> {
   )
 }
 
-async function sendFeedbackEmail(userId: string, message: string): Promise<void> {
+async function sendFeedbackEmail(userId: string, message: string, page: string): Promise<void> {
   try {
     await ses.send(
       new SendEmailCommand({
@@ -279,7 +280,7 @@ async function sendFeedbackEmail(userId: string, message: string): Promise<void>
         Destination: { ToAddresses: [FEEDBACK_EMAIL] },
         Message: {
           Subject: { Data: `[Leavs Feedback] New feedback from ${userId}` },
-          Body: { Text: { Data: `User ID: ${userId}\n\nMessage:\n${message}` } },
+          Body: { Text: { Data: `User ID: ${userId}\nPage: ${page}\n\nMessage:\n${message}` } },
         },
       })
     )
@@ -574,7 +575,7 @@ async function handlePostDeadline(userId: string, event: any): Promise<ApiRespon
 }
 
 async function handlePostFeedback(event: any): Promise<ApiResponse> {
-  const { message } = parseBody(event)
+  const { message, page } = parseBody(event)
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return fail(400, 'Message is required and must be a non-empty string')
@@ -582,9 +583,26 @@ async function handlePostFeedback(event: any): Promise<ApiResponse> {
 
   const guestId = `guest-${Date.now()}`
   const trimmed = message.trim()
+  const pageStr = typeof page === 'string' && page.trim() ? page.trim() : 'unknown'
 
-  await Promise.all([saveFeedback(guestId, trimmed), sendFeedbackEmail(guestId, trimmed)])
+  await Promise.all([saveFeedback(guestId, trimmed, pageStr), sendFeedbackEmail(guestId, trimmed, pageStr)])
   return ok({ message: 'Feedback received' })
+}
+
+async function handleGetAdminFeedback(event: any): Promise<ApiResponse> {
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  if (adminSecret && providedSecret !== adminSecret) {
+    return fail(403, 'Forbidden')
+  }
+
+  const items = await scanAll(TABLE.feedback)
+  // Sort newest-first
+  items.sort((a, b) => ((b.timestamp as number) ?? 0) - ((a.timestamp as number) ?? 0))
+  return ok({ feedback: items })
 }
 
 // ─── Router ──────────────────────────────────────────────────────────────────
@@ -619,6 +637,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'POST' && path === '/deadlines')  return await handlePostDeadline(userId, event)
     if (method === 'GET'  && path === '/admin/stats') return await handleGetAdminStats(event)
     if (method === 'GET'  && path === '/admin/reddit-posts') return await handleGetAdminRedditPosts(event)
+    if (method === 'GET'  && path === '/admin/feedback') return await handleGetAdminFeedback(event)
 
     console.error(`[Handler] No route matched for ${method} ${path}`)
     return fail(404, 'Not found')

@@ -19,7 +19,7 @@ import {
   MessageCircle,
   Clock,
 } from 'lucide-react'
-import { fetchAdminStats, fetchAdminRedditPosts, type AdminStats, type RedditPost, type RedditPostsResponse } from '../lib/api'
+import { fetchAdminStats, fetchAdminRedditPosts, fetchAdminFeedback, type AdminStats, type RedditPost, type RedditPostsResponse, type FeedbackItem } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -473,10 +473,116 @@ function DataAnalyticsTab() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Feedback Tab
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function FeedbackTab() {
+  const [items, setItems] = useState<FeedbackItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [search, setSearch] = useState('')
+
+  async function load(showRefresh = false) {
+    if (showRefresh) setRefreshing(true)
+    else setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchAdminFeedback()
+      setItems(data)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to load feedback')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return items
+    const q = search.toLowerCase()
+    return items.filter(
+      (f) =>
+        f.message.toLowerCase().includes(q) ||
+        (f.page ?? '').toLowerCase().includes(q) ||
+        (f.userId ?? '').toLowerCase().includes(q)
+    )
+  }, [items, search])
+
+  if (loading) return <div className="flex items-center justify-center py-24"><RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" /></div>
+
+  if (error) return (
+    <div className="flex items-start gap-3 bg-red-950/40 border border-red-800 rounded-xl p-5">
+      <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+      <div>
+        <p className="text-red-300 font-medium">Failed to load feedback</p>
+        <p className="text-red-400/70 text-sm mt-0.5">{error}</p>
+        <button onClick={() => load()} className="mt-3 text-xs text-red-400 hover:text-red-300 underline underline-offset-2">Try again</button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-6">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-white">User Feedback</h2>
+          <p className="text-xs text-gray-500 mt-0.5">{items.length} submission{items.length !== 1 ? 's' : ''} total</p>
+        </div>
+        <button onClick={() => load(true)} disabled={refreshing}
+          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors disabled:opacity-50 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg">
+          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search messages, pages or user IDs…"
+          className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600 transition-colors" />
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 text-gray-600">
+          <MessageSquare className="w-8 h-8 mx-auto mb-3 opacity-40" />
+          <p className="font-medium">{items.length === 0 ? 'No feedback submitted yet' : 'No results match your search'}</p>
+        </div>
+      ) : (
+        <div className="space-y-3 pb-8">
+          {filtered.map((f) => (
+            <div key={f.feedbackId} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-white text-sm leading-relaxed flex-1">{f.message}</p>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-xs text-gray-500">
+                    <Clock className="inline w-3 h-3 mr-0.5 -mt-0.5" />
+                    {new Date(f.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-3">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-900/40 border border-indigo-700/50 text-indigo-300 text-xs">
+                  <Map className="w-3 h-3" />{f.page ?? 'unknown'}
+                </span>
+                <span className="text-xs text-gray-600">{f.userId}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Main Admin Dashboard Page
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = 'overview' | 'analytics'
+type Tab = 'overview' | 'analytics' | 'feedback'
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
@@ -507,6 +613,7 @@ export default function AdminDashboardPage() {
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview',  label: 'Overview',       icon: <LayoutDashboard className="w-3.5 h-3.5" /> },
     { id: 'analytics', label: 'Data Analytics', icon: <LineChart className="w-3.5 h-3.5" /> },
+    { id: 'feedback',  label: 'Feedback',        icon: <MessageSquare className="w-3.5 h-3.5" /> },
   ]
 
   return (
@@ -561,6 +668,7 @@ export default function AdminDashboardPage() {
           </>
         )}
         {activeTab === 'analytics' && <DataAnalyticsTab />}
+        {activeTab === 'feedback' && <FeedbackTab />}
       </main>
     </div>
   )
