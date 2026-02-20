@@ -482,3 +482,64 @@ export async function fetchAdminStats(): Promise<AdminStats> {
 
   return res.json() as Promise<AdminStats>
 }
+
+// ─── Admin: Reddit Posts ──────────────────────────────────────────────────────
+
+export interface RedditPost {
+  postId: string
+  subreddit: string
+  title: string
+  selftext: string
+  author: string
+  score: number
+  numComments: number
+  createdUtc: number   // Unix timestamp (seconds)
+  url: string
+  permalink: string
+  isSticky: boolean
+  fetchedAt: string
+}
+
+export interface RedditPostsResponse {
+  posts: RedditPost[]
+  total: number
+  subredditCounts: Record<string, number>
+  fetchedAt: string
+}
+
+/**
+ * Fetch Reddit posts from the admin API.
+ * Optionally filter by subreddit name (e.g. "bocconi").
+ * Results are sorted newest-first by the backend.
+ */
+export async function fetchAdminRedditPosts(subreddit?: string): Promise<RedditPostsResponse> {
+  const headers = await getAuthHeaders()
+
+  const params = new URLSearchParams({ limit: '200' })
+  if (subreddit) params.set('subreddit', subreddit)
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = `/api-proxy/admin/reddit-posts?${params}`
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/reddit-posts?${params}`
+  }
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  return res.json() as Promise<RedditPostsResponse>
+}

@@ -1,14 +1,18 @@
 import { defineBackend } from '@aws-amplify/backend'
-import { Stack, RemovalPolicy } from 'aws-cdk-lib'
+import { Stack, RemovalPolicy, Duration } from 'aws-cdk-lib'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as apigateway from 'aws-cdk-lib/aws-apigateway'
 import * as iam from 'aws-cdk-lib/aws-iam'
+import * as events from 'aws-cdk-lib/aws-events'
+import * as eventTargets from 'aws-cdk-lib/aws-events-targets'
 import { auth } from './auth/resource'
 import { userApi } from './functions/userApi/resource'
+import { redditPoller } from './functions/redditPoller/resource'
 
 const backend = defineBackend({
   auth,
   userApi,
+  redditPoller,
 })
 
 // Get the stack from the Lambda function construct (implicit stack)
@@ -77,6 +81,70 @@ userProfileTable.grantReadWriteData(backend.userApi.resources.lambda)
 userProgressTable.grantReadWriteData(backend.userApi.resources.lambda)
 feedbackTable.grantReadWriteData(backend.userApi.resources.lambda)
 deadlinesTable.grantReadWriteData(backend.userApi.resources.lambda)
+
+// ─── Reddit Posts Table ───────────────────────────────────────────────────────
+// Stores posts fetched from monitored subreddits by the redditPoller Lambda.
+// PK: subreddit (the community name, e.g. "bocconi")
+// SK: postId    (Reddit's global post ID, e.g. "t3_abc123")
+// A GSI on createdUtc lets us query posts sorted by date across all subreddits.
+
+const redditPostsTable = new dynamodb.Table(apiStack, 'RedditPostsTable', {
+  tableName: `leavs-${env}-reddit-posts`,
+  partitionKey: {
+    name: 'subreddit',
+    type: dynamodb.AttributeType.STRING,
+  },
+  sortKey: {
+    name: 'postId',
+    type: dynamodb.AttributeType.STRING,
+  },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
+// GSI: query ALL posts sorted by creation date (for the admin dashboard feed)
+redditPostsTable.addGlobalSecondaryIndex({
+  indexName: 'byCreatedUtc',
+  partitionKey: { name: 'fetchedMonth', type: dynamodb.AttributeType.STRING },
+  sortKey: { name: 'createdUtc', type: dynamodb.AttributeType.NUMBER },
+  projectionType: dynamodb.ProjectionType.ALL,
+})
+
+// redditPoller needs read + write to store fetched posts
+redditPostsTable.grantReadWriteData(backend.redditPoller.resources.lambda)
+
+// userApi (serves /admin/reddit-posts) needs read access
+redditPostsTable.grantReadData(backend.userApi.resources.lambda)
+
+// ─── EventBridge Cron: run redditPoller every 6 hours ─────────────────────────
+// Schedule: 0:00, 6:00, 12:00, 18:00 UTC every day
+// To change frequency, update the schedule expression below.
+
+const redditPollerSchedule = new events.Rule(apiStack, 'RedditPollerSchedule', {
+  ruleName: `leavs-${env}-reddit-poller-every-6h`,
+  description: 'Triggers the redditPoller Lambda every 6 hours to fetch new Reddit posts',
+  schedule: events.Schedule.cron({ minute: '0', hour: '0/6' }),
+})
+
+redditPollerSchedule.addTarget(
+  new eventTargets.LambdaFunction(backend.redditPoller.resources.lambda, {
+    retryAttempts: 2,
+  })
+)
+
+// ─── Environment variables for redditPoller ───────────────────────────────────
+
+backend.redditPoller.resources.lambda.addEnvironment(
+  'REDDIT_POSTS_TABLE_NAME',
+  redditPostsTable.tableName
+)
+
+// ─── Environment variables for userApi (reddit table read) ───────────────────
+
+backend.userApi.resources.lambda.addEnvironment(
+  'REDDIT_POSTS_TABLE_NAME',
+  redditPostsTable.tableName
+)
 
 // Grant Lambda permission to send emails via SES
 backend.userApi.resources.lambda.addToRolePolicy(
@@ -205,6 +273,19 @@ const adminStatsResource = adminResource.addResource('stats')
 
 // GET /admin/stats
 adminStatsResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// ─── /admin/reddit-posts ─────────────────────────────────────────────────────
+// Serves paginated Reddit posts to the admin dashboard.
+// Query params: ?subreddit=bocconi  (optional, filters by subreddit)
+//               ?limit=50           (optional, default 50)
+
+const adminRedditPostsResource = adminResource.addResource('reddit-posts')
+
+// GET /admin/reddit-posts
+adminRedditPostsResource.addMethod('GET', lambdaIntegration, {
   authorizer: cognitoAuthorizer,
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })

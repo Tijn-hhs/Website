@@ -121,6 +121,8 @@ const TABLE = {
   progress: process.env.USER_PROGRESS_TABLE_NAME!,
   feedback: process.env.FEEDBACK_TABLE_NAME!,
   deadlines: process.env.DEADLINES_TABLE_NAME!,
+  // Reddit posts fetched by the redditPoller Lambda (leavs-{env}-reddit-posts)
+  redditPosts: process.env.REDDIT_POSTS_TABLE_NAME!,
 } as const
 
 const FEEDBACK_EMAIL = process.env.FEEDBACK_EMAIL || 'tijn@eendenburg.eu'
@@ -449,7 +451,69 @@ async function handleGetAdminStats(event: any): Promise<ApiResponse> {
     generatedAt: new Date().toISOString(),
   })
 }
+// ─── Admin: Reddit Posts ───────────────────────────────────────────────────────
 
+/**
+ * GET /admin/reddit-posts
+ * Returns Reddit posts stored by redditPoller, optionally filtered by subreddit.
+ *
+ * Query params:
+ *   subreddit  — filter to one subreddit (e.g. "bocconi"). Omit for all posts.
+ *   limit      — max posts to return (default 100, max 500)
+ */
+async function handleGetAdminRedditPosts(event: any): Promise<ApiResponse> {
+  const subredditFilter: string | undefined = event.queryStringParameters?.subreddit
+  const limit = Math.min(parseInt(event.queryStringParameters?.limit ?? '100', 10), 500)
+
+  let items: Record<string, unknown>[] = []
+
+  if (subredditFilter) {
+    // Query by specific subreddit (uses the table's partition key — very efficient)
+    const { Items } = await dynamo.send(
+      new QueryCommand({
+        TableName: TABLE.redditPosts,
+        KeyConditionExpression: 'subreddit = :sub',
+        ExpressionAttributeValues: marshall({ ':sub': subredditFilter }),
+        ScanIndexForward: false, // newest first
+        Limit: limit,
+      })
+    )
+    items = (Items ?? []).map((i) => unmarshall(i))
+  } else {
+    // No filter — scan the full table (acceptable for admin use at this scale)
+    let lastKey: Record<string, any> | undefined
+    do {
+      const result = await dynamo.send(
+        new ScanCommand({
+          TableName: TABLE.redditPosts,
+          ExclusiveStartKey: lastKey,
+          Limit: limit,
+        })
+      )
+      for (const item of result.Items ?? []) {
+        items.push(unmarshall(item))
+      }
+      lastKey = result.LastEvaluatedKey
+    } while (lastKey && items.length < limit)
+  }
+
+  // Sort by createdUtc descending (newest first) before returning
+  items.sort((a, b) => ((b.createdUtc as number) ?? 0) - ((a.createdUtc as number) ?? 0))
+
+  // Compute per-subreddit counts for the summary header
+  const subredditCounts: Record<string, number> = {}
+  for (const item of items) {
+    const sub = (item.subreddit as string) ?? 'unknown'
+    subredditCounts[sub] = (subredditCounts[sub] ?? 0) + 1
+  }
+
+  return ok({
+    posts: items,
+    total: items.length,
+    subredditCounts,
+    fetchedAt: new Date().toISOString(),
+  })
+}
 // ─── Route Handlers ──────────────────────────────────────────────────────────
 
 async function handleGetUser(userId: string): Promise<ApiResponse> {
@@ -554,6 +618,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/deadlines')  return await handleGetDeadlines(userId)
     if (method === 'POST' && path === '/deadlines')  return await handlePostDeadline(userId, event)
     if (method === 'GET'  && path === '/admin/stats') return await handleGetAdminStats(event)
+    if (method === 'GET'  && path === '/admin/reddit-posts') return await handleGetAdminRedditPosts(event)
 
     console.error(`[Handler] No route matched for ${method} ${path}`)
     return fail(404, 'Not found')
