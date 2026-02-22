@@ -614,6 +614,34 @@ async function handleGetAdminFeedback(event: any): Promise<ApiResponse> {
 
 // ─── Buddy System ───────────────────────────────────────────────────────────
 
+/** GET /admin/users — return all user profiles for the admin dashboard. */
+async function handleGetAdminUsers(event: any): Promise<ApiResponse> {
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  if (adminSecret && providedSecret !== adminSecret) {
+    return fail(403, 'Forbidden')
+  }
+
+  const profiles = await scanAll(TABLE.profiles)
+  // Return all fields but ensure userId and updatedAt are present
+  const users = profiles.map((p) => ({
+    userId: p.userId,
+    updatedAt: p.updatedAt,
+    ...p,
+  }))
+  // Sort newest-first by updatedAt
+  users.sort((a, b) => {
+    const ta = typeof a.updatedAt === 'string' ? a.updatedAt : ''
+    const tb = typeof b.updatedAt === 'string' ? b.updatedAt : ''
+    return tb.localeCompare(ta)
+  })
+
+  return ok({ users, total: users.length })
+}
+
 /** GET /buddy/match — return the matched user's buddy contact profile. */
 async function handleGetBuddyMatch(userId: string): Promise<ApiResponse> {
   const profile = await getUserProfile(userId)
@@ -738,6 +766,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/admin/whatsapp-messages') return await handleGetAdminWhatsappMessages(event)
     if (method === 'GET'  && path === '/admin/feedback') return await handleGetAdminFeedback(event)
     if (method === 'GET'  && path === '/buddy/match') return await handleGetBuddyMatch(userId)
+    if (method === 'GET'  && path === '/admin/users') return await handleGetAdminUsers(event)
     if (method === 'GET'  && path === '/admin/buddy-pool') return await handleGetAdminBuddyPool(event)
     if (method === 'POST' && path === '/admin/buddy-match') return await handlePostAdminBuddyMatch(event)
 

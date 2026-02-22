@@ -624,6 +624,85 @@ export interface BuddyPoolUser {
   updatedAt?: string
 }
 
+// ─── Admin: All Users ─────────────────────────────────────────────────────────
+
+export interface AdminUserRecord {
+  userId: string
+  updatedAt?: string
+  // personal
+  preferredName?: string
+  nationality?: string
+  residenceCountry?: string
+  // destination
+  destinationCountry?: string
+  destinationCity?: string
+  destinationUniversity?: string
+  // program
+  degreeType?: string
+  fieldOfStudy?: string
+  programStartMonth?: string
+  // admission
+  admissionStatus?: string
+  programApplied?: string
+  programAccepted?: string
+  // visa
+  isEuCitizen?: string
+  hasVisa?: string
+  visaType?: string
+  hasCodiceFiscale?: string
+  hasResidencePermit?: string
+  // housing
+  hasHousing?: string
+  housingPreference?: string
+  housingBudget?: string
+  housingSupportNeeded?: string
+  moveInWindow?: string
+  // banking
+  needsBankAccount?: string
+  hasBankAccount?: string
+  // insurance
+  hasTravelInsurance?: string
+  hasHealthInsurance?: string
+  // budget
+  monthlyBudgetRange?: string
+  fundingSource?: string
+  // buddy
+  buddyOptIn?: string
+  buddyStatus?: string
+  buddyLookingFor?: string
+  // misc
+  lastCompletedStep?: number
+  flightBooked?: string
+  departureDate?: string
+}
+
+export async function fetchAdminUsers(): Promise<AdminUserRecord[]> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/users'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/users`
+  }
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', ...headers },
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  const json = await res.json() as { users: AdminUserRecord[] }
+  return json.users ?? []
+}
+
 /** Admin: fetch all users who opted into the buddy system. */
 export async function fetchAdminBuddyPool(): Promise<BuddyPoolUser[]> {
   const headers = await getAuthHeaders()

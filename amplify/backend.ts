@@ -254,6 +254,15 @@ adminFeedbackResource.addMethod('GET', lambdaIntegration, {
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
 
+// ─── /admin/users ────────────────────────────────────────────────────────────
+const adminUsersResource = adminResource.addResource('users')
+
+// GET /admin/users
+adminUsersResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
 // ─── /admin/buddy-pool ────────────────────────────────────────────────────────
 const adminBuddyPoolResource = adminResource.addResource('buddy-pool')
 

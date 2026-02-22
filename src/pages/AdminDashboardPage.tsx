@@ -18,8 +18,14 @@ import {
   Heart,
   CheckCircle2,
   XCircle,
+  ChevronDown,
+  ChevronUp,
+  GraduationCap,
+  Home,
+  CreditCard,
+  Plane,
 } from 'lucide-react'
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -565,6 +571,305 @@ function FeedbackTab() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TAB 3 — Users
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function statusBadge(label: string, colour: string) {
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${colour}`}>
+      {label}
+    </span>
+  )
+}
+
+function admissionBadge(status?: string) {
+  if (!status) return null
+  const map: Record<string, string> = {
+    admitted: 'bg-emerald-900/40 border-emerald-700 text-emerald-300',
+    applied: 'bg-blue-900/40 border-blue-700 text-blue-300',
+    planning: 'bg-yellow-900/40 border-yellow-700 text-yellow-300',
+    rejected: 'bg-red-900/40 border-red-700 text-red-300',
+  }
+  const key = Object.keys(map).find((k) => status.toLowerCase().includes(k)) || ''
+  return statusBadge(status, map[key] || 'bg-gray-800 border-gray-700 text-gray-400')
+}
+
+function Field({ label, value }: { label: string; value?: string | number | boolean | null }) {
+  if (value === undefined || value === null || value === '') return null
+  return (
+    <div>
+      <p className="text-xs text-gray-600">{label}</p>
+      <p className="text-sm text-gray-200 mt-0.5">{String(value)}</p>
+    </div>
+  )
+}
+
+function UserRow({ user }: { user: AdminUserRecord }) {
+  const [open, setOpen] = useState(false)
+
+  const name = user.preferredName || 'Unknown'
+  const program = [user.degreeType, user.fieldOfStudy].filter(Boolean).join(' — ') || null
+  const arrival = user.programStartMonth
+    ? new Date(`${user.programStartMonth}-01`).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : null
+  const uni = user.destinationUniversity || user.destinationCity || null
+  const lastSeen = user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null
+
+  return (
+    <div className="rounded-xl border border-gray-800 bg-gray-900 overflow-hidden">
+      {/* Summary row */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full text-left px-5 py-4 flex items-center gap-4 hover:bg-gray-800/50 transition-colors"
+      >
+        {/* Avatar */}
+        <div className="flex-shrink-0 w-9 h-9 rounded-full bg-indigo-700 flex items-center justify-center text-white text-sm font-bold">
+          {name.slice(0, 2).toUpperCase()}
+        </div>
+
+        {/* Main info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-white font-semibold text-sm">{name}</span>
+            {user.nationality && <span className="text-gray-400 text-xs">{user.nationality}</span>}
+            {admissionBadge(user.admissionStatus)}
+            {user.buddyOptIn === 'yes' && statusBadge('Buddy', 'bg-pink-900/40 border-pink-700 text-pink-300')}
+          </div>
+          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+            {program && <span className="text-xs text-gray-500">{program}</span>}
+            {arrival && <span className="text-xs text-gray-600">• {arrival}</span>}
+            {uni && <span className="text-xs text-gray-600">• {uni}</span>}
+          </div>
+        </div>
+
+        {/* Right meta */}
+        <div className="flex-shrink-0 flex items-center gap-3 text-right">
+          {lastSeen && <span className="text-xs text-gray-600 hidden sm:block">{lastSeen}</span>}
+          {open ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+        </div>
+      </button>
+
+      {/* Expanded details */}
+      {open && (
+        <div className="border-t border-gray-800 px-5 py-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
+          <div className="col-span-full">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 mb-3 flex items-center gap-1.5">
+              <Globe className="w-3 h-3" /> Personal &amp; Destination
+            </p>
+          </div>
+          <Field label="Full name" value={user.preferredName} />
+          <Field label="Nationality" value={user.nationality} />
+          <Field label="Residence country" value={user.residenceCountry} />
+          <Field label="Destination country" value={user.destinationCountry} />
+          <Field label="Destination city" value={user.destinationCity} />
+          <Field label="University" value={user.destinationUniversity} />
+
+          <div className="col-span-full mt-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 mb-3 flex items-center gap-1.5">
+              <GraduationCap className="w-3 h-3" /> Program &amp; Admission
+            </p>
+          </div>
+          <Field label="Degree type" value={user.degreeType} />
+          <Field label="Field of study" value={user.fieldOfStudy} />
+          <Field label="Arrival" value={arrival || undefined} />
+          <Field label="Admission status" value={user.admissionStatus} />
+          <Field label="Applied" value={user.programApplied} />
+          <Field label="Accepted" value={user.programAccepted} />
+
+          <div className="col-span-full mt-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 mb-3 flex items-center gap-1.5">
+              <Plane className="w-3 h-3" /> Visa &amp; Immigration
+            </p>
+          </div>
+          <Field label="EU citizen" value={user.isEuCitizen} />
+          <Field label="Has visa" value={user.hasVisa} />
+          <Field label="Visa type" value={user.visaType} />
+          <Field label="Codice fiscale" value={user.hasCodiceFiscale} />
+          <Field label="Residence permit" value={user.hasResidencePermit} />
+          <Field label="Flight booked" value={user.flightBooked} />
+          <Field label="Departure date" value={user.departureDate} />
+
+          <div className="col-span-full mt-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 mb-3 flex items-center gap-1.5">
+              <Home className="w-3 h-3" /> Housing
+            </p>
+          </div>
+          <Field label="Has housing" value={user.hasHousing} />
+          <Field label="Preference" value={user.housingPreference} />
+          <Field label="Budget" value={user.housingBudget} />
+          <Field label="Move-in window" value={user.moveInWindow} />
+          <Field label="Needs support" value={user.housingSupportNeeded} />
+
+          <div className="col-span-full mt-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 mb-3 flex items-center gap-1.5">
+              <CreditCard className="w-3 h-3" /> Finance &amp; Banking
+            </p>
+          </div>
+          <Field label="Monthly budget" value={user.monthlyBudgetRange} />
+          <Field label="Funding source" value={user.fundingSource} />
+          <Field label="Needs bank account" value={user.needsBankAccount} />
+          <Field label="Has bank account" value={user.hasBankAccount} />
+          <Field label="Travel insurance" value={user.hasTravelInsurance} />
+          <Field label="Health insurance" value={user.hasHealthInsurance} />
+
+          {user.buddyOptIn === 'yes' && (
+            <>
+              <div className="col-span-full mt-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 mb-3 flex items-center gap-1.5">
+                  <Heart className="w-3 h-3" /> Buddy System
+                </p>
+              </div>
+              <Field label="Buddy status" value={user.buddyStatus} />
+              <Field label="Looking for" value={(() => { try { return (JSON.parse(user.buddyLookingFor || '[]') as string[]).join(', ') } catch { return user.buddyLookingFor } })()} />
+            </>
+          )}
+
+          <div className="col-span-full mt-2 pt-3 border-t border-gray-800">
+            <p className="text-xs text-gray-700">User ID: {user.userId}</p>
+            {user.updatedAt && <p className="text-xs text-gray-700">Last updated: {new Date(user.updatedAt).toLocaleString()}</p>}
+            <p className="text-xs text-gray-700">Steps completed: {user.lastCompletedStep ?? 0}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function UsersTab() {
+  const [users, setUsers] = useState<AdminUserRecord[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [filterUni, setFilterUni] = useState('all')
+  const [filterNationality, setFilterNationality] = useState('all')
+  const [refreshing, setRefreshing] = useState(false)
+
+  async function load(showRefresh = false) {
+    if (showRefresh) setRefreshing(true)
+    else setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchAdminUsers()
+      setUsers(data)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to load users')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const universities = useMemo(() => {
+    const seen = new Set<string>()
+    for (const u of users) if (u.destinationUniversity) seen.add(u.destinationUniversity)
+    return Array.from(seen).sort()
+  }, [users])
+
+  const nationalities = useMemo(() => {
+    const seen = new Set<string>()
+    for (const u of users) if (u.nationality) seen.add(u.nationality)
+    return Array.from(seen).sort()
+  }, [users])
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase()
+    return users.filter((u) => {
+      const matchSearch = !q ||
+        (u.preferredName || '').toLowerCase().includes(q) ||
+        (u.nationality || '').toLowerCase().includes(q) ||
+        (u.destinationUniversity || '').toLowerCase().includes(q) ||
+        (u.destinationCity || '').toLowerCase().includes(q) ||
+        (u.fieldOfStudy || '').toLowerCase().includes(q) ||
+        (u.admissionStatus || '').toLowerCase().includes(q)
+      const matchUni = filterUni === 'all' || u.destinationUniversity === filterUni
+      const matchNat = filterNationality === 'all' || u.nationality === filterNationality
+      return matchSearch && matchUni && matchNat
+    })
+  }, [users, search, filterUni, filterNationality])
+
+  if (loading) return <div className="flex items-center justify-center py-24"><RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" /></div>
+
+  if (error) return (
+    <div className="flex items-start gap-3 bg-red-950/40 border border-red-800 rounded-xl p-5">
+      <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+      <div>
+        <p className="text-red-300 font-medium">Failed to load users</p>
+        <p className="text-red-400/70 text-sm mt-0.5">{error}</p>
+        <button onClick={() => load()} className="mt-3 text-xs text-red-400 hover:text-red-300 underline underline-offset-2">Try again</button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-5">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-48">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, nationality, university, program…"
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600 transition-colors"
+          />
+        </div>
+        {nationalities.length > 0 && (
+          <div className="relative">
+            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+            <select
+              value={filterNationality}
+              onChange={(e) => setFilterNationality(e.target.value)}
+              className="bg-gray-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-600 appearance-none"
+            >
+              <option value="all">All nationalities</option>
+              {nationalities.map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+        )}
+        {universities.length > 0 && (
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+            <select
+              value={filterUni}
+              onChange={(e) => setFilterUni(e.target.value)}
+              className="bg-gray-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-600 appearance-none"
+            >
+              <option value="all">All universities</option>
+              {universities.map((u) => <option key={u} value={u}>{u}</option>)}
+            </select>
+          </div>
+        )}
+        <button
+          onClick={() => load(true)}
+          disabled={refreshing}
+          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors disabled:opacity-50 bg-gray-900 border border-gray-700 hover:border-gray-500 rounded-lg px-3 py-2"
+        >
+          <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
+        </button>
+      </div>
+
+      <p className="text-xs text-gray-600">
+        {filtered.length} user{filtered.length !== 1 ? 's' : ''}{filtered.length !== users.length ? ` of ${users.length}` : ''} — click a row to expand
+      </p>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 text-gray-600">
+          <p className="font-medium">No users found</p>
+          {search && <p className="text-xs mt-1">Try adjusting your search.</p>}
+        </div>
+      ) : (
+        <div className="space-y-2 pb-8">
+          {filtered.map((u) => <UserRow key={u.userId} user={u} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TAB 4 — Buddy System
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -678,7 +983,7 @@ function BuddyTab() {
       )}
 
       {/* Manual match panel */}
-      {pending.length >= 2 && (
+      {pending.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500">Pending — Select 2 to Match</h2>
@@ -772,7 +1077,7 @@ function BuddyTab() {
 // Main Admin Dashboard Page
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = 'overview' | 'analytics' | 'feedback' | 'buddy'
+type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy'
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
@@ -804,6 +1109,7 @@ export default function AdminDashboardPage() {
     { id: 'overview',  label: 'Overview',       icon: <LayoutDashboard className="w-3.5 h-3.5" /> },
     { id: 'analytics', label: 'Data Analytics', icon: <LineChart className="w-3.5 h-3.5" /> },
     { id: 'feedback',  label: 'Feedback',        icon: <MessageSquare className="w-3.5 h-3.5" /> },
+    { id: 'users',     label: 'Users',           icon: <UserCheck className="w-3.5 h-3.5" /> },
     { id: 'buddy',     label: 'Buddy System',    icon: <Heart className="w-3.5 h-3.5" /> },
   ]
 
@@ -860,6 +1166,7 @@ export default function AdminDashboardPage() {
         )}
         {activeTab === 'analytics' && <DataAnalyticsTab />}
         {activeTab === 'feedback' && <FeedbackTab />}
+        {activeTab === 'users' && <UsersTab />}
         {activeTab === 'buddy' && <BuddyTab />}
       </main>
     </div>
