@@ -89,7 +89,7 @@ export default function NeighborhoodMap({
               <Popup>
                 <div className="space-y-2 text-sm">
                   <div className="font-semibold text-slate-900">{neighborhood.name}</div>
-                  <div className="text-xs text-slate-600">{neighborhood.description}</div>
+                  <div className="text-xs text-slate-600">{neighborhood.shortDescription}</div>
                   <div className="flex space-x-2 text-xs">
                     <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
                       {neighborhood.avgRent}

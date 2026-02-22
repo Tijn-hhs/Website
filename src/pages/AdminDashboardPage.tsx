@@ -24,6 +24,7 @@ import {
   Home,
   CreditCard,
   Plane,
+  Mail,
 } from 'lucide-react'
 import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
@@ -636,6 +637,11 @@ function UserRow({ user }: { user: AdminUserRecord }) {
             {user.buddyOptIn === 'yes' && statusBadge('Buddy', 'bg-pink-900/40 border-pink-700 text-pink-300')}
           </div>
           <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+            {user.email && (
+              <span className="inline-flex items-center gap-1 text-xs text-indigo-300 font-medium">
+                <Mail className="w-3 h-3" />{user.email}
+              </span>
+            )}
             {program && <span className="text-xs text-gray-500">{program}</span>}
             {arrival && <span className="text-xs text-gray-600">• {arrival}</span>}
             {uni && <span className="text-xs text-gray-600">• {uni}</span>}
@@ -725,6 +731,12 @@ function UserRow({ user }: { user: AdminUserRecord }) {
           )}
 
           <div className="col-span-full mt-2 pt-3 border-t border-gray-800">
+            {user.email && (
+              <p className="text-xs text-gray-400 flex items-center gap-1 mb-1">
+                <Mail className="w-3 h-3 text-indigo-400" />
+                <span className="text-indigo-300 font-medium">{user.email}</span>
+              </p>
+            )}
             <p className="text-xs text-gray-700">User ID: {user.userId}</p>
             {user.updatedAt && <p className="text-xs text-gray-700">Last updated: {new Date(user.updatedAt).toLocaleString()}</p>}
             <p className="text-xs text-gray-700">Steps completed: {user.lastCompletedStep ?? 0}</p>
@@ -778,6 +790,7 @@ function UsersTab() {
     return users.filter((u) => {
       const matchSearch = !q ||
         (u.preferredName || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q) ||
         (u.nationality || '').toLowerCase().includes(q) ||
         (u.destinationUniversity || '').toLowerCase().includes(q) ||
         (u.destinationCity || '').toLowerCase().includes(q) ||
@@ -812,7 +825,7 @@ function UsersTab() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name, nationality, university, program…"
+            placeholder="Search name, email, nationality, university…"
             className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600 transition-colors"
           />
         </div>

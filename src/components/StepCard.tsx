@@ -115,38 +115,38 @@ export default function StepCard({
         disabled ? 'text-slate-500' : 'text-slate-600'
       }`}>{description}</p>
 
-      {/* Checkbox - stays at bottom */}
-      <div className="flex-shrink-0">
-        <label
-          className={`inline-flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150 ${
-            disabled
-              ? 'text-slate-400 cursor-not-allowed bg-slate-50'
-              : 'text-slate-700 cursor-pointer hover:bg-slate-50 group'
-          }`}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={(event) => {
-              if (!disabled) {
-                const newValue = event.target.checked
-                if (onComplete) {
-                  onComplete(newValue)
-                }
-              }
-            }}
-            onClick={(event) => event.stopPropagation()}
-            disabled={disabled}
-            className={`w-5 h-5 rounded-md border-2 transition-all duration-150 accent-blue-600 ${
+      {/* Checkbox - only shown on steps that support completion */}
+      {onComplete && (
+        <div className="flex-shrink-0">
+          <label
+            className={`inline-flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150 ${
               disabled
-                ? 'border-slate-300 bg-slate-100 cursor-not-allowed'
-                : 'border-slate-300 text-blue-600 bg-white cursor-pointer hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1'
+                ? 'text-slate-400 cursor-not-allowed bg-slate-50'
+                : 'text-slate-700 cursor-pointer hover:bg-slate-50 group'
             }`}
-          />
-          <span className={disabled ? 'text-slate-400' : 'group-hover:text-slate-900'}>Mark as done</span>
-        </label>
-      </div>
+            onClick={(event) => event.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={completed}
+              onChange={(event) => {
+                if (!disabled) {
+                  onComplete(event.target.checked)
+                }
+              }}
+              onClick={(event) => event.stopPropagation()}
+              disabled={disabled}
+              className={`w-5 h-5 rounded-md border-2 transition-all duration-150 accent-blue-600 ${
+                disabled
+                  ? 'border-slate-300 bg-slate-100 cursor-not-allowed'
+                  : 'border-slate-300 text-blue-600 bg-white cursor-pointer hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1'
+              }`}
+            />
+            <span className={disabled ? 'text-slate-400' : 'group-hover:text-slate-900'}>Mark as done</span>
+          </label>
+        </div>
+      )}
+
     </article>
   )
 }

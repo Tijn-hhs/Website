@@ -628,6 +628,7 @@ export interface BuddyPoolUser {
 
 export interface AdminUserRecord {
   userId: string
+  email?: string | null
   updatedAt?: string
   // personal
   preferredName?: string
@@ -755,4 +756,44 @@ export async function adminBuddyMatch(userAId: string, userBId: string): Promise
     try { body = await res.text() } catch {}
     throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
   }
+}
+
+// ─── AI Chat ──────────────────────────────────────────────────────────────────
+
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+/**
+ * Send the conversation history to the /chat Lambda endpoint which calls
+ * Google Gemini and returns a personalised reply.
+ */
+export async function postChat(messages: ChatMessage[]): Promise<string> {
+  const headers = await getAuthHeaders()
+
+  // Use the raw-fetch pattern so it works in both dev (via vite proxy) and prod
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/chat'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/chat`
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify({ messages }),
+  })
+
+  if (!res.ok) {
+    let errBody = ''
+    try { errBody = await res.text() } catch {}
+    throw new Error(`Chat API error ${res.status}${errBody ? ': ' + errBody : ''}`)
+  }
+
+  const data = await res.json() as { reply: string }
+  return data.reply
 }

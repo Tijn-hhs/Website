@@ -109,6 +109,15 @@ backend.userApi.resources.lambda.addToRolePolicy(
   })
 )
 
+// Grant Lambda permission to list Cognito users (for email lookup in admin dashboard)
+backend.userApi.resources.lambda.addToRolePolicy(
+  new iam.PolicyStatement({
+    effect: iam.Effect.ALLOW,
+    actions: ['cognito-idp:ListUsers'],
+    resources: [backend.auth.resources.userPool.userPoolArn],
+  })
+)
+
 // Set environment variables on Lambda
 backend.userApi.resources.lambda.addEnvironment(
   'USER_PROFILE_TABLE_NAME',
@@ -133,6 +142,23 @@ backend.userApi.resources.lambda.addEnvironment(
 backend.userApi.resources.lambda.addEnvironment(
   'WHATSAPP_MESSAGES_TABLE_NAME',
   whatsappMessagesTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'USER_POOL_ID',
+  backend.auth.resources.userPool.userPoolId
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'GEMINI_SECRET_NAME',
+  'Google_api'
+)
+
+// Grant Lambda permission to read the Gemini API key from Secrets Manager
+backend.userApi.resources.lambda.addToRolePolicy(
+  new iam.PolicyStatement({
+    effect: iam.Effect.ALLOW,
+    actions: ['secretsmanager:GetSecretValue'],
+    resources: ['arn:aws:secretsmanager:*:*:secret:Google_api*'],
+  })
 )
 
 // Create REST API
@@ -287,6 +313,15 @@ const buddyMatchResource = buddyResource.addResource('match')
 
 // GET /buddy/match
 buddyMatchResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// ─── /chat ───────────────────────────────────────────────────────────────────
+const chatResource = restApi.root.addResource('chat')
+
+// POST /chat
+chatResource.addMethod('POST', lambdaIntegration, {
   authorizer: cognitoAuthorizer,
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })

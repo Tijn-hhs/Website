@@ -16,6 +16,7 @@ import {
   CreditCard,
   Hash,
   Users,
+  Sparkles,
 } from 'lucide-react'
 
 const numberedSteps = [
@@ -34,6 +35,7 @@ const extraInformationSteps = [
   'Information Centre',
   'Cost of Living',
   'Buddy System',
+  'AI Support',
 ]
 
 const steps = [...numberedSteps, ...extraInformationSteps]
@@ -51,6 +53,7 @@ const stepRoutes: Record<string, string | undefined> = {
   'Information Centre': '/dashboard/information-centre',
   'Cost of Living': '/dashboard/cost-of-living',
   'Buddy System': '/dashboard/buddy-system',
+  'AI Support': '/dashboard/ai-support',
 }
 
 const stepKeys: Record<string, string> = {
@@ -66,6 +69,7 @@ const stepKeys: Record<string, string> = {
   'Information Centre': 'information-centre',
   'Cost of Living': 'cost-of-living',
   'Buddy System': 'buddy-system',
+  'AI Support': 'ai-support',
 }
 
 const stepIcons: Record<string, React.ReactNode> = {
@@ -81,6 +85,7 @@ const stepIcons: Record<string, React.ReactNode> = {
   'Information Centre': <HelpCircle size={20} className="flex-shrink-0" />,
   'Cost of Living': <DollarSign size={20} className="flex-shrink-0" />,
   'Buddy System': <Users size={20} className="flex-shrink-0" />,
+  'AI Support': <Sparkles size={20} className="flex-shrink-0" />,
 }
 
 const stepDescriptions: Record<string, string> = {
@@ -96,6 +101,7 @@ const stepDescriptions: Record<string, string> = {
   'Information Centre': 'Access comprehensive guides and local resources.',
   'Cost of Living': 'Understand expenses and budget for your stay.',
   'Buddy System': 'Connect with fellow students for housing, bureaucracy help, and friendship.',
+  'AI Support': 'Get personalised answers about your move to Italy from an AI that knows your profile.',
 }
 
 export default function DashboardHome() {
@@ -289,27 +295,93 @@ export default function DashboardHome() {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Next recommended step
+          <h2 className="text-lg font-semibold text-slate-900 mb-3">
+            Your journey
           </h2>
           {isLoading ? (
-            <p className="mt-4 text-sm text-slate-600">Loading...</p>
-          ) : firstIncompleteIndex >= 0 ? (
-            <>
-              <p className="mt-4 text-sm text-slate-600">
-                Next step: Step {firstIncompleteIndex + 1} — {numberedSteps[firstIncompleteIndex]}
-              </p>
-              <Link
-                to={stepRoutes[numberedSteps[firstIncompleteIndex]] || '/dashboard'}
-                className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:scale-[1.02]"
-              >
-                Open Step
-              </Link>
-            </>
-          ) : (
-            <p className="mt-4 text-sm text-slate-600">
+            <p className="text-sm text-slate-600">Loading...</p>
+          ) : firstIncompleteIndex < 0 ? (
+            <p className="text-sm text-slate-600">
               Congratulations! You've completed all steps! 🎉
             </p>
+          ) : (
+            <div className="flex flex-col">
+              {numberedSteps
+                .map((name, i) => ({ name, i }))
+                .filter(({ name }) => !progress[stepKeys[name]])
+                .slice(0, 3)
+                .map(({ name: stepName, i: idx }, position, arr) => {
+                const isCurrent = position === 0
+                const isLast = position === arr.length - 1
+                const stepRoute = stepRoutes[stepName] || '/dashboard'
+                const icon = stepIcons[stepName]
+
+                return (
+                  <div key={stepName} className="flex items-stretch gap-3">
+                    {/* Timeline spine */}
+                    <div className="flex flex-col items-center pt-[18px] flex-shrink-0">
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                          isCurrent
+                            ? 'bg-blue-600 ring-[3px] ring-blue-100'
+                            : 'bg-slate-300'
+                        }`}
+                      />
+                      {!isLast && (
+                        <div className="flex-1 w-px my-1" style={{ borderLeft: '2px dashed #cbd5e1' }} />
+                      )}
+                    </div>
+
+                    {/* Step card */}
+                    <div
+                      className={`flex-1 mb-2 rounded-xl px-3.5 py-2.5 ${
+                        isCurrent
+                          ? 'bg-gradient-to-r from-[#1e1b4b] to-[#1e3a5f] shadow-md'
+                          : 'bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span
+                            className={`flex-shrink-0 ${
+                              isCurrent ? 'text-blue-300' : 'text-slate-400'
+                            }`}
+                          >
+                            {icon}
+                          </span>
+                          <div className="min-w-0">
+                            <p
+                              className={`text-[11px] font-medium mb-0.5 ${
+                                isCurrent ? 'text-blue-300' : 'text-slate-400'
+                              }`}
+                            >
+                              Step {idx + 1}
+                            </p>
+                            <p
+                              className={`text-sm font-semibold leading-tight truncate ${
+                                isCurrent ? 'text-white' : 'text-slate-700'
+                              }`}
+                            >
+                              {stepName}
+                            </p>
+                          </div>
+                        </div>
+                        {isCurrent ? (
+                          <Link
+                            to={stepRoute}
+                            className="flex-shrink-0 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 transition-colors rounded-full px-3 py-1"
+                          >
+                            Open →
+                          </Link>
+                        ) : (
+                          <span className="flex-shrink-0 text-slate-300 font-bold text-base">✕</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           )}
         </div>
       </div>
@@ -350,7 +422,6 @@ export default function DashboardHome() {
               showStepNumber={false}
               to={stepRoutes[title]}
               completed={progress[stepKeys[title]] || false}
-              onComplete={(completed) => handleStepComplete(title, completed)}
               icon={stepIcons[title]}
             />
           ))}

@@ -29,29 +29,66 @@ function convertDraftToProfile(draft: OnboardingDraft): Partial<UserProfile> {
 
 // EDITABLE_KEYS: whitelisted keys from UserProfile that can be saved
 const EDITABLE_KEYS: (keyof UserProfile)[] = [
+  // Personal
+  'preferredName',
   'nationality',
   'residenceCountry',
+  // Destination
   'destinationCountry',
   'destinationCity',
   'destinationUniversity',
+  // Program
   'degreeType',
   'fieldOfStudy',
+  'specificProgramName',
   'programStartMonth',
+  'previousDegreeLanguage',
+  // Admission
   'admissionStatus',
+  'programApplied',
+  'programAccepted',
+  'deadlinesKnown',
+  'targetApplicationRound',
+  'bocconiTestStatus',
+  // Application requirements
+  'hasGmatOrEntranceTest',
+  'gmatScore',
+  'hasEnglishTest',
+  'englishTestType',
+  'englishTestScore',
+  'hasRecommendationLetters',
+  'hasCv',
+  // Visa & legal
   'isEuCitizen',
   'visaType',
   'passportExpiry',
+  'hasVisa',
+  'visaAppointmentNeeded',
+  // Immigration
+  'hasCodiceFiscale',
+  'hasResidencePermit',
+  // Housing
+  'hasHousing',
+  'housingPreference',
   'housingBudget',
+  'moveInWindow',
+  'housingSupportNeeded',
+  // Banking & phone
+  'needsBankAccount',
+  'hasBankAccount',
+  'needsPhoneNumber',
+  'hasPhoneNumber',
+  // Insurance & health
+  'hasTravelInsurance',
+  'hasHealthInsurance',
+  // Before departure
+  'flightBooked',
+  'departureDate',
+  'hasEhic',
+  // Budget
   'monthlyBudgetRange',
   'scholarshipNeed',
   'fundingSource',
-  'housingPreference',
-  'housingSupportNeeded',
-  // Application details
-  'targetApplicationRound',
-  'specificProgramName',
-  'bocconiTestStatus',
-  'previousDegreeLanguage',
 ]
 
 const createEmptyProfile = (): UserProfile => {
@@ -388,6 +425,20 @@ export default function MySituationPage() {
                 />
                 {renderError('nationality')}
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="residenceCountry">
+              Country of residence
+            </label>
+            <input
+              id="residenceCountry"
+              name="residenceCountry"
+              type="text"
+              placeholder="e.g., Netherlands"
+              value={formData.residenceCountry || ''}
+              onChange={handleChange}
+              className={inputBase}
+            />
+          </div>
             </div>
           </section>
 
@@ -560,28 +611,345 @@ export default function MySituationPage() {
                     />
                     {renderError('programStartMonth')}
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="admissionStatus">
+                      Admission status
+                    </label>
+                    <select
+                      id="admissionStatus"
+                      name="admissionStatus"
+                      value={formData.admissionStatus || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select status</option>
+                      <option value="exploring">Still exploring options</option>
+                      <option value="applying">Currently applying</option>
+                      <option value="accepted">Accepted / conditional offer</option>
+                      <option value="enrolled">Enrolled / confirmed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="programApplied">
+                      Have you applied to your program?
+                    </label>
+                    <select
+                      id="programApplied"
+                      name="programApplied"
+                      value={formData.programApplied || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="yes">Yes, I have applied</option>
+                      <option value="no">No, not yet</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="programAccepted">
+                      Have you received an acceptance?
+                    </label>
+                    <select
+                      id="programAccepted"
+                      name="programAccepted"
+                      value={formData.programAccepted || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="yes">Yes, I have been accepted</option>
+                      <option value="no">No, not yet</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="deadlinesKnown">
+                      Do you know your application deadlines?
+                    </label>
+                    <select
+                      id="deadlinesKnown"
+                      name="deadlinesKnown"
+                      value={formData.deadlinesKnown || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="yes">Yes, I know my deadlines</option>
+                      <option value="no">No, I need to find out</option>
+                      <option value="unknown">Not applicable</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="targetApplicationRound">
+                      Target application round
+                    </label>
+                    <input
+                      id="targetApplicationRound"
+                      name="targetApplicationRound"
+                      type="text"
+                      placeholder="e.g., Round 1, Early Decision"
+                      value={formData.targetApplicationRound || ''}
+                      onChange={handleChange}
+                      className={inputBase}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="bocconiTestStatus">
+                      Bocconi entrance test status
+                    </label>
+                    <select
+                      id="bocconiTestStatus"
+                      name="bocconiTestStatus"
+                      value={formData.bocconiTestStatus || ''}
+                      onChange={handleChange}
+                      className={selectBase}
+                    >
+                      <option value="">Select status</option>
+                      <option value="not_required">Not required for my program</option>
+                      <option value="not_taken">Required, not taken yet</option>
+                      <option value="scheduled">Scheduled</option>
+                      <option value="passed">Passed</option>
+                      <option value="failed">Did not pass</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="previousDegreeLanguage">
+                      Language of previous degree
+                    </label>
+                    <input
+                      id="previousDegreeLanguage"
+                      name="previousDegreeLanguage"
+                      type="text"
+                      placeholder="e.g., English, Dutch"
+                      value={formData.previousDegreeLanguage || ''}
+                      onChange={handleChange}
+                      className={inputBase}
+                    />
+                  </div>
+            </div>
+          </section>
+
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Requirements</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hasEnglishTest">
+                  English language test
+                </label>
+                <select
+                  id="hasEnglishTest"
+                  name="hasEnglishTest"
+                  value={formData.hasEnglishTest || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select an option</option>
+                  <option value="yes">Yes, I have a test score</option>
+                  <option value="no">No, I don't have one yet</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="englishTestType">
+                  Test type
+                </label>
+                <select
+                  id="englishTestType"
+                  name="englishTestType"
+                  value={formData.englishTestType || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select test</option>
+                  <option value="IELTS">IELTS</option>
+                  <option value="TOEFL">TOEFL</option>
+                  <option value="Cambridge">Cambridge (CAE/CPE)</option>
+                  <option value="Duolingo">Duolingo English Test</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="englishTestScore">
+                  English test score
+                </label>
+                <input
+                  id="englishTestScore"
+                  name="englishTestScore"
+                  type="text"
+                  placeholder="e.g., 7.5, 105"
+                  value={formData.englishTestScore || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hasGmatOrEntranceTest">
+                  GMAT or other entrance test
+                </label>
+                <select
+                  id="hasGmatOrEntranceTest"
+                  name="hasGmatOrEntranceTest"
+                  value={formData.hasGmatOrEntranceTest || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select an option</option>
+                  <option value="yes">Yes, I have a score</option>
+                  <option value="no">No, not required / not taken</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="gmatScore">
+                  GMAT / entrance test score
+                </label>
+                <input
+                  id="gmatScore"
+                  name="gmatScore"
+                  type="text"
+                  placeholder="e.g., 680"
+                  value={formData.gmatScore || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hasRecommendationLetters">
+                  Recommendation letters
+                </label>
+                <select
+                  id="hasRecommendationLetters"
+                  name="hasRecommendationLetters"
+                  value={formData.hasRecommendationLetters || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select an option</option>
+                  <option value="yes">Yes, I have them</option>
+                  <option value="no">No, not yet</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hasCv">
+                  CV / Resume ready
+                </label>
+                <select
+                  id="hasCv"
+                  name="hasCv"
+                  value={formData.hasCv || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select an option</option>
+                  <option value="yes">Yes, my CV is ready</option>
+                  <option value="no">No, still working on it</option>
+                </select>
+              </div>
             </div>
           </section>
 
           <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Visa & Legal Entry</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 pt-6">
-                    <input
-                      id="hasVisa"
-                      name="hasVisa"
-                      type="checkbox"
-                      checked={formData.hasVisa === 'yes'}
-                      onChange={(e) => {
-                        const value = e.target.checked ? 'yes' : 'no'
-                        handleChange({ target: { name: 'hasVisa', value } } as any)
-                      }}
-                      className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
-                    />
-                    <label className="text-sm font-medium text-gray-700" htmlFor="hasVisa">
-                      I have my visa
-                    </label>
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="visaType">
+                  Visa type
+                </label>
+                <select
+                  id="visaType"
+                  name="visaType"
+                  value={formData.visaType || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select visa type</option>
+                  <option value="student_visa_d">Student Visa (Type D)</option>
+                  <option value="eu_freedom">EU Freedom of Movement (no visa needed)</option>
+                  <option value="not_sure">Not sure yet</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="passportExpiry">
+                  Passport expiry date
+                </label>
+                <input
+                  id="passportExpiry"
+                  name="passportExpiry"
+                  type="date"
+                  value={formData.passportExpiry || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="visaAppointmentNeeded">
+                  Do you need a visa appointment?
+                </label>
+                <select
+                  id="visaAppointmentNeeded"
+                  name="visaAppointmentNeeded"
+                  value={formData.visaAppointmentNeeded || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select an option</option>
+                  <option value="yes">Yes, I need one</option>
+                  <option value="no">No, not required</option>
+                  <option value="unknown">Not sure yet</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-3 pt-6">
+                <input
+                  id="hasVisa"
+                  name="hasVisa"
+                  type="checkbox"
+                  checked={formData.hasVisa === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasVisa', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasVisa">
+                  I have my visa
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Immigration Registration</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <input
+                  id="hasCodiceFiscale"
+                  name="hasCodiceFiscale"
+                  type="checkbox"
+                  checked={formData.hasCodiceFiscale === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasCodiceFiscale', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasCodiceFiscale">
+                  I have my Codice Fiscale
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id="hasResidencePermit"
+                  name="hasResidencePermit"
+                  type="checkbox"
+                  checked={formData.hasResidencePermit === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasResidencePermit', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasResidencePermit">
+                  I have my residence permit (Permesso di Soggiorno)
+                </label>
+              </div>
             </div>
           </section>
 
@@ -652,40 +1020,242 @@ export default function MySituationPage() {
           <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Housing</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="housingPreference">
-                      Housing preference
-                    </label>
-                    <select
-                      id="housingPreference"
-                      name="housingPreference"
-                      value={formData.housingPreference || ''}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">Select preference</option>
-                      <option value="dorm">Dormitory</option>
-                      <option value="private">Private apartment</option>
-                      <option value="roommates">Shared apartment with roommates</option>
-                      <option value="unknown">Not sure yet</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-3 pt-6">
-                    <input
-                      id="housingSupportNeeded"
-                      name="housingSupportNeeded"
-                      type="checkbox"
-                      checked={formData.housingSupportNeeded === 'yes'}
-                      onChange={(e) => {
-                        const value = e.target.checked ? 'yes' : 'no'
-                        handleChange({ target: { name: 'housingSupportNeeded', value } } as any)
-                      }}
-                      className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
-                    />
-                    <label className="text-sm font-medium text-gray-700" htmlFor="housingSupportNeeded">
-                      I need help finding housing
-                    </label>
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="housingPreference">
+                  Housing preference
+                </label>
+                <select
+                  id="housingPreference"
+                  name="housingPreference"
+                  value={formData.housingPreference || ''}
+                  onChange={handleChange}
+                  className={selectBase}
+                >
+                  <option value="">Select preference</option>
+                  <option value="dorm">Dormitory / student residence</option>
+                  <option value="private">Private apartment</option>
+                  <option value="roommates">Shared apartment with roommates</option>
+                  <option value="unknown">Not sure yet</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="housingBudget">
+                  Monthly housing budget
+                </label>
+                <input
+                  id="housingBudget"
+                  name="housingBudget"
+                  type="text"
+                  placeholder="e.g., €700–900"
+                  value={formData.housingBudget || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="moveInWindow">
+                  Preferred move-in window
+                </label>
+                <input
+                  id="moveInWindow"
+                  name="moveInWindow"
+                  type="month"
+                  value={formData.moveInWindow || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
+              </div>
+              <div className="flex items-center gap-3 pt-6">
+                <input
+                  id="hasHousing"
+                  name="hasHousing"
+                  type="checkbox"
+                  checked={formData.hasHousing === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasHousing', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasHousing">
+                  I have arranged my housing
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id="housingSupportNeeded"
+                  name="housingSupportNeeded"
+                  type="checkbox"
+                  checked={formData.housingSupportNeeded === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'housingSupportNeeded', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="housingSupportNeeded">
+                  I need help finding housing
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Banking & Phone</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <input
+                  id="needsBankAccount"
+                  name="needsBankAccount"
+                  type="checkbox"
+                  checked={formData.needsBankAccount === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'needsBankAccount', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="needsBankAccount">
+                  I need to open an Italian bank account
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id="hasBankAccount"
+                  name="hasBankAccount"
+                  type="checkbox"
+                  checked={formData.hasBankAccount === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasBankAccount', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasBankAccount">
+                  I have an Italian bank account
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id="needsPhoneNumber"
+                  name="needsPhoneNumber"
+                  type="checkbox"
+                  checked={formData.needsPhoneNumber === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'needsPhoneNumber', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="needsPhoneNumber">
+                  I need an Italian phone number
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id="hasPhoneNumber"
+                  name="hasPhoneNumber"
+                  type="checkbox"
+                  checked={formData.hasPhoneNumber === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasPhoneNumber', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasPhoneNumber">
+                  I have an Italian phone number
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Insurance & Healthcare</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <input
+                  id="hasTravelInsurance"
+                  name="hasTravelInsurance"
+                  type="checkbox"
+                  checked={formData.hasTravelInsurance === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasTravelInsurance', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasTravelInsurance">
+                  I have travel insurance
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id="hasHealthInsurance"
+                  name="hasHealthInsurance"
+                  type="checkbox"
+                  checked={formData.hasHealthInsurance === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasHealthInsurance', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasHealthInsurance">
+                  I have health insurance for Italy
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Before Departure</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="departureDate">
+                  Planned departure date
+                </label>
+                <input
+                  id="departureDate"
+                  name="departureDate"
+                  type="date"
+                  value={formData.departureDate || ''}
+                  onChange={handleChange}
+                  className={inputBase}
+                />
+              </div>
+              <div className="flex items-center gap-3 pt-6">
+                <input
+                  id="flightBooked"
+                  name="flightBooked"
+                  type="checkbox"
+                  checked={formData.flightBooked === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'flightBooked', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="flightBooked">
+                  My flight is booked
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id="hasEhic"
+                  name="hasEhic"
+                  type="checkbox"
+                  checked={formData.hasEhic === 'yes'}
+                  onChange={(e) => {
+                    const value = e.target.checked ? 'yes' : 'no'
+                    handleChange({ target: { name: 'hasEhic', value } } as any)
+                  }}
+                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-medium text-gray-700" htmlFor="hasEhic">
+                  I have my EHIC card (EU health card)
+                </label>
+              </div>
             </div>
           </section>
 

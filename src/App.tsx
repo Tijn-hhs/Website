@@ -19,6 +19,7 @@ import HealthcarePage from './pages/HealthcarePage'
 import InformationCentrePage from './pages/InformationCentrePage'
 import CostOfLivingPage from './pages/CostOfLivingPage'
 import BuddySystemPage from './pages/BuddySystemPage'
+import AISupportPage from './pages/AISupportPage'
 import BlogOverviewPage from './pages/BlogOverviewPage'
 import BlogPostPage from './pages/BlogPostPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -145,6 +146,9 @@ export default function App() {
           element={
             <AuthGate>
               <BuddySystemPage />
+            </AuthGate>} />
+            <Route path="/dashboard/ai-support" element={<AuthGate>
+              <AISupportPage />
             </AuthGate>
           }
         />

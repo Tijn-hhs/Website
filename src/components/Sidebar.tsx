@@ -20,6 +20,7 @@ import {
   BookOpen,
   Hash,
   Search,
+  Sparkles,
 } from 'lucide-react'
 import { useSearch } from '../lib/SearchContext'
 import { fetchMe } from '../lib/api'
@@ -133,6 +134,11 @@ export default function Sidebar() {
       label: 'Buddy System',
       path: '/dashboard/buddy-system',
       icon: <Users size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'AI Support',
+      path: '/dashboard/ai-support',
+      icon: <Sparkles size={20} className="flex-shrink-0" />,
     },
   ]
 

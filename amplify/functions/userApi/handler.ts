@@ -7,6 +7,8 @@ import {
   ScanCommand,
 } from '@aws-sdk/client-dynamodb'
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
+import { CognitoIdentityProviderClient, ListUsersCommand } from '@aws-sdk/client-cognito-identity-provider'
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager'
 import { unmarshall, marshall } from '@aws-sdk/util-dynamodb'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -126,6 +128,10 @@ interface ApiResponse {
 
 const dynamo = new DynamoDBClient({})
 const ses = new SESClient({})
+const secretsClient = new SecretsManagerClient({})
+
+// Cache the Gemini API key across warm Lambda invocations
+let cachedGeminiApiKey: string | null = null
 
 const TABLE = {
   profiles: process.env.USER_PROFILE_TABLE_NAME!,
@@ -614,6 +620,34 @@ async function handleGetAdminFeedback(event: any): Promise<ApiResponse> {
 
 // ─── Buddy System ───────────────────────────────────────────────────────────
 
+/** Fetch all Cognito users and return a map from sub (userId) → email. */
+async function buildCognitoEmailMap(): Promise<Map<string, string>> {
+  const userPoolId = process.env.USER_POOL_ID
+  if (!userPoolId) return new Map()
+
+  const client = new CognitoIdentityProviderClient({})
+  const emailMap = new Map<string, string>()
+  let paginationToken: string | undefined
+
+  do {
+    const cmd = new ListUsersCommand({
+      UserPoolId: userPoolId,
+      AttributesToGet: ['email', 'sub'],
+      Limit: 60,
+      PaginationToken: paginationToken,
+    })
+    const result = await client.send(cmd)
+    for (const user of result.Users ?? []) {
+      const sub = user.Attributes?.find((a) => a.Name === 'sub')?.Value
+      const email = user.Attributes?.find((a) => a.Name === 'email')?.Value
+      if (sub && email) emailMap.set(sub, email)
+    }
+    paginationToken = result.PaginationToken
+  } while (paginationToken)
+
+  return emailMap
+}
+
 /** GET /admin/users — return all user profiles for the admin dashboard. */
 async function handleGetAdminUsers(event: any): Promise<ApiResponse> {
   const adminSecret = process.env.ADMIN_SECRET
@@ -625,12 +659,17 @@ async function handleGetAdminUsers(event: any): Promise<ApiResponse> {
     return fail(403, 'Forbidden')
   }
 
-  const profiles = await scanAll(TABLE.profiles)
-  // Return all fields but ensure userId and updatedAt are present
+  const [profiles, emailMap] = await Promise.all([
+    scanAll(TABLE.profiles),
+    buildCognitoEmailMap(),
+  ])
+
+  // Return all fields but ensure userId and updatedAt are present, and enrich with email
   const users = profiles.map((p) => ({
     userId: p.userId,
     updatedAt: p.updatedAt,
     ...p,
+    email: emailMap.get(p.userId as string) ?? null,
   }))
   // Sort newest-first by updatedAt
   users.sort((a, b) => {
@@ -732,6 +771,120 @@ async function handlePostAdminBuddyMatch(event: any): Promise<ApiResponse> {
   return ok({ message: 'Matched successfully', userAId, userBId })
 }
 
+// ─── AI Chat Handler ──────────────────────────────────────────────────────────
+
+interface ChatMessage { role: string; content: string }
+
+async function getGeminiApiKey(): Promise<string> {
+  if (cachedGeminiApiKey) return cachedGeminiApiKey
+  const secretName = process.env.GEMINI_SECRET_NAME
+  if (!secretName) throw new Error('GEMINI_SECRET_NAME env var not set')
+  const { SecretString } = await secretsClient.send(
+    new GetSecretValueCommand({ SecretId: secretName })
+  )
+  // Secrets Manager may store the key as a plain string or as JSON e.g. {"api_key":"..."}
+  if (!SecretString) throw new Error('Secret has no string value')
+  let key = SecretString
+  try {
+    const parsed = JSON.parse(SecretString)
+    // Accept common key names
+    key = parsed.api_key ?? parsed.apiKey ?? parsed.key ?? parsed.value ?? SecretString
+  } catch {
+    // not JSON — use as-is
+  }
+  cachedGeminiApiKey = key
+  return cachedGeminiApiKey
+}
+
+async function handlePostChat(userId: string, event: any): Promise<ApiResponse> {
+  const body = parseBody(event)
+  const messages: ChatMessage[] = body.messages
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return fail(400, 'messages array is required')
+  }
+
+  // Load user profile for personalised context
+  const profile = await getUserProfile(userId)
+
+  // Build system prompt
+  const systemLines: string[] = [
+    'You are Leavs AI, a friendly and knowledgeable assistant helping international students relocate to Italy (primarily Milan for universities such as Bocconi, Politecnico di Milano, etc.).',
+    'Give clear, practical, concise advice. Use bullet points or numbered lists when listing steps. Be encouraging and supportive.',
+    'Topics you are expert in: student visas, Codice Fiscale, Permesso di Soggiorno, housing in Milan, Italian bank accounts, health insurance, healthcare (SSN / mutua), university enrollment, Italian bureaucracy, cost of living.',
+    'Always recommend checking official sources for deadlines since they can change.',
+  ]
+
+  if (profile) {
+    const ctx: string[] = []
+    if (profile.preferredName)          ctx.push(`Name: ${profile.preferredName}`)
+    if (profile.nationality)            ctx.push(`Nationality: ${profile.nationality}`)
+    if (profile.destinationUniversity)  ctx.push(`University: ${profile.destinationUniversity}`)
+    const prog = [profile.degreeType, profile.fieldOfStudy].filter(Boolean).join(' – ')
+    if (prog)                           ctx.push(`Program: ${prog}`)
+    if (profile.programStartMonth) {
+      const d = new Date(`${profile.programStartMonth}-01`)
+      ctx.push(`Arrival: ${d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`)
+    }
+    if (profile.isEuCitizen)            ctx.push(`EU citizen: ${profile.isEuCitizen === 'yes' ? 'Yes' : 'No'}`)
+    if (profile.hasVisa)                ctx.push(`Visa: ${profile.hasVisa === 'yes' ? 'Obtained' : 'Not yet obtained'}`)
+    if (profile.hasHousing)             ctx.push(`Housing: ${profile.hasHousing === 'yes' ? 'Arranged' : 'Not yet arranged'}`)
+    if (profile.hasBankAccount)         ctx.push(`Bank account: ${profile.hasBankAccount === 'yes' ? 'Open' : 'Not yet open'}`)
+    if (profile.hasCodiceFiscale)       ctx.push(`Codice Fiscale: ${profile.hasCodiceFiscale === 'yes' ? 'Obtained' : 'Not yet obtained'}`)
+    if (ctx.length > 0) {
+      systemLines.push(`\nUser profile (use this to personalise your answers — never reveal private contact details):\n${ctx.map(c => `- ${c}`).join('\n')}`)
+    }
+  }
+
+  const systemPrompt = systemLines.join('\n')
+
+  // Gemini requires the conversation to start with a 'user' turn;
+  // merge consecutive same-role turns as required by the API
+  const geminiContents = messages
+    .filter((_, i) => i > 0 || _.role === 'user')
+    .reduce<{ role: string; parts: { text: string }[] }[]>((acc, m) => {
+      const geminiRole = m.role === 'user' ? 'user' : 'model'
+      const last = acc[acc.length - 1]
+      if (last && last.role === geminiRole) {
+        last.parts.push({ text: m.content })
+      } else {
+        acc.push({ role: geminiRole, parts: [{ text: m.content }] })
+      }
+      return acc
+    }, [])
+
+  const apiKey = await getGeminiApiKey()
+
+  const geminiRes = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: geminiContents,
+        generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+      }),
+    }
+  )
+
+  if (!geminiRes.ok) {
+    const errText = await geminiRes.text()
+    console.error('[Chat] Gemini API error:', errText)
+    return fail(502, 'AI service unavailable')
+  }
+
+  const geminiData = await geminiRes.json() as any
+  const text: string | undefined = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text
+
+  if (!text) {
+    console.error('[Chat] No text in Gemini response:', JSON.stringify(geminiData))
+    return fail(502, 'No response from AI service')
+  }
+
+  return ok({ reply: text })
+}
+
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 export async function handler(event: any): Promise<ApiResponse> {
@@ -769,6 +922,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/admin/users') return await handleGetAdminUsers(event)
     if (method === 'GET'  && path === '/admin/buddy-pool') return await handleGetAdminBuddyPool(event)
     if (method === 'POST' && path === '/admin/buddy-match') return await handlePostAdminBuddyMatch(event)
+    if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
 
     console.error(`[Handler] No route matched for ${method} ${path}`)
     return fail(404, 'Not found')
