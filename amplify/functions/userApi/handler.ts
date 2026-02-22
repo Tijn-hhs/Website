@@ -354,6 +354,47 @@ async function createDeadline(
   return deadline
 }
 
+async function saveChatMessage(
+  userId: string,
+  role: string,
+  content: string,
+  timestamp: string,
+): Promise<void> {
+  await dynamo.send(
+    new PutItemCommand({
+      TableName: TABLE.chatMessages,
+      Item: marshall({
+        messageId: `${timestamp}#${uuidv4()}`,
+        userId,
+        role,
+        content,
+        timestamp,
+        createdAt: new Date().toISOString(),
+      }),
+    })
+  )
+}
+
+async function handleGetChat(userId: string): Promise<ApiResponse> {
+  const { Items } = await dynamo.send(
+    new QueryCommand({
+      TableName: TABLE.chatMessages,
+      KeyConditionExpression: 'userId = :uid',
+      ExpressionAttributeValues: marshall({ ':uid': userId }),
+      ScanIndexForward: true,
+    })
+  )
+  const messages = (Items ?? []).map((item) => {
+    const m = unmarshall(item)
+    return {
+      role: m.role as string,
+      content: m.content as string,
+      timestamp: m.timestamp as string,
+    }
+  })
+  return ok({ messages })
+}
+
 // ─── Admin helpers ───────────────────────────────────────────────────────────
 
 /** Scan a full table and return all unmarshalled items (handles pagination). */
@@ -914,15 +955,29 @@ async function handlePostChat(userId: string, event: any): Promise<ApiResponse> 
     return fail(502, 'No response from AI service')
   }
 
-  // Persist both the user turn and the AI reply
-  const now = new Date().toISOString()
-  const userTimestamp = body.userTimestamp as string | undefined ?? now
-  await Promise.all([
-    saveChatMessage(userId, 'user',      messages[messages.length - 1].content, userTimestamp),
-    saveChatMessage(userId, 'assistant', text, now),
-  ])
+  // Persist messages asynchronously — non-fatal if table isn't ready
+  const userTimestamp = body.userTimestamp as string | undefined ?? new Date().toISOString()
+  void persistChatMessages(userId, messages[messages.length - 1].content, text, userTimestamp)
 
   return ok({ reply: text })
+}
+
+async function persistChatMessages(
+  userId: string,
+  userContent: string,
+  aiText: string,
+  userTimestamp: string,
+): Promise<void> {
+  const now = new Date().toISOString()
+  try {
+    await Promise.all([
+      saveChatMessage(userId, 'user',      userContent, userTimestamp),
+      saveChatMessage(userId, 'assistant', aiText, now),
+    ])
+  } catch (err) {
+    // Non-fatal — log but don't fail the chat response
+    console.error('[Chat] Failed to persist messages to DynamoDB:', err)
+  }
 }
 
 // ─── Router ──────────────────────────────────────────────────────────────────
