@@ -140,6 +140,7 @@ const TABLE = {
   deadlines: process.env.DEADLINES_TABLE_NAME!,
   // Reddit posts fetched by the redditPoller Lambda (leavs-{env}-reddit-posts)
   whatsappMessages: process.env.WHATSAPP_MESSAGES_TABLE_NAME!,
+  chatMessages: process.env.CHAT_MESSAGES_TABLE_NAME!,
 } as const
 
 const FEEDBACK_EMAIL = process.env.FEEDBACK_EMAIL || 'tijn@eendenburg.eu'
@@ -889,6 +890,14 @@ async function handlePostChat(userId: string, event: any): Promise<ApiResponse> 
     return fail(502, 'No response from AI service')
   }
 
+  // Persist both the user turn and the AI reply
+  const now = new Date().toISOString()
+  const userTimestamp = body.userTimestamp as string | undefined ?? now
+  await Promise.all([
+    saveChatMessage(userId, 'user',      messages[messages.length - 1].content, userTimestamp),
+    saveChatMessage(userId, 'assistant', text, now),
+  ])
+
   return ok({ reply: text })
 }
 
@@ -929,6 +938,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/admin/users') return await handleGetAdminUsers(event)
     if (method === 'GET'  && path === '/admin/buddy-pool') return await handleGetAdminBuddyPool(event)
     if (method === 'POST' && path === '/admin/buddy-match') return await handlePostAdminBuddyMatch(event)
+    if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
 
     console.error(`[Handler] No route matched for ${method} ${path}`)

@@ -72,11 +72,29 @@ const deadlinesTable = new dynamodb.Table(apiStack, 'DeadlinesTable', {
   removalPolicy: RemovalPolicy.DESTROY,
 })
 
+// ─── Chat Messages Table ─────────────────────────────────────────────────────
+// Persists every AI chat message per user.
+// PK: userId   SK: messageId (ISO timestamp + # + uuid for chronological sort)
+const chatMessagesTable = new dynamodb.Table(apiStack, 'ChatMessagesTable', {
+  tableName: `leavs-${env}-chat-messages`,
+  partitionKey: {
+    name: 'userId',
+    type: dynamodb.AttributeType.STRING,
+  },
+  sortKey: {
+    name: 'messageId',
+    type: dynamodb.AttributeType.STRING,
+  },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
 // Grant Lambda function access to DynamoDB tables
 userProfileTable.grantReadWriteData(backend.userApi.resources.lambda)
 userProgressTable.grantReadWriteData(backend.userApi.resources.lambda)
 feedbackTable.grantReadWriteData(backend.userApi.resources.lambda)
 deadlinesTable.grantReadWriteData(backend.userApi.resources.lambda)
+chatMessagesTable.grantReadWriteData(backend.userApi.resources.lambda)
 
 // ─── WhatsApp Messages Table ──────────────────────────────────────────────────
 // Stores messages collected by the local whatsapp-poller script.
@@ -150,6 +168,10 @@ backend.userApi.resources.lambda.addEnvironment(
 backend.userApi.resources.lambda.addEnvironment(
   'GEMINI_SECRET_NAME',
   'Google_api'
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'CHAT_MESSAGES_TABLE_NAME',
+  chatMessagesTable.tableName
 )
 
 // Grant Lambda permission to read the Gemini API key from Secrets Manager
@@ -320,7 +342,13 @@ buddyMatchResource.addMethod('GET', lambdaIntegration, {
 // ─── /chat ───────────────────────────────────────────────────────────────────
 const chatResource = restApi.root.addResource('chat')
 
-// POST /chat
+// GET /chat — load chat history
+chatResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// POST /chat — send message
 chatResource.addMethod('POST', lambdaIntegration, {
   authorizer: cognitoAuthorizer,
   authorizationType: apigateway.AuthorizationType.COGNITO,

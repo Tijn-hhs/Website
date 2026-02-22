@@ -765,11 +765,38 @@ export interface ChatMessage {
   content: string
 }
 
+export interface StoredChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: string  // ISO string
+}
+
+/**
+ * Load the persisted chat history for the current user.
+ */
+export async function fetchChatHistory(): Promise<StoredChatMessage[]> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/chat'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/chat`
+  }
+
+  const res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json', ...headers } })
+  if (!res.ok) return []
+  const data = await res.json() as { messages: StoredChatMessage[] }
+  return data.messages ?? []
+}
+
 /**
  * Send the conversation history to the /chat Lambda endpoint which calls
  * Google Gemini and returns a personalised reply.
  */
-export async function postChat(messages: ChatMessage[]): Promise<string> {
+export async function postChat(messages: ChatMessage[], userTimestamp?: string): Promise<string> {
   const headers = await getAuthHeaders()
 
   // Use the raw-fetch pattern so it works in both dev (via vite proxy) and prod
@@ -785,7 +812,7 @@ export async function postChat(messages: ChatMessage[]): Promise<string> {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, userTimestamp }),
   })
 
   if (!res.ok) {

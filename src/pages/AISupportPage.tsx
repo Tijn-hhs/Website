@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
-import { fetchMe, postChat } from '../lib/api'
+import { fetchMe, postChat, fetchChatHistory } from '../lib/api'
 import type { ChatMessage } from '../lib/api'
 import type { UserProfile, StepProgress } from '../types/user'
 import {
@@ -248,11 +248,25 @@ export default function AISupportPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    fetchMe().then((data) => {
+    // Load profile + progress and chat history in parallel
+    Promise.all([
+      fetchMe().catch(() => null),
+      fetchChatHistory().catch(() => []),
+    ]).then(([data, history]) => {
       setProfile(data?.profile || {})
       setProgress(data?.progress || [])
+      if (history.length > 0) {
+        setMessages(
+          history.map((m, i) => ({
+            id: `hist-${i}`,
+            role: m.role,
+            content: m.content,
+            timestamp: new Date(m.timestamp),
+          }))
+        )
+      }
       setDataLoaded(true)
-    }).catch(() => setDataLoaded(true))
+    })
   }, [])
 
   useEffect(() => {
@@ -263,11 +277,12 @@ export default function AISupportPage() {
     const trimmed = text.trim()
     if (!trimmed) return
 
+    const userTimestamp = new Date().toISOString()
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: 'user',
       content: trimmed,
-      timestamp: new Date(),
+      timestamp: new Date(userTimestamp),
     }
     setMessages((prev) => [...prev, userMsg])
     setInput('')
@@ -280,7 +295,7 @@ export default function AISupportPage() {
     }))
 
     try {
-      const reply = await postChat(chatHistory)
+      const reply = await postChat(chatHistory, userTimestamp)
       const aiMsg: Message = {
         id: `ai-${Date.now()}`,
         role: 'assistant',
