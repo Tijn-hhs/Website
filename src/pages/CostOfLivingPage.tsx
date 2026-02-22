@@ -15,6 +15,13 @@ import type { UserProfile } from '../types/user'
 import type { CostSliderConfig } from '../lib/cityConfig'
 
 const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:cost-of-living'
+const CUSTOM_EXPENSES_KEY = 'cost-of-living-custom-expenses'
+
+interface CustomExpense {
+  id: string
+  label: string
+  amount: number
+}
 
 export default function CostOfLivingPage() {
   const navigate = useNavigate()
@@ -58,6 +65,39 @@ export default function CostOfLivingPage() {
   const [clothingCost, setClothingCost] = useState(0)
   const [personalCareCost, setPersonalCareCost] = useState(0)
   const [booksCost, setBooksCost] = useState(0)
+
+  // Custom expenses
+  const [customExpenses, setCustomExpenses] = useState<CustomExpense[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem(CUSTOM_EXPENSES_KEY)
+        return saved ? JSON.parse(saved) : []
+      } catch {
+        return []
+      }
+    }
+    return []
+  })
+  const [showAddExpense, setShowAddExpense] = useState(false)
+  const [newExpenseLabel, setNewExpenseLabel] = useState('')
+  const [newExpenseAmount, setNewExpenseAmount] = useState('')
+
+  const addCustomExpense = () => {
+    const amount = parseFloat(newExpenseAmount)
+    if (!newExpenseLabel.trim() || isNaN(amount) || amount < 0) return
+    const updated = [...customExpenses, { id: crypto.randomUUID(), label: newExpenseLabel.trim(), amount }]
+    setCustomExpenses(updated)
+    window.localStorage.setItem(CUSTOM_EXPENSES_KEY, JSON.stringify(updated))
+    setNewExpenseLabel('')
+    setNewExpenseAmount('')
+    setShowAddExpense(false)
+  }
+
+  const removeCustomExpense = (id: string) => {
+    const updated = customExpenses.filter(e => e.id !== id)
+    setCustomExpenses(updated)
+    window.localStorage.setItem(CUSTOM_EXPENSES_KEY, JSON.stringify(updated))
+  }
 
   // Check if step has been started
   useEffect(() => {
@@ -604,6 +644,85 @@ export default function CostOfLivingPage() {
                       id="books-slider"
                     />
                   </div>
+
+                  {/* Custom expenses */}
+                  {customExpenses.length > 0 && (
+                    <div className="border-t border-slate-200 pt-8 space-y-3">
+                      <p className="text-sm font-semibold text-slate-700">Custom Expenses</p>
+                      {customExpenses.map((expense) => (
+                        <div key={expense.id} className="flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900 truncate">{expense.label}</p>
+                          </div>
+                          <span className="text-sm font-semibold text-slate-900 shrink-0">€{expense.amount.toLocaleString('en-US')}/mo</span>
+                          <button
+                            onClick={() => removeCustomExpense(expense.id)}
+                            className="shrink-0 text-slate-400 hover:text-red-500 transition-colors"
+                            aria-label={`Remove ${expense.label}`}
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add custom expense */}
+                  <div className="border-t border-slate-200 pt-6">
+                    {showAddExpense ? (
+                      <div className="space-y-3">
+                        <p className="text-sm font-semibold text-slate-700">Add Custom Expense</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. Gym membership"
+                            value={newExpenseLabel}
+                            onChange={(e) => setNewExpenseLabel(e.target.value)}
+                            className="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <div className="relative w-28 shrink-0">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">€</span>
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="0"
+                              value={newExpenseAmount}
+                              onChange={(e) => setNewExpenseAmount(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && addCustomExpense()}
+                              className="w-full rounded-lg border border-slate-300 pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={addCustomExpense}
+                            disabled={!newExpenseLabel.trim() || newExpenseAmount === ''}
+                            className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            Add
+                          </button>
+                          <button
+                            onClick={() => { setShowAddExpense(false); setNewExpenseLabel(''); setNewExpenseAmount('') }}
+                            className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowAddExpense(true)}
+                        className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add custom expense
+                      </button>
+                    )}
+                  </div>
                 </article>
               </div>
             </div>
@@ -626,6 +745,7 @@ export default function CostOfLivingPage() {
                   personalCare: personalCareCost,
                   books: booksCost,
                 }}
+                customExpenses={customExpenses}
               />
             </div>
           </>

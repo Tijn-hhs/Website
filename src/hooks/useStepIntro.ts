@@ -26,8 +26,8 @@ export function useStepIntro(stepKey: string): UseStepIntroResult {
       // Find the progress entry for this step
       const stepProgress = data.progress.find(p => p.stepKey === stepKey)
       
-      // Show modal if step has never been started
-      if (!stepProgress || !stepProgress.started) {
+      // Show modal only if the step has never been started AND not already completed
+      if (!stepProgress || (!stepProgress.started && !stepProgress.completed)) {
         setShowModal(true)
       }
     } catch (error) {

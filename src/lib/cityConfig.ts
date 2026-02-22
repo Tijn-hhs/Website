@@ -54,7 +54,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 650,
       step: 10,
       label: 'Rent',
-      description: 'The low budget option assumes a basic or shared living situation. The high budget option assumes a more central location, greater comfort, or fewer shared costs. Choose what best fits your situation.',
+      description: 'Low: a basic single room in a shared student apartment (e.g. 3–4 flatmates, areas like Famagosta or Loreto) typically costs €450–550/month.\nHigh: a room in a 2-person apartment near Bocconi (Porta Romana, Navigli) runs €750–900/month.',
     },
     housingTypes: [
       {
@@ -104,7 +104,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 150,
       step: 5,
       label: 'Utilities (gas/water/electricity – your share)',
-      description: 'The low budget option assumes a basic or shared living situation. The high budget option assumes a more central location, greater comfort, or fewer shared costs. Choose what best fits your situation.',
+      description: 'Low: splitting a ~€240 monthly bill 3 ways = ~€80/person (summer).\nHigh: in winter, heating pushes costs up — a 2-person apartment can cost €200+ total, so €100–110 per person. Older buildings and gas heating are the main drivers.',
     },
     internet: {
       min: 20,
@@ -112,7 +112,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 30,
       step: 1,
       label: 'Internet',
-      description: 'The low budget option assumes a basic or shared living situation. The high budget option assumes a more central location, greater comfort, or fewer shared costs. Choose what best fits your situation.',
+      description: 'Low: a home fibre plan (e.g. TIM or Fastweb, ~€30/month) split between 3 flatmates = ~€10 each.\nHigh: if you pay the full plan yourself or have only one flatmate, expect €25–40/month. Most plans come with unlimited data.',
     },
     mobile: {
       min: 10,
@@ -120,7 +120,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 15,
       step: 1,
       label: 'Mobile phone plan',
-      description: 'The low budget option assumes a basic or shared living situation. The high budget option assumes a more central location, greater comfort, or fewer shared costs. Choose what best fits your situation.',
+      description: 'Low: Iliad Italy offers 150 GB + unlimited calls for €9.99/month — one of the best value plans. Mid: Fastweb Mobile at €7.95/month (100 GB) or Ho. Mobile at €12.99/month.\nHigh: mainstream operators like TIM or Vodafone charge €15–25/month for equivalent data.',
     },
     transport: {
       min: 22,
@@ -128,7 +128,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 22,
       step: 1,
       label: 'Public transport (monthly pass)',
-      description: 'The low budget option assumes a basic or shared living situation. The high budget option assumes a more central location, greater comfort, or fewer shared costs. Choose what best fits your situation.',
+      description: 'Low: the ATM student monthly pass costs €22/month (requires a valid student card — worth getting on arrival).\nHigh: without a student card, the standard monthly pass is €39/month. A single metro or bus ride costs €2.20, so a pass pays off after just 10 trips.',
     },
     groceries: {
       min: 150,
@@ -136,7 +136,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 250,
       step: 10,
       label: 'Groceries & food shopping',
-      description: 'Cooking at home vs. buying pre-made meals. Low budget: basic ingredients, cooking most meals. High budget: more variety, organic products, convenience foods.',
+      description: 'Low: cooking simple meals at home (pasta, eggs, vegetables) — a weekly Esselunga shop costs ~€35–40, about €150/month.\nHigh: buying quality proteins, organic produce, and convenience foods (pre-cut veg, ready meals) pushes a weekly shop to €70–90, or ~€300–350/month.',
     },
     diningOut: {
       min: 50,
@@ -144,7 +144,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 100,
       step: 10,
       label: 'Dining out & restaurants',
-      description: 'How often you eat out. Low budget: occasional pizza or casual dining. High budget: frequent restaurant visits, nice dinners.',
+      description: 'Low: a pizza + house wine at a local trattoria costs about €18–22 — going once a week adds up to ~€80–90/month. A quick lunch (panino + drink near Bocconi) costs €8–12, so 3 lunches/week = ~€120/month.\nHigh: sit-down dinners 3–4×/week plus regular aperitivo (€10–15/round) easily reaches €200–250/month.',
     },
     entertainment: {
       min: 30,
@@ -152,7 +152,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 80,
       step: 10,
       label: 'Entertainment & social activities',
-      description: 'Movies, bars, clubs, concerts, events. Low budget: occasional outings, free activities. High budget: regular nightlife, concerts, and events.',
+      description: 'Low: a cinema ticket costs €9–12; one outing per week (coffee + bar, ~€15) = ~€60/month.\nHigh: a night out in the Navigli area (drinks + club entry) easily costs €40–60 — going out twice a week plus occasional concerts (€25–50 each) adds up to €130–150/month.',
     },
     clothing: {
       min: 30,
@@ -160,7 +160,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 60,
       step: 10,
       label: 'Clothing & shoes',
-      description: 'Monthly average for clothes and shoes. Low budget: occasional basic items. High budget: regular fashion purchases.',
+      description: 'Low: buying one or two basic items a month — e.g. a Zara t-shirt (€15–20) or H&M jeans (€25–35) averages ~€30–50/month.\nHigh: Milan is a fashion city — regular shopping trips to Corso Buenos Aires or the sales, averaging 2–3 items/week, can reach €120–150/month.',
     },
     personalCare: {
       min: 20,
@@ -168,7 +168,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 40,
       step: 5,
       label: 'Personal care & hygiene',
-      description: 'Toiletries, haircuts, cosmetics. Low budget: basic essentials. High budget: salon visits, quality products.',
+      description: 'Low: basic supermarket toiletries (shampoo, soap, razor, etc.) cost ~€15–20/month, plus a budget haircut every 6–8 weeks (~€15) averages to ~€20–25/month.\nHigh: salon haircut (€30–50 each), quality skincare or cosmetics, and branded products push this to €70–80/month.',
     },
     books: {
       min: 20,
@@ -176,7 +176,7 @@ export const CITY_COSTS: Record<string, CityCostsConfig> = {
       default: 40,
       step: 5,
       label: 'Books & study materials',
-      description: 'Textbooks, stationery, printing. Low budget: used books, library use. High budget: new textbooks, lots of materials.',
+      description: 'Low: buying used or PDF versions of textbooks and using the Bocconi library keeps costs to ~€15–25/month.\nHigh: new Bocconi textbooks cost €40–80 each — buying 2 a month new adds up to ~€80–100/month. Stationery, printing, and course packs add another €10–20/month on top.',
     },
   },
 }

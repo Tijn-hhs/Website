@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
@@ -41,7 +41,60 @@ const PAGE_SECTIONS = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+function TabBarButtons({
+  activeId,
+  onSelect,
+  compact = false,
+}: {
+  activeId: string
+  onSelect: (id: string) => void
+  compact?: boolean
+}) {
+  return (
+    <>
+      {PAGE_SECTIONS.map(({ id, label, icon: Icon }) => {
+        const isActive = activeId === id
+        return (
+          <button
+            key={id}
+            onClick={() => onSelect(id)}
+            className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg transition-all ${
+              compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
+            } ${
+              isActive
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
+            {label}
+          </button>
+        )
+      })}
+    </>
+  )
+}
+
 function TabNavigation({
+  activeId,
+  onSelect,
+  isMerged = false,
+}: {
+  activeId: string
+  onSelect: (id: string) => void
+  isMerged?: boolean
+}) {
+  return (
+    <nav
+      className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide"
+      style={{ visibility: isMerged ? 'hidden' : 'visible', transition: 'visibility 0ms' }}
+    >
+      <TabBarButtons activeId={activeId} onSelect={onSelect} />
+    </nav>
+  )
+}
+
+function StickyMergedTabBar({
   activeId,
   onSelect,
 }: {
@@ -49,27 +102,9 @@ function TabNavigation({
   onSelect: (id: string) => void
 }) {
   return (
-    <div className="col-span-full">
-      <nav className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
-        {PAGE_SECTIONS.map(({ id, label, icon: Icon }) => {
-          const isActive = activeId === id
-          return (
-            <button
-              key={id}
-              onClick={() => onSelect(id)}
-              className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-              }`}
-            >
-              <Icon size={14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
-              {label}
-            </button>
-          )
-        })}
-      </nav>
-    </div>
+    <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
+      <TabBarButtons activeId={activeId} onSelect={onSelect} compact />
+    </nav>
   )
 }
 
@@ -406,6 +441,21 @@ export default function BeforeDeparturePage() {
   const [activeSection, setActiveSection] = useState('overview')
   const { setSections, clearSections } = usePageSections()
 
+  // Sticky merge: track when the tab nav row scrolls behind the sticky action bar
+  const tabNavRef = useRef<HTMLDivElement>(null)
+  const [tabsMerged, setTabsMerged] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!tabNavRef.current) return
+      const rect = tabNavRef.current.getBoundingClientRect()
+      setTabsMerged(rect.top < 72)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   // Profile state
   const [isEuCitizen, setIsEuCitizen] = useState<string | null>(null)
   const [hasVisa, setHasVisa] = useState<string | null>(null)
@@ -612,9 +662,15 @@ export default function BeforeDeparturePage() {
           ]}
           checklistItems={checklistItems}
           onChecklistItemToggle={handleChecklistToggle}
+          isTabMerged={tabsMerged}
+          mergedTabBar={
+            <StickyMergedTabBar activeId={activeSection} onSelect={handleTabSelect} />
+          }
         >
           {/* ── Tab navigation ── */}
-          <TabNavigation activeId={activeSection} onSelect={handleTabSelect} />
+          <div ref={tabNavRef} className="col-span-full">
+            <TabNavigation activeId={activeSection} onSelect={handleTabSelect} isMerged={tabsMerged} />
+          </div>
 
           {/* ══════════════════ OVERVIEW ══════════════════ */}
           {activeSection === 'overview' && (
@@ -700,39 +756,7 @@ export default function BeforeDeparturePage() {
                 </div>
               )}
 
-              {/* Quick nav */}
-              <SectionCard title="What's on this page" icon={<ClipboardList size={18} />}>
-                <p className="mb-4 text-sm text-slate-500">
-                  Documents to pack and how to get to Milan — the unique departure prep. For visa, insurance, and banking, see the dedicated steps below.
-                </p>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 mb-5">
-                  {[
-                    { id: 'documents', label: 'What to pack',     icon: <FileText size={16} />,   color: 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' },
-                    { id: 'travel',    label: 'Travel & arrival', icon: <Plane size={16} />,      color: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' },
-                    { id: 'faq',       label: 'FAQ',              icon: <HelpCircle size={16} />, color: 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100' },
-                  ].map(({ id, label, icon, color }) => (
-                    <button key={id} onClick={() => handleTabSelect(id)}
-                      className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-xs font-medium transition-colors ${color}`}>
-                      {icon}
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Covered on other steps</p>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {[
-                    { label: 'Student Visa', sub: 'Step 2 — visa requirements & process', href: '/dashboard/student-visa', color: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' },
-                    { label: 'Insurance',    sub: 'Step 8 — EHIC, health & travel cover',  href: '/dashboard/insurance',    color: 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100' },
-                    { label: 'Banking',      sub: 'Step 8 — cards, Wise, Italian accounts', href: '/dashboard/banking',      color: 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100' },
-                  ].map(({ label, sub, href, color }) => (
-                    <a key={href} href={href}
-                      className={`flex flex-col gap-0.5 rounded-lg border p-3 text-xs font-medium transition-colors ${color}`}>
-                      <span className="font-semibold">{label}</span>
-                      <span className="font-normal opacity-80">{sub}</span>
-                    </a>
-                  ))}
-                </div>
-              </SectionCard>
+
             </>
           )}
 
@@ -807,7 +831,7 @@ export default function BeforeDeparturePage() {
                   {
                     code: 'LIN', name: 'Linate Airport', note: 'Intra-EU flights — closest to the city centre',
                     options: [
-                      { method: 'Metro M4 (blue line)', time: '30 min', cost: '€1.50', to: 'San Babila / Forlanini', url: 'https://www.atm.it/' },
+                      { method: 'Metro M4 (blue line)', time: '30 min', cost: '€2.20', to: 'San Babila / Forlanini', url: 'https://www.atm.it/' },
                       { method: 'Taxi (fixed rate)', time: '20–30 min', cost: '€35', to: 'Central Milan', url: null },
                     ],
                   },

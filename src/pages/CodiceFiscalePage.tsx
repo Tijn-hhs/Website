@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
@@ -22,23 +22,79 @@ import {
   HelpCircle,
   ClipboardList,
   ShieldCheck,
+  Calculator,
 } from 'lucide-react'
+import CodiceFiscaleCalculator from '../components/CodiceFiscaleCalculator'
 
 const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:codice-fiscale'
 
 const PAGE_SECTIONS = [
-  { id: 'overview',   label: 'Overview',        icon: CreditCard },
-  { id: 'apply',      label: 'How to apply',    icon: ClipboardList },
-  { id: 'documents',  label: 'Documents',       icon: FileText },
-  { id: 'offices',    label: 'Offices',         icon: MapPin },
-  { id: 'verify',     label: 'Verify & check',  icon: ShieldCheck },
-  { id: 'faq',        label: 'FAQ',             icon: HelpCircle },
-  { id: 'links',      label: 'Key links',       icon: LinkIcon },
+  { id: 'overview',    label: 'Overview',        icon: CreditCard },
+  { id: 'apply',       label: 'How to apply',    icon: ClipboardList },
+  { id: 'documents',   label: 'Documents',       icon: FileText },
+  { id: 'offices',     label: 'Offices',         icon: MapPin },
+  { id: 'calculator',  label: 'Calculator',      icon: Calculator },
+  { id: 'verify',      label: 'Verify & check',  icon: ShieldCheck },
+  { id: 'faq',         label: 'FAQ',             icon: HelpCircle },
+  { id: 'links',       label: 'Key links',       icon: LinkIcon },
 ]
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+function TabBarButtons({
+  activeId,
+  onSelect,
+  compact = false,
+}: {
+  activeId: string
+  onSelect: (id: string) => void
+  compact?: boolean
+}) {
+  return (
+    <>
+      {PAGE_SECTIONS.map(({ id, label, icon: Icon }) => {
+        const isActive = activeId === id
+        return (
+          <button
+            key={id}
+            onClick={() => onSelect(id)}
+            className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg transition-all ${
+              compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
+            } ${
+              isActive
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
+            {label}
+          </button>
+        )
+      })}
+    </>
+  )
+}
+
 function TabNavigation({
+  activeId,
+  onSelect,
+  isMerged = false,
+}: {
+  activeId: string
+  onSelect: (id: string) => void
+  isMerged?: boolean
+}) {
+  return (
+    <nav
+      className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide"
+      style={{ visibility: isMerged ? 'hidden' : 'visible', transition: 'visibility 0ms' }}
+    >
+      <TabBarButtons activeId={activeId} onSelect={onSelect} />
+    </nav>
+  )
+}
+
+function StickyMergedTabBar({
   activeId,
   onSelect,
 }: {
@@ -46,27 +102,9 @@ function TabNavigation({
   onSelect: (id: string) => void
 }) {
   return (
-    <div className="col-span-full">
-      <nav className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
-        {PAGE_SECTIONS.map(({ id, label, icon: Icon }) => {
-          const isActive = activeId === id
-          return (
-            <button
-              key={id}
-              onClick={() => onSelect(id)}
-              className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-              }`}
-            >
-              <Icon size={14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
-              {label}
-            </button>
-          )
-        })}
-      </nav>
-    </div>
+    <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
+      <TabBarButtons activeId={activeId} onSelect={onSelect} compact />
+    </nav>
   )
 }
 
@@ -214,6 +252,21 @@ export default function CodiceFiscalePage() {
   const [nationality, setNationality] = useState<string | null>(null)
   const { setSections, clearSections } = usePageSections()
 
+  // Sticky merge: track when the tab nav row scrolls behind the sticky action bar
+  const tabNavRef = useRef<HTMLDivElement>(null)
+  const [tabsMerged, setTabsMerged] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!tabNavRef.current) return
+      const rect = tabNavRef.current.getBoundingClientRect()
+      setTabsMerged(rect.top < 72)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const handleTabSelect = useCallback((id: string) => {
     setActiveSection(id)
     window.location.hash = id
@@ -344,9 +397,15 @@ export default function CodiceFiscalePage() {
           checklistItems={checklistItems}
           onChecklistItemToggle={handleChecklistToggle}
           useGradientBar={true}
+          isTabMerged={tabsMerged}
+          mergedTabBar={
+            <StickyMergedTabBar activeId={activeSection} onSelect={handleTabSelect} />
+          }
         >
           {/* ── Tab navigation ── */}
-          <TabNavigation activeId={activeSection} onSelect={handleTabSelect} />
+          <div ref={tabNavRef} className="col-span-full">
+            <TabNavigation activeId={activeSection} onSelect={handleTabSelect} isMerged={tabsMerged} />
+          </div>
 
           {/* ── Overview ── */}
           {activeSection === 'overview' && (
@@ -417,26 +476,15 @@ export default function CodiceFiscalePage() {
                   </div>
                 </div>
 
-                {/* Quick nav cards */}
-                <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    { id: 'apply',     label: 'Step-by-step guide', icon: <ClipboardList size={16} />, color: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' },
-                    { id: 'documents', label: 'Documents needed',   icon: <FileText size={16} />, color: 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' },
-                    { id: 'offices',   label: 'Offices in Milan',   icon: <MapPin size={16} />, color: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' },
-                    { id: 'verify',    label: 'Verify your code',   icon: <ShieldCheck size={16} />, color: 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100' },
-                  ].map(({ id, label, icon, color }) => (
-                    <button
-                      key={id}
-                      onClick={() => handleTabSelect(id)}
-                      className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-xs font-medium transition-colors ${color}`}
-                    >
-                      {icon}
-                      {label}
-                    </button>
-                  ))}
-                </div>
               </SectionCard>
             </>
+          )}
+
+          {/* ── Calculator ── */}
+          {activeSection === 'calculator' && (
+            <SectionCard title="Codice Fiscale Calculator" icon={<Calculator size={18} />}>
+              <CodiceFiscaleCalculator />
+            </SectionCard>
           )}
 
           {/* ── How to apply ── */}
@@ -714,18 +762,16 @@ export default function CodiceFiscalePage() {
 
                 <ExpandableCard title="Calculate your code before going to the office" badge={<Badge label="Calculator" variant="note" />}>
                   <p className="mb-3">
-                    You can pre-calculate what your codice fiscale <em>should</em> be using online calculators.
-                    This is useful to fill in forms before you have the official card — but the official document
-                    from Agenzia delle Entrate is still required for binding procedures.
+                    We have a built-in calculator that uses the official algorithm — it produces the same code
+                    you will receive at the Agenzia delle Entrate. It is <strong>not a legal document</strong>,
+                    but it lets you fill in forms while waiting for your appointment.
                   </p>
-                  <a
-                    href="https://www.codicefiscale.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                  <button
+                    onClick={() => handleTabSelect('calculator')}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100 transition-colors"
                   >
-                    CodiceFiscale.com calculator <ExternalLink size={13} />
-                  </a>
+                    <Calculator size={13} /> Open the CF Calculator
+                  </button>
                 </ExpandableCard>
 
                 <ExpandableCard title="Lost or stolen card" badge={<Badge label="Replacement" variant="warning" />}>

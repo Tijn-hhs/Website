@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
@@ -53,27 +53,56 @@ function getVisibleSections(isEuCitizen: string | null) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function TabNavigation({ activeId, onSelect, sections }: { activeId: string; onSelect: (id: string) => void; sections: typeof ALL_SECTIONS }) {
+function TabBarButtons({
+  sections,
+  activeId,
+  onSelect,
+  compact = false,
+}: {
+  sections: typeof ALL_SECTIONS
+  activeId: string
+  onSelect: (id: string) => void
+  compact?: boolean
+}) {
   return (
-    <div className="col-span-full">
-      <nav className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
-        {sections.map(({ id, label, icon: Icon }) => {
-          const isActive = activeId === id
-          return (
-            <button
-              key={id}
-              onClick={() => onSelect(id)}
-              className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                isActive ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-              }`}
-            >
-              <Icon size={14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
-              {label}
-            </button>
-          )
-        })}
-      </nav>
-    </div>
+    <>
+      {sections.map(({ id, label, icon: Icon }) => {
+        const isActive = activeId === id
+        return (
+          <button
+            key={id}
+            onClick={() => onSelect(id)}
+            className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg transition-all ${
+              compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
+            } ${
+              isActive ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
+            {label}
+          </button>
+        )
+      })}
+    </>
+  )
+}
+
+function TabNavigation({ activeId, onSelect, sections, isMerged = false }: { activeId: string; onSelect: (id: string) => void; sections: typeof ALL_SECTIONS; isMerged?: boolean }) {
+  return (
+    <nav
+      className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide"
+      style={{ visibility: isMerged ? 'hidden' : 'visible', transition: 'visibility 0ms' }}
+    >
+      <TabBarButtons sections={sections} activeId={activeId} onSelect={onSelect} />
+    </nav>
+  )
+}
+
+function StickyMergedTabBar({ sections, activeId, onSelect }: { sections: typeof ALL_SECTIONS; activeId: string; onSelect: (id: string) => void }) {
+  return (
+    <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
+      <TabBarButtons sections={sections} activeId={activeId} onSelect={onSelect} compact />
+    </nav>
   )
 }
 
@@ -188,6 +217,21 @@ export default function ImmigrationRegistrationPage() {
   const { setSections, clearSections } = usePageSections()
 
   const visibleSections = useMemo(() => getVisibleSections(isEuCitizen), [isEuCitizen])
+
+  // Sticky merge: track when the tab nav row scrolls behind the sticky action bar
+  const tabNavRef = useRef<HTMLDivElement>(null)
+  const [tabsMerged, setTabsMerged] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!tabNavRef.current) return
+      const rect = tabNavRef.current.getBoundingClientRect()
+      setTabsMerged(rect.top < 72)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const handleTabSelect = useCallback((id: string) => {
     setActiveSection(id)
@@ -327,9 +371,15 @@ export default function ImmigrationRegistrationPage() {
           ]}
           checklistItems={checklistItems}
           onChecklistItemToggle={handleChecklistToggle}
+          isTabMerged={tabsMerged}
+          mergedTabBar={
+            <StickyMergedTabBar sections={visibleSections} activeId={activeSection} onSelect={handleTabSelect} />
+          }
         >
           {/* ── Tab navigation ── */}
-          <TabNavigation activeId={activeSection} onSelect={handleTabSelect} sections={visibleSections} />
+          <div ref={tabNavRef} className="col-span-full">
+            <TabNavigation activeId={activeSection} onSelect={handleTabSelect} sections={visibleSections} isMerged={tabsMerged} />
+          </div>
 
           {/* ═══════════════════════════════════════════════════════════════════
               OVERVIEW
@@ -418,20 +468,6 @@ export default function ImmigrationRegistrationPage() {
                   </div>
                 </div>
 
-                {/* Quick nav cards */}
-                <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    { id: 'noneu', label: 'Step-by-step guide', icon: <ClipboardList size={16} />, color: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' },
-                    { id: 'documents', label: 'Documents needed', icon: <FileText size={16} />, color: 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' },
-                    { id: 'questura', label: 'Police interview', icon: <BadgeCheck size={16} />, color: 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100' },
-                    { id: 'eu', label: 'EU citizens', icon: <Users size={16} />, color: 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100' },
-                  ].map(({ id, label, icon, color }) => (
-                    <button key={id} onClick={() => handleTabSelect(id)} className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-xs font-medium transition-colors ${color}`}>
-                      {icon}
-                      {label}
-                    </button>
-                  ))}
-                </div>
               </SectionCard>
             </>
           )}

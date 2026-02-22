@@ -151,13 +151,13 @@ export default function CostSlider({ config, value, onChange, id }: CostSliderPr
 
       {/* Min en max labels */}
       <div className="flex justify-between text-xs text-slate-500 px-1">
-        <span>Low budget (€{config.min})</span>
-        <span>High budget (€{config.max})</span>
+        <span>Low (€{config.min})</span>
+        <span>High (€{config.max})</span>
       </div>
 
       {/* Uitleg - matches body text styling */}
       <div className="mt-2">
-        <p className="text-sm text-slate-600">
+        <p className="whitespace-pre-line text-sm text-slate-600">
           {config.description}
         </p>
       </div>

@@ -31,6 +31,10 @@ interface StepPageLayoutProps {
   showChecklist?: boolean
   children: ReactNode
   useGradientBar?: boolean
+  /** Content to show merged into the sticky bar after scrolling */
+  mergedTabBar?: ReactNode
+  /** Whether the tab bar is currently merged into the sticky bar */
+  isTabMerged?: boolean
 }
 
 export default function StepPageLayout({
@@ -47,6 +51,8 @@ export default function StepPageLayout({
   showChecklist = true,
   children,
   useGradientBar = false,
+  mergedTabBar,
+  isTabMerged = false,
 }: StepPageLayoutProps) {
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [isChecklistOpen, setIsChecklistOpen] = useState(false)
@@ -280,6 +286,25 @@ export default function StepPageLayout({
             </div>
           </div>
         </div>
+
+        {/* Merged Tab Bar row — slides in below action row when isTabMerged */}
+        {mergedTabBar && (
+          <div
+            style={{
+              maxHeight: isTabMerged ? '56px' : '0px',
+              opacity: isTabMerged ? 1 : 0,
+              marginTop: isTabMerged ? '10px' : '0px',
+              pointerEvents: isTabMerged ? 'auto' : 'none',
+              overflow: 'hidden',
+              transition: 'max-height 230ms ease-in-out, opacity 200ms ease-in-out, margin-top 230ms ease-in-out',
+            }}
+            aria-hidden={!isTabMerged}
+          >
+            <div className="border-t border-slate-200/60 pt-2">
+              {mergedTabBar}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Page Content */}

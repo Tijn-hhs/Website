@@ -101,8 +101,8 @@ export async function fetchUserData(): Promise<UserData> {
        profileKeyCount: Object.keys(userData.profile || {}).length,
        sampleFields: {
          destinationCountry: userData.profile?.destinationCountry,
-         universityName: userData.profile?.universityName,
-         studyLevel: userData.profile?.studyLevel,
+         universityName: (userData.profile as any)?.universityName,
+         studyLevel: (userData.profile as any)?.studyLevel,
          nationality: userData.profile?.nationality,
        },
        firstFewKeys: Object.keys(userData.profile || {}).slice(0, 20),
@@ -401,7 +401,8 @@ export async function createDeadline(
       apiName: API_NAME,
       path: '/deadlines',
       options: {
-        body: { title, dueDate, sendReminder, note },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        body: { title, dueDate, sendReminder, ...(note !== undefined ? { note } : {}) } as any,
         headers: {
           'Content-Type': 'application/json',
           ...headers,

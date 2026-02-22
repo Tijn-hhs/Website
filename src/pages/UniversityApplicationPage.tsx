@@ -43,7 +43,66 @@ const PAGE_SECTIONS = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+/** Shared tab button row — used in both the standalone nav card and the sticky merged bar */
+function TabBarButtons({
+  activeId,
+  onSelect,
+  compact = false,
+}: {
+  activeId: string
+  onSelect: (id: string) => void
+  compact?: boolean
+}) {
+  return (
+    <>
+      {PAGE_SECTIONS.map(({ id, label, icon: Icon }) => {
+        const isActive = activeId === id
+        return (
+          <button
+            key={id}
+            onClick={() => onSelect(id)}
+            className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg transition-all ${
+              compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
+            } ${
+              isActive
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
+            {label}
+          </button>
+        )
+      })}
+    </>
+  )
+}
+
+/** Standalone tab navigation card (rendered in the page content area) */
 function TabNavigation({
+  activeId,
+  onSelect,
+  isMerged = false,
+}: {
+  activeId: string
+  onSelect: (id: string) => void
+  isMerged?: boolean
+}) {
+  return (
+    <nav
+      className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide"
+      style={{
+        visibility: isMerged ? 'hidden' : 'visible',
+        transition: 'visibility 0ms',
+      }}
+    >
+      <TabBarButtons activeId={activeId} onSelect={onSelect} />
+    </nav>
+  )
+}
+
+/** Compact inline tab bar for inside the sticky header */
+function StickyMergedTabBar({
   activeId,
   onSelect,
 }: {
@@ -51,27 +110,9 @@ function TabNavigation({
   onSelect: (id: string) => void
 }) {
   return (
-    <div className="col-span-full">
-      <nav className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
-        {PAGE_SECTIONS.map(({ id, label, icon: Icon }) => {
-          const isActive = activeId === id
-          return (
-            <button
-              key={id}
-              onClick={() => onSelect(id)}
-              className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-              }`}
-            >
-              <Icon size={14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
-              {label}
-            </button>
-          )
-        })}
-      </nav>
-    </div>
+    <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
+      <TabBarButtons activeId={activeId} onSelect={onSelect} compact />
+    </nav>
   )
 }
 
@@ -402,6 +443,22 @@ export default function UniversityApplicationPage() {
   const [englishExempt, setEnglishExempt] = useState(false)
   const { setSections, clearSections } = usePageSections()
 
+  // Sticky merge: track when the tab nav row scrolls behind the sticky action bar
+  const tabNavRef = useRef<HTMLDivElement>(null)
+  const [tabsMerged, setTabsMerged] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!tabNavRef.current) return
+      // The sticky bar sits at top-4 (16px) and is ~52px tall → threshold ~68px
+      const rect = tabNavRef.current.getBoundingClientRect()
+      setTabsMerged(rect.top < 72)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    // Check on mount in case page loads already scrolled
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
   const handleTabSelect = useCallback((id: string) => {
     setActiveSection(id)
     window.location.hash = id
@@ -578,10 +635,16 @@ export default function UniversityApplicationPage() {
           onChecklistItemToggle={handleChecklistToggle}
           showChecklist={false}
           useGradientBar={true}
+          isTabMerged={tabsMerged}
+          mergedTabBar={
+            <StickyMergedTabBar activeId={activeSection} onSelect={handleTabSelect} />
+          }
         >
 
           {/* ── Tab navigation ── */}
-          <TabNavigation activeId={activeSection} onSelect={handleTabSelect} />
+          <div ref={tabNavRef} className="col-span-full">
+            <TabNavigation activeId={activeSection} onSelect={handleTabSelect} isMerged={tabsMerged} />
+          </div>
 
           {/* ── Overview ── */}
           {activeSection === 'overview' && (
@@ -626,24 +689,6 @@ export default function UniversityApplicationPage() {
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5">Via Sarfatti 25, Milan — city-integrated campus</p>
                 </div>
-              </div>
-              {/* Quick-start nav cards */}
-              <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {[
-                  { id: 'deadlines', label: 'Check deadlines', icon: <CalendarClock size={16} />, color: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' },
-                  { id: 'tests', label: 'Entrance tests', icon: <FlaskConical size={16} />, color: 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100' },
-                  { id: 'documents', label: 'Documents needed', icon: <FileText size={16} />, color: 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' },
-                  { id: 'links', label: 'Apply now', icon: <ExternalLink size={16} />, color: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' },
-                ].map(({ id, label, icon, color }) => (
-                  <button
-                    key={id}
-                    onClick={() => handleTabSelect(id)}
-                    className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-xs font-medium transition-colors ${color}`}
-                  >
-                    {icon}
-                    {label}
-                  </button>
-                ))}
               </div>
             </SectionCard>
             </>

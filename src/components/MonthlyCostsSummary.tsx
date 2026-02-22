@@ -15,15 +15,23 @@ interface VariableCostsBreakdown {
   books: number
 }
 
+interface CustomExpense {
+  id: string
+  label: string
+  amount: number
+}
+
 interface MonthlyCostsSummaryProps {
   fixedCosts: FixedCostsBreakdown
   variableCosts: VariableCostsBreakdown
+  customExpenses?: CustomExpense[]
 }
 
-export default function MonthlyCostsSummary({ fixedCosts, variableCosts }: MonthlyCostsSummaryProps) {
+export default function MonthlyCostsSummary({ fixedCosts, variableCosts, customExpenses = [] }: MonthlyCostsSummaryProps) {
   const fixedTotal = fixedCosts.rent + fixedCosts.utilities + fixedCosts.internet + fixedCosts.mobile + fixedCosts.transport
   const variableTotal = variableCosts.groceries + variableCosts.diningOut + variableCosts.entertainment + variableCosts.clothing + variableCosts.personalCare + variableCosts.books
-  const grandTotal = fixedTotal + variableTotal
+  const customTotal = customExpenses.reduce((sum, e) => sum + e.amount, 0)
+  const grandTotal = fixedTotal + variableTotal + customTotal
 
   const fixedCostItems = [
     { label: 'Rent', amount: fixedCosts.rent },
@@ -93,6 +101,31 @@ export default function MonthlyCostsSummary({ fixedCosts, variableCosts }: Month
           </div>
         </div>
       </div>
+
+      {/* Custom Expenses Section */}
+      {customExpenses.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-base font-semibold text-slate-800 mb-2">Custom Expenses</h3>
+          <div className="space-y-2">
+            {customExpenses.map((item) => (
+              <div key={item.id} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
+                <span className="text-sm text-slate-700">{item.label}</span>
+                <span className="text-sm font-semibold text-slate-900">
+                  €{item.amount.toLocaleString('en-US')}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-200">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-slate-900">Custom expenses subtotal</span>
+              <span className="text-base font-semibold text-slate-900">
+                €{customTotal.toLocaleString('en-US')}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Grand Total */}
       <div className="pt-4 border-t-2 border-slate-300">

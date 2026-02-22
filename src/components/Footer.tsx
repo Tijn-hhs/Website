@@ -1,7 +1,31 @@
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const location = useLocation()
+
+  // Mirror the sidebar collapsed state so the footer never slides under the sidebar
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed')
+    return saved ? JSON.parse(saved) : false
+  })
+
+  useEffect(() => {
+    const sync = () => {
+      const saved = localStorage.getItem('sidebarCollapsed')
+      setIsCollapsed(saved ? JSON.parse(saved) : false)
+    }
+    window.addEventListener('storage', sync)
+    const interval = setInterval(sync, 100)
+    return () => {
+      window.removeEventListener('storage', sync)
+      clearInterval(interval)
+    }
+  }, [])
+
+  // Only offset the footer when the sidebar is visible (dashboard / my-situation pages)
+  const hasSidebar = location.pathname.startsWith('/dashboard') || location.pathname === '/my-situation'
 
   const productLinks = [
     { label: 'How it works', to: '/' },
@@ -17,7 +41,11 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-white border-t border-slate-200 mt-auto">
+    <footer
+      className={`bg-white border-t border-slate-200 mt-auto transition-all duration-75 ease-in-out ${
+        hasSidebar ? (isCollapsed ? 'ml-[88px]' : 'ml-[280px]') : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 mb-8">

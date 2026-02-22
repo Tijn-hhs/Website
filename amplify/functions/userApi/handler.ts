@@ -2,6 +2,7 @@ import {
   DynamoDBClient,
   GetItemCommand,
   PutItemCommand,
+  UpdateItemCommand,
   QueryCommand,
   ScanCommand,
 } from '@aws-sdk/client-dynamodb'
@@ -223,15 +224,18 @@ async function saveStepProgress(
   stepKey: string,
   completed: boolean,
 ): Promise<void> {
+  const now = new Date().toISOString()
   await dynamo.send(
-    new PutItemCommand({
+    new UpdateItemCommand({
       TableName: TABLE.progress,
-      Item: marshall({
-        userId,
-        stepKey,
-        completed,
-        completedAt: completed ? new Date().toISOString() : null,
-        updatedAt: new Date().toISOString(),
+      Key: marshall({ userId, stepKey }),
+      // Preserve started/startedAt; only update completed-related fields
+      UpdateExpression:
+        'SET completed = :completed, completedAt = :completedAt, updatedAt = :now',
+      ExpressionAttributeValues: marshall({
+        ':completed': completed,
+        ':completedAt': completed ? now : null,
+        ':now': now,
       }),
     })
   )
@@ -241,16 +245,21 @@ async function markStepStarted(
   userId: string,
   stepKey: string,
 ): Promise<void> {
+  const now = new Date().toISOString()
   await dynamo.send(
-    new PutItemCommand({
+    new UpdateItemCommand({
       TableName: TABLE.progress,
-      Item: marshall({
-        userId,
-        stepKey,
-        started: true,
-        startedAt: new Date().toISOString(),
-        completed: false,
-        updatedAt: new Date().toISOString(),
+      Key: marshall({ userId, stepKey }),
+      // Only set started/startedAt; never touch the completed field
+      UpdateExpression:
+        'SET #started = :started, startedAt = if_not_exists(startedAt, :now), updatedAt = :now',
+      ConditionExpression: undefined,
+      ExpressionAttributeNames: {
+        '#started': 'started',
+      },
+      ExpressionAttributeValues: marshall({
+        ':started': true,
+        ':now': now,
       }),
     })
   )

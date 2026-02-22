@@ -81,6 +81,15 @@ export interface UserProfile {
   clothingCost?: number
   personalCareCost?: number
   booksCost?: number
+  // Codice Fiscale calculator inputs
+  cfFirstName?: string
+  cfLastName?: string
+  cfDateOfBirth?: string   // ISO date "YYYY-MM-DD"
+  cfGender?: 'M' | 'F'
+  cfBirthplaceCode?: string    // 4-char Belfiore code
+  cfBirthplaceLabel?: string   // Human-readable name
+  cfBornInItaly?: boolean
+  calculatedCodiceFiscale?: string
 }
 
 export interface StepProgress {
