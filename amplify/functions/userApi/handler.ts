@@ -782,15 +782,22 @@ async function getGeminiApiKey(): Promise<string> {
   const { SecretString } = await secretsClient.send(
     new GetSecretValueCommand({ SecretId: secretName })
   )
-  // Secrets Manager may store the key as a plain string or as JSON e.g. {"api_key":"..."}
   if (!SecretString) throw new Error('Secret has no string value')
   let key = SecretString
   try {
     const parsed = JSON.parse(SecretString)
-    // Accept common key names
-    key = parsed.api_key ?? parsed.apiKey ?? parsed.key ?? parsed.value ?? SecretString
+    // Try common field names, then the secret name itself (AWS console default)
+    key = parsed.api_key
+      ?? parsed.apiKey
+      ?? parsed.key
+      ?? parsed.value
+      ?? parsed[secretName]   // e.g. {"Google_api": "AIzaSy..."}
+      ?? Object.values(parsed)[0]  // fallback: first value in the object
+      ?? SecretString
+    console.log(`[Chat] Secret parsed as JSON, using field. Key length: ${String(key).length}`)
   } catch {
     // not JSON — use as-is
+    console.log(`[Chat] Secret is plain string. Key length: ${key.length}`)
   }
   cachedGeminiApiKey = key
   return cachedGeminiApiKey
@@ -871,7 +878,7 @@ async function handlePostChat(userId: string, event: any): Promise<ApiResponse> 
   if (!geminiRes.ok) {
     const errText = await geminiRes.text()
     console.error('[Chat] Gemini API error:', errText)
-    return fail(502, 'AI service unavailable')
+    return fail(502, `AI service unavailable: ${errText}`)
   }
 
   const geminiData = await geminiRes.json() as any
