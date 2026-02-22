@@ -780,26 +780,50 @@ async function getGeminiApiKey(): Promise<string> {
   if (cachedGeminiApiKey) return cachedGeminiApiKey
   const secretName = process.env.GEMINI_SECRET_NAME
   if (!secretName) throw new Error('GEMINI_SECRET_NAME env var not set')
+
   const { SecretString } = await secretsClient.send(
     new GetSecretValueCommand({ SecretId: secretName })
   )
   if (!SecretString) throw new Error('Secret has no string value')
-  let key = SecretString
-  try {
-    const parsed = JSON.parse(SecretString)
-    // Try common field names, then the secret name itself (AWS console default)
-    key = parsed.api_key
+
+  // Log the raw format to CloudWatch (masked) so we can see exactly what is stored
+  const isJson = SecretString.trimStart().startsWith('{')
+  console.log(`[Chat] SecretString type: ${isJson ? 'JSON' : 'plain string'}, length: ${SecretString.length}`)
+
+  let key: string
+  if (isJson) {
+    let parsed: Record<string, unknown>
+    try {
+      parsed = JSON.parse(SecretString)
+    } catch (e) {
+      throw new Error(`Secret looks like JSON but failed to parse: ${e}`)
+    }
+    console.log(`[Chat] JSON keys in secret: ${JSON.stringify(Object.keys(parsed))}`)
+
+    // Try every possible field name
+    const candidate = parsed.api_key
       ?? parsed.apiKey
       ?? parsed.key
       ?? parsed.value
-      ?? parsed[secretName]   // e.g. {"Google_api": "AIzaSy..."}
-      ?? Object.values(parsed)[0]  // fallback: first value in the object
-      ?? SecretString
-    console.log(`[Chat] Secret parsed as JSON, using field. Key length: ${String(key).length}`)
-  } catch {
-    // not JSON — use as-is
-    console.log(`[Chat] Secret is plain string. Key length: ${key.length}`)
+      ?? parsed[secretName]           // e.g. {"Google_api": "AIzaSy..."}
+      ?? Object.values(parsed).find((v) => typeof v === 'string' && (v as string).length > 10)
+      ?? (Object.keys(parsed)[0]?.length > 10 ? Object.keys(parsed)[0] : undefined) // key IS the API key (e.g. {"AIzaSy...": ""})
+
+    if (!candidate || typeof candidate !== 'string') {
+      throw new Error(
+        `Could not find API key in secret JSON. Keys present: ${JSON.stringify(Object.keys(parsed))}. ` +
+        `Values (lengths): ${JSON.stringify(Object.fromEntries(Object.entries(parsed).map(([k, v]) => [k, String(v).length])))}`
+      )
+    }
+    key = candidate
+  } else {
+    // Plain string — use as-is
+    key = SecretString.trim()
   }
+
+  if (!key) throw new Error('Gemini API key resolved to empty string')
+  console.log(`[Chat] Gemini API key resolved, length: ${key.length}, prefix: ${key.slice(0, 4)}`)
+
   cachedGeminiApiKey = key
   return cachedGeminiApiKey
 }

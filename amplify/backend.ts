@@ -167,7 +167,7 @@ backend.userApi.resources.lambda.addEnvironment(
 )
 backend.userApi.resources.lambda.addEnvironment(
   'GEMINI_SECRET_NAME',
-  'Google_api'
+  'Gemini_API_Key'
 )
 backend.userApi.resources.lambda.addEnvironment(
   'CHAT_MESSAGES_TABLE_NAME',
@@ -179,7 +179,7 @@ backend.userApi.resources.lambda.addToRolePolicy(
   new iam.PolicyStatement({
     effect: iam.Effect.ALLOW,
     actions: ['secretsmanager:GetSecretValue'],
-    resources: ['arn:aws:secretsmanager:*:*:secret:Google_api*'],
+    resources: ['arn:aws:secretsmanager:*:*:secret:Gemini_API_Key*'],
   })
 )
 
