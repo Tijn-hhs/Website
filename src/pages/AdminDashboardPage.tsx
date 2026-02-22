@@ -15,8 +15,11 @@ import {
   Search,
   Filter,
   Clock,
+  Heart,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -562,10 +565,214 @@ function FeedbackTab() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TAB 4 — Buddy System
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const LOOKING_FOR_LABELS: Record<string, string> = {
+  flatmate: 'Flatmate',
+  bureaucracy: 'Bureaucracy',
+  study: 'Study partner',
+  social: 'Friendship',
+  career: 'Career',
+  language: 'Language',
+  sports: 'Sports',
+  city: 'City guide',
+}
+
+function parseLookingFor(raw?: string): string[] {
+  if (!raw) return []
+  try { return JSON.parse(raw) } catch { return [] }
+}
+
+function formatProgram(u: BuddyPoolUser): string {
+  const parts = [u.degreeType, u.fieldOfStudy].filter(Boolean)
+  return parts.length ? parts.join(' — ') : 'Unknown program'
+}
+
+function BuddyTab() {
+  const [users, setUsers] = useState<BuddyPoolUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [selected, setSelected] = useState<string[]>([])
+  const [matching, setMatching] = useState(false)
+  const [matchMsg, setMatchMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  async function load(showRefresh = false) {
+    if (showRefresh) setRefreshing(true)
+    else setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchAdminBuddyPool()
+      setUsers(data)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to load buddy pool')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const pending = users.filter((u) => u.buddyStatus === 'pending')
+  const matched = users.filter((u) => u.buddyStatus === 'matched')
+
+  function toggleSelect(userId: string) {
+    setMatchMsg(null)
+    setSelected((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : prev.length < 2
+        ? [...prev, userId]
+        : [prev[1], userId]
+    )
+  }
+
+  async function handleMatch() {
+    if (selected.length !== 2) return
+    setMatching(true)
+    setMatchMsg(null)
+    try {
+      await adminBuddyMatch(selected[0], selected[1])
+      setMatchMsg({ ok: true, text: 'Matched successfully! Both users will now see each other\'s contact details.' })
+      setSelected([])
+      await load(true)
+    } catch (e: unknown) {
+      setMatchMsg({ ok: false, text: e instanceof Error ? e.message : 'Match failed' })
+    } finally {
+      setMatching(false)
+    }
+  }
+
+  if (loading) return <div className="flex items-center justify-center py-24"><RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" /></div>
+
+  if (error) return (
+    <div className="flex items-start gap-3 bg-red-950/40 border border-red-800 rounded-xl p-5">
+      <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+      <div>
+        <p className="text-red-300 font-medium">Failed to load buddy pool</p>
+        <p className="text-red-400/70 text-sm mt-0.5">{error}</p>
+        <button onClick={() => load()} className="mt-3 text-xs text-red-400 hover:text-red-300 underline underline-offset-2">Try again</button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-8">
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard icon={<Heart className="w-5 h-5" />} label="In Pool" value={pending.length} sub="Awaiting a match" />
+        <StatCard icon={<CheckCircle2 className="w-5 h-5" />} label="Matched" value={matched.length} sub="Successfully paired" />
+        <StatCard icon={<Users className="w-5 h-5" />} label="Total Opt-ins" value={users.length} sub="All buddy sign-ups" />
+      </div>
+
+      {/* Match message */}
+      {matchMsg && (
+        <div className={`flex items-start gap-3 rounded-xl border p-4 ${
+          matchMsg.ok ? 'bg-emerald-950/40 border-emerald-700 text-emerald-300' : 'bg-red-950/40 border-red-700 text-red-300'
+        }`}>
+          {matchMsg.ok ? <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+          <p className="text-sm">{matchMsg.text}</p>
+        </div>
+      )}
+
+      {/* Manual match panel */}
+      {pending.length >= 2 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500">Pending — Select 2 to Match</h2>
+            <div className="flex items-center gap-3">
+              <button onClick={() => load(true)} disabled={refreshing} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors disabled:opacity-50">
+                <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
+              </button>
+              <button
+                onClick={handleMatch}
+                disabled={selected.length !== 2 || matching}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
+              >
+                <Heart className="w-3.5 h-3.5" />
+                {matching ? 'Matching…' : `Match${selected.length === 2 ? ` (${users.find(u => u.userId === selected[0])?.displayName} ↔ ${users.find(u => u.userId === selected[1])?.displayName})` : ''}`}
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {pending.map((u) => {
+              const isSelected = selected.includes(u.userId)
+              const lookingFor = parseLookingFor(u.lookingFor)
+              return (
+                <button
+                  key={u.userId}
+                  onClick={() => toggleSelect(u.userId)}
+                  className={`text-left rounded-xl border p-4 transition-all ${
+                    isSelected
+                      ? 'border-indigo-500 bg-indigo-900/30 ring-1 ring-indigo-500'
+                      : 'border-gray-700 bg-gray-900 hover:border-gray-500'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <p className="text-white font-semibold text-sm">{u.displayName}</p>
+                      <p className="text-gray-400 text-xs mt-0.5">{formatProgram(u)}</p>
+                    </div>
+                    {isSelected && (
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {lookingFor.slice(0, 3).map((id) => (
+                      <span key={id} className="px-1.5 py-0.5 rounded bg-indigo-900/50 border border-indigo-700/50 text-indigo-300 text-xs">
+                        {LOOKING_FOR_LABELS[id] || id}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="space-y-0.5 text-xs text-gray-500">
+                    {u.nationality && <p><Globe className="inline w-3 h-3 mr-1" />{u.nationality}</p>}
+                    {u.phone && <p className="truncate"><span className="mr-1">📱</span>{u.phone}</p>}
+                    {u.bio && <p className="truncate italic text-gray-600">"{u.bio}"</p>}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {pending.length === 0 && (
+        <div className="text-center py-12 text-gray-600">
+          <p className="font-medium">No users pending a match</p>
+          <p className="text-xs mt-1">Users will appear here when they opt into the Buddy System.</p>
+        </div>
+      )}
+
+      {matched.length > 0 && (
+        <section>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Already Matched</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {matched.map((u) => (
+              <div key={u.userId} className="rounded-xl border border-gray-800 bg-gray-900 p-4 opacity-70">
+                <p className="text-white font-semibold text-sm">{u.displayName}</p>
+                <p className="text-gray-400 text-xs mt-0.5">{formatProgram(u)}</p>
+                <p className="text-xs text-emerald-500 mt-2">
+                  <CheckCircle2 className="inline w-3 h-3 mr-1" />
+                  Matched with {users.find(u2 => u2.userId === u.buddyMatchedWithId)?.displayName || u.buddyMatchedWithId}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Main Admin Dashboard Page
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = 'overview' | 'analytics' | 'feedback'
+type Tab = 'overview' | 'analytics' | 'feedback' | 'buddy'
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
@@ -597,6 +804,7 @@ export default function AdminDashboardPage() {
     { id: 'overview',  label: 'Overview',       icon: <LayoutDashboard className="w-3.5 h-3.5" /> },
     { id: 'analytics', label: 'Data Analytics', icon: <LineChart className="w-3.5 h-3.5" /> },
     { id: 'feedback',  label: 'Feedback',        icon: <MessageSquare className="w-3.5 h-3.5" /> },
+    { id: 'buddy',     label: 'Buddy System',    icon: <Heart className="w-3.5 h-3.5" /> },
   ]
 
   return (
@@ -652,6 +860,7 @@ export default function AdminDashboardPage() {
         )}
         {activeTab === 'analytics' && <DataAnalyticsTab />}
         {activeTab === 'feedback' && <FeedbackTab />}
+        {activeTab === 'buddy' && <BuddyTab />}
       </main>
     </div>
   )

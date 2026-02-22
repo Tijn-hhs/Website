@@ -15,6 +15,7 @@ import {
   DollarSign,
   CreditCard,
   Hash,
+  Users,
 } from 'lucide-react'
 
 const numberedSteps = [
@@ -32,6 +33,7 @@ const numberedSteps = [
 const extraInformationSteps = [
   'Information Centre',
   'Cost of Living',
+  'Buddy System',
 ]
 
 const steps = [...numberedSteps, ...extraInformationSteps]
@@ -48,6 +50,7 @@ const stepRoutes: Record<string, string | undefined> = {
   Healthcare: '/dashboard/healthcare',
   'Information Centre': '/dashboard/information-centre',
   'Cost of Living': '/dashboard/cost-of-living',
+  'Buddy System': '/dashboard/buddy-system',
 }
 
 const stepKeys: Record<string, string> = {
@@ -62,6 +65,7 @@ const stepKeys: Record<string, string> = {
   Healthcare: 'healthcare',
   'Information Centre': 'information-centre',
   'Cost of Living': 'cost-of-living',
+  'Buddy System': 'buddy-system',
 }
 
 const stepIcons: Record<string, React.ReactNode> = {
@@ -76,6 +80,7 @@ const stepIcons: Record<string, React.ReactNode> = {
   Healthcare: <Heart size={20} className="flex-shrink-0" />,
   'Information Centre': <HelpCircle size={20} className="flex-shrink-0" />,
   'Cost of Living': <DollarSign size={20} className="flex-shrink-0" />,
+  'Buddy System': <Users size={20} className="flex-shrink-0" />,
 }
 
 const stepDescriptions: Record<string, string> = {
@@ -90,6 +95,7 @@ const stepDescriptions: Record<string, string> = {
   Healthcare: 'Register with healthcare providers and understand the system.',
   'Information Centre': 'Access comprehensive guides and local resources.',
   'Cost of Living': 'Understand expenses and budget for your stay.',
+  'Buddy System': 'Connect with fellow students for housing, bureaucracy help, and friendship.',
 }
 
 export default function DashboardHome() {

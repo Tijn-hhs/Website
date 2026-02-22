@@ -85,6 +85,16 @@ interface UserProfile {
   clothingCost?: number
   personalCareCost?: number
   booksCost?: number
+  // Buddy system
+  buddyOptIn?: string
+  buddyDisplayName?: string
+  buddyPhone?: string
+  buddyInstagram?: string
+  buddyLinkedIn?: string
+  buddyLookingFor?: string
+  buddyBio?: string
+  buddyStatus?: string
+  buddyMatchedWithId?: string
 }
 
 interface StepProgress {
@@ -602,6 +612,98 @@ async function handleGetAdminFeedback(event: any): Promise<ApiResponse> {
   return ok({ feedback: items })
 }
 
+// ─── Buddy System ───────────────────────────────────────────────────────────
+
+/** GET /buddy/match — return the matched user's buddy contact profile. */
+async function handleGetBuddyMatch(userId: string): Promise<ApiResponse> {
+  const profile = await getUserProfile(userId)
+  if (!profile) return fail(404, 'Profile not found')
+  if (profile.buddyStatus !== 'matched' || !profile.buddyMatchedWithId) {
+    return fail(400, 'Not currently matched')
+  }
+
+  const matchedUserId = profile.buddyMatchedWithId as string
+  const matchProfile = await getUserProfile(matchedUserId)
+  if (!matchProfile) return fail(404, 'Match profile not found')
+
+  return ok({
+    displayName: matchProfile.buddyDisplayName || matchProfile.preferredName || 'Your Match',
+    phone: matchProfile.buddyPhone,
+    instagram: matchProfile.buddyInstagram,
+    linkedin: matchProfile.buddyLinkedIn,
+    lookingFor: matchProfile.buddyLookingFor,
+    bio: matchProfile.buddyBio,
+    nationality: matchProfile.nationality,
+    degreeType: matchProfile.degreeType,
+    fieldOfStudy: matchProfile.fieldOfStudy,
+    programStartMonth: matchProfile.programStartMonth,
+  })
+}
+
+/** GET /admin/buddy-pool — list all users who opted into the buddy system. */
+async function handleGetAdminBuddyPool(event: any): Promise<ApiResponse> {
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  if (adminSecret && providedSecret !== adminSecret) {
+    return fail(403, 'Forbidden')
+  }
+
+  const profiles = await scanAll(TABLE.profiles)
+  const buddyUsers = profiles
+    .filter((p) => p.buddyOptIn === 'yes')
+    .map((p) => ({
+      userId: p.userId,
+      displayName: (p.buddyDisplayName || p.preferredName || 'Unknown') as string,
+      nationality: p.nationality as string | undefined,
+      degreeType: p.degreeType as string | undefined,
+      fieldOfStudy: p.fieldOfStudy as string | undefined,
+      programStartMonth: p.programStartMonth as string | undefined,
+      phone: p.buddyPhone as string | undefined,
+      instagram: p.buddyInstagram as string | undefined,
+      linkedin: p.buddyLinkedIn as string | undefined,
+      lookingFor: p.buddyLookingFor as string | undefined,
+      bio: p.buddyBio as string | undefined,
+      buddyStatus: (p.buddyStatus || 'pending') as string,
+      buddyMatchedWithId: p.buddyMatchedWithId as string | undefined,
+      updatedAt: p.updatedAt as string | undefined,
+    }))
+
+  return ok({ users: buddyUsers })
+}
+
+/** POST /admin/buddy-match — manually match two users. */
+async function handlePostAdminBuddyMatch(event: any): Promise<ApiResponse> {
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  if (adminSecret && providedSecret !== adminSecret) {
+    return fail(403, 'Forbidden')
+  }
+
+  const { userAId, userBId } = parseBody(event)
+  if (!userAId || !userBId) return fail(400, 'userAId and userBId are required')
+  if (userAId === userBId) return fail(400, 'Cannot match a user with themselves')
+
+  const [profileA, profileB] = await Promise.all([
+    getUserProfile(userAId as string),
+    getUserProfile(userBId as string),
+  ])
+  if (!profileA) return fail(404, `User ${userAId} not found`)
+  if (!profileB) return fail(404, `User ${userBId} not found`)
+
+  await Promise.all([
+    saveUserProfile(userAId as string, { ...profileA, buddyStatus: 'matched', buddyMatchedWithId: userBId as string }),
+    saveUserProfile(userBId as string, { ...profileB, buddyStatus: 'matched', buddyMatchedWithId: userAId as string }),
+  ])
+
+  return ok({ message: 'Matched successfully', userAId, userBId })
+}
+
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 export async function handler(event: any): Promise<ApiResponse> {
@@ -635,6 +737,9 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/admin/stats') return await handleGetAdminStats(event)
     if (method === 'GET'  && path === '/admin/whatsapp-messages') return await handleGetAdminWhatsappMessages(event)
     if (method === 'GET'  && path === '/admin/feedback') return await handleGetAdminFeedback(event)
+    if (method === 'GET'  && path === '/buddy/match') return await handleGetBuddyMatch(userId)
+    if (method === 'GET'  && path === '/admin/buddy-pool') return await handleGetAdminBuddyPool(event)
+    if (method === 'POST' && path === '/admin/buddy-match') return await handlePostAdminBuddyMatch(event)
 
     console.error(`[Handler] No route matched for ${method} ${path}`)
     return fail(404, 'Not found')

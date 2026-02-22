@@ -18,6 +18,7 @@ import InsurancePage from './pages/InsurancePage'
 import HealthcarePage from './pages/HealthcarePage'
 import InformationCentrePage from './pages/InformationCentrePage'
 import CostOfLivingPage from './pages/CostOfLivingPage'
+import BuddySystemPage from './pages/BuddySystemPage'
 import BlogOverviewPage from './pages/BlogOverviewPage'
 import BlogPostPage from './pages/BlogPostPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -136,6 +137,14 @@ export default function App() {
           element={
             <AuthGate>
               <CostOfLivingPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/dashboard/buddy-system"
+          element={
+            <AuthGate>
+              <BuddySystemPage />
             </AuthGate>
           }
         />

@@ -31,6 +31,8 @@ interface StepPageLayoutProps {
   showChecklist?: boolean
   children: ReactNode
   useGradientBar?: boolean
+  /** Skip the inner grid wrapper; children fill full width */
+  fullWidth?: boolean
   /** Content to show merged into the sticky bar after scrolling */
   mergedTabBar?: ReactNode
   /** Whether the tab bar is currently merged into the sticky bar */
@@ -51,6 +53,7 @@ export default function StepPageLayout({
   showChecklist = true,
   children,
   useGradientBar = false,
+  fullWidth = false,
   mergedTabBar,
   isTabMerged = false,
 }: StepPageLayoutProps) {
@@ -273,18 +276,20 @@ export default function StepPageLayout({
             </button>
           )}
 
-          {/* Step Progress (right-aligned) */}
-          <div className="ml-auto flex items-center gap-3">
-            <div className="text-sm font-medium text-slate-600 whitespace-nowrap">
-              Step {stepNumber} of {totalSteps}
+          {/* Step Progress (right-aligned) — hidden for tool pages */}
+          {totalSteps > 0 && (
+            <div className="ml-auto flex items-center gap-3">
+              <div className="text-sm font-medium text-slate-600 whitespace-nowrap">
+                Step {stepNumber} of {totalSteps}
+              </div>
+              <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 transition-all duration-300"
+                  style={{ width: `${(stepNumber / totalSteps) * 100}%` }}
+                />
+              </div>
             </div>
-            <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600 transition-all duration-300"
-                style={{ width: `${(stepNumber / totalSteps) * 100}%` }}
-              />
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Merged Tab Bar row — slides in below action row when isTabMerged */}
@@ -308,7 +313,11 @@ export default function StepPageLayout({
       </div>
 
       {/* Page Content */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">{children}</div>
+      {fullWidth ? (
+        <div>{children}</div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">{children}</div>
+      )}
     </div>
   )
 }

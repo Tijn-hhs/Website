@@ -577,3 +577,103 @@ export async function fetchAdminWhatsappMessages(groupId?: string): Promise<What
 
   return res.json() as Promise<WhatsAppMessagesResponse>
 }
+// ─── Buddy System ─────────────────────────────────────────────────────────────
+
+export interface BuddyMatchProfile {
+  displayName: string
+  phone?: string
+  instagram?: string
+  linkedin?: string
+  lookingFor?: string   // JSON-stringified string[]
+  bio?: string
+  nationality?: string
+  degreeType?: string
+  fieldOfStudy?: string
+  programStartMonth?: string
+}
+
+/** Fetch the current user's matched buddy's contact profile. */
+export async function fetchBuddyMatch(): Promise<BuddyMatchProfile> {
+  const headers = await getAuthHeaders()
+
+  const restOperation = get({
+    apiName: API_NAME,
+    path: '/buddy/match',
+    options: { headers },
+  })
+
+  const response = await restOperation.response
+  const json = await response.body.json()
+  return json as unknown as BuddyMatchProfile
+}
+
+export interface BuddyPoolUser {
+  userId: string
+  displayName: string
+  nationality?: string
+  degreeType?: string
+  fieldOfStudy?: string
+  programStartMonth?: string
+  phone?: string
+  instagram?: string
+  linkedin?: string
+  lookingFor?: string
+  bio?: string
+  buddyStatus: string
+  buddyMatchedWithId?: string
+  updatedAt?: string
+}
+
+/** Admin: fetch all users who opted into the buddy system. */
+export async function fetchAdminBuddyPool(): Promise<BuddyPoolUser[]> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/buddy-pool'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/buddy-pool`
+  }
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', ...headers },
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  const json = await res.json() as { users: BuddyPoolUser[] }
+  return json.users ?? []
+}
+
+/** Admin: manually match two users by their userIds. */
+export async function adminBuddyMatch(userAId: string, userBId: string): Promise<void> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/buddy-match'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/buddy-match`
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify({ userAId, userBId }),
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+}

@@ -254,6 +254,34 @@ adminFeedbackResource.addMethod('GET', lambdaIntegration, {
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
 
+// ─── /admin/buddy-pool ────────────────────────────────────────────────────────
+const adminBuddyPoolResource = adminResource.addResource('buddy-pool')
+
+// GET /admin/buddy-pool
+adminBuddyPoolResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// ─── /admin/buddy-match ───────────────────────────────────────────────────────
+const adminBuddyMatchResource = adminResource.addResource('buddy-match')
+
+// POST /admin/buddy-match
+adminBuddyMatchResource.addMethod('POST', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// ─── /buddy/match ─────────────────────────────────────────────────────────────
+const buddyResource = restApi.root.addResource('buddy')
+const buddyMatchResource = buddyResource.addResource('match')
+
+// GET /buddy/match
+buddyMatchResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
 // Add Gateway Responses so that 4XX/5XX errors from API Gateway
 // (e.g. Cognito authorizer 401) include CORS headers.
 restApi.addGatewayResponse('Default4XX', {

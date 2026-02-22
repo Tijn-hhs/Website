@@ -90,6 +90,16 @@ export interface UserProfile {
   cfBirthplaceLabel?: string   // Human-readable name
   cfBornInItaly?: boolean
   calculatedCodiceFiscale?: string
+  // Buddy system
+  buddyOptIn?: string           // 'yes' | ''
+  buddyDisplayName?: string
+  buddyPhone?: string
+  buddyInstagram?: string
+  buddyLinkedIn?: string
+  buddyLookingFor?: string      // JSON-stringified string[]
+  buddyBio?: string
+  buddyStatus?: string          // 'pending' | 'matched'
+  buddyMatchedWithId?: string
 }
 
 export interface StepProgress {

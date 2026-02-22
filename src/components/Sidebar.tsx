@@ -12,6 +12,7 @@ import {
   HelpCircle,
   DollarSign,
   User,
+  Users,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -127,6 +128,11 @@ export default function Sidebar() {
       label: 'Cost of Living',
       path: '/dashboard/cost-of-living',
       icon: <DollarSign size={20} className="flex-shrink-0" />,
+    },
+    {
+      label: 'Buddy System',
+      path: '/dashboard/buddy-system',
+      icon: <Users size={20} className="flex-shrink-0" />,
     },
   ]
 
