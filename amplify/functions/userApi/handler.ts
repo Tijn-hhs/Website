@@ -129,7 +129,7 @@ interface ApiResponse {
 // ─── Clients & Config ────────────────────────────────────────────────────────
 
 const dynamo = new DynamoDBClient({})
-const ses = new SESClient({})
+const ses = new SESClient({ region: 'eu-west-1' }) // SES identity (weleav.com) is verified in eu-west-1
 const secretsClient = new SecretsManagerClient({})
 
 // Cache the Gemini API key across warm Lambda invocations
