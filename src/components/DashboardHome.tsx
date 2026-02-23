@@ -113,16 +113,17 @@ interface TimelineMilestone {
   date: Date
   isProgramStart?: boolean
   isMock?: boolean
+  templateKey?: string
   emoji: string
 }
 
 // Default suggested milestones relative to program start (in days)
-const MOCK_MILESTONES: { label: string; daysOffset: number; emoji: string }[] = [
-  { label: 'Book your flight',         daysOffset: -90, emoji: '🔖' },
-  { label: 'Find your apartment',      daysOffset: -60, emoji: '🏠' },
-  { label: 'Get health insurance',     daysOffset: -30, emoji: '🩺' },
-  { label: 'Fly to Italy ✈️',          daysOffset: -5,  emoji: '✈️' },
-  { label: 'Move into apartment',      daysOffset: -2,  emoji: '📦' },
+const MOCK_MILESTONES: { label: string; daysOffset: number; emoji: string; templateKey: string }[] = [
+  { label: 'Book your flight',         daysOffset: -90, emoji: '🔖', templateKey: 'book-flight' },
+  { label: 'Find your apartment',      daysOffset: -60, emoji: '🏠', templateKey: 'find-apartment' },
+  { label: 'Get health insurance',     daysOffset: -30, emoji: '🩺', templateKey: 'get-health-insurance' },
+  { label: 'Fly to Italy ✈️',          daysOffset: -5,  emoji: '✈️', templateKey: 'fly-to-italy' },
+  { label: 'Move into apartment',      daysOffset: -2,  emoji: '📦', templateKey: 'move-into-apartment' },
 ]
 
 function getMilestoneStyle(date: Date, today: Date, isProgramStart?: boolean) {
@@ -139,11 +140,13 @@ function ProgramTimeline({
   deadlines,
   onAddDeadline,
   onEditDeadline,
+  onClaimMilestone,
 }: {
   programStartMonth: string
   deadlines: Deadline[]
   onAddDeadline: () => void
   onEditDeadline: (deadline: Deadline) => void
+  onClaimMilestone: (m: { label: string; suggestedDate: string; templateKey: string }) => void
 }) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -152,19 +155,28 @@ function ProgramTimeline({
   const daysToStart = Math.ceil((programStartDate.getTime() - today.getTime()) / 86400000)
 
   // Merge mock defaults + user deadlines + program start, sorted by date
+  // Mocks are hidden once the user has claimed them (matched by templateKey)
+  const claimedKeys = new Set(deadlines.map(d => d.templateKey).filter(Boolean))
+
   const milestones: TimelineMilestone[] = [
-    ...MOCK_MILESTONES.map((m) => ({
-      id: `mock-${m.daysOffset}`,
-      label: m.label,
-      date: new Date(programStartDate.getTime() + m.daysOffset * 86400000),
-      isMock: true,
-      emoji: m.emoji,
-    })),
+    ...MOCK_MILESTONES
+      .filter(m => !claimedKeys.has(m.templateKey))
+      .map((m) => ({
+        id: `mock-${m.daysOffset}`,
+        label: m.label,
+        date: new Date(programStartDate.getTime() + m.daysOffset * 86400000),
+        isMock: true,
+        templateKey: m.templateKey,
+        emoji: m.emoji,
+      })),
     ...deadlines.map((d) => ({
       id: d.deadlineId,
       label: d.title,
       date: new Date(d.dueDate),
-      emoji: '📌',
+      // Use the original milestone emoji if it was claimed from a template
+      emoji: d.templateKey
+        ? (MOCK_MILESTONES.find(m => m.templateKey === d.templateKey)?.emoji ?? '📌')
+        : '📌',
     })),
     {
       id: 'program-start',
@@ -307,11 +319,22 @@ function ProgramTimeline({
 
                   {/* Dot */}
                   <div
-                    onClick={() => !m.isMock && !m.isProgramStart && onEditDeadline(deadlines.find(d => d.deadlineId === m.id)!)}
+                    onClick={() => {
+                      if (m.isMock && m.templateKey) {
+                        onClaimMilestone({
+                          label: m.label,
+                          suggestedDate: m.date.toISOString().slice(0, 10),
+                          templateKey: m.templateKey,
+                        })
+                      } else if (!m.isMock && !m.isProgramStart) {
+                        onEditDeadline(deadlines.find(d => d.deadlineId === m.id)!)
+                      }
+                    }}
+                    title={m.isMock ? `Click to set your date for: ${m.label}` : undefined}
                     className={`flex items-center justify-center rounded-full transition-all ${
                       m.isProgramStart ? 'w-8 h-8' : 'w-5 h-5'
                     } ${trackDot[style]} ${
-                      !m.isMock && !m.isProgramStart ? 'cursor-pointer hover:scale-125' : ''
+                      !m.isProgramStart ? 'cursor-pointer hover:scale-125' : ''
                     }`}
                   >
                     <span className={m.isProgramStart ? 'text-sm' : 'text-[10px]'}>{m.emoji}</span>
@@ -329,7 +352,7 @@ function ProgramTimeline({
                       {m.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
                     {m.isMock && (
-                      <span className="inline-block mt-1 text-[9px] text-slate-300 italic">suggested</span>
+                      <span className="inline-block mt-1 text-[9px] text-blue-400 italic">+ set date</span>
                     )}
                   </div>
                 </div>
@@ -368,7 +391,7 @@ function ProgramTimeline({
             <span className="text-[10px] text-slate-400">Program Start</span>
           </div>
           <div className="flex items-center gap-1.5 ml-auto">
-            <span className="text-[10px] text-slate-300 italic">Suggested milestones shown in grey</span>
+            <span className="text-[10px] text-blue-400 italic">Tap a suggested dot to set your own date</span>
           </div>
         </div>
       </div>
@@ -386,6 +409,7 @@ export default function DashboardHome() {
   const [deadlines, setDeadlines] = useState<Deadline[]>([])
   const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false)
   const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null)
+  const [claimingMilestone, setClaimingMilestone] = useState<{ label: string; suggestedDate: string; templateKey: string } | null>(null)
 
   useEffect(() => {
     loadProgress()
@@ -401,11 +425,11 @@ export default function DashboardHome() {
     }
   }
 
-  async function handleAddDeadline(data: { title: string; dueDate: string; sendReminder: boolean; note?: string }) {
+  async function handleAddDeadline(data: { title: string; dueDate: string; sendReminder: boolean; note?: string; templateKey?: string }) {
     if (editingDeadline) {
       await updateDeadline(editingDeadline.deadlineId, data.title, data.dueDate, data.sendReminder, data.note)
     } else {
-      await createDeadline(data.title, data.dueDate, data.sendReminder, data.note)
+      await createDeadline(data.title, data.dueDate, data.sendReminder, data.note, data.templateKey)
     }
     // Always refetch from server so the timeline stays in sync
     await loadDeadlines()
@@ -503,16 +527,18 @@ export default function DashboardHome() {
         <ProgramTimeline
           programStartMonth={profile.programStartMonth}
           deadlines={deadlines}
-          onAddDeadline={() => { setEditingDeadline(null); setIsDeadlineModalOpen(true) }}
-          onEditDeadline={(d) => { setEditingDeadline(d); setIsDeadlineModalOpen(true) }}
+          onAddDeadline={() => { setEditingDeadline(null); setClaimingMilestone(null); setIsDeadlineModalOpen(true) }}
+          onEditDeadline={(d) => { setEditingDeadline(d); setClaimingMilestone(null); setIsDeadlineModalOpen(true) }}
+          onClaimMilestone={(m) => { setEditingDeadline(null); setClaimingMilestone(m); setIsDeadlineModalOpen(true) }}
         />
       )}
 
       <DeadlineModal
         isOpen={isDeadlineModalOpen}
-        onClose={() => { setIsDeadlineModalOpen(false); setEditingDeadline(null) }}
+        onClose={() => { setIsDeadlineModalOpen(false); setEditingDeadline(null); setClaimingMilestone(null) }}
         onSave={handleAddDeadline}
         initialData={editingDeadline ?? undefined}
+        prefill={claimingMilestone ?? undefined}
         onDelete={editingDeadline ? handleDeleteDeadline : undefined}
       />
 

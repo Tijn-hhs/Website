@@ -115,6 +115,7 @@ interface Deadline {
   dueDate: string
   sendReminder: boolean
   note?: string
+  templateKey?: string
   createdAt: string
   updatedAt: string
 }
@@ -370,6 +371,7 @@ async function createDeadline(
   dueDate: string,
   sendReminder: boolean,
   note?: string,
+  templateKey?: string,
 ): Promise<Deadline> {
   const now = new Date().toISOString()
   const deadline: Deadline = {
@@ -379,6 +381,7 @@ async function createDeadline(
     dueDate,
     sendReminder,
     note: note || undefined,
+    templateKey: templateKey || undefined,
     createdAt: now,
     updatedAt: now,
   }
@@ -643,7 +646,7 @@ async function handleGetDeadlines(userId: string): Promise<ApiResponse> {
 }
 
 async function handlePostDeadline(userId: string, event: any): Promise<ApiResponse> {
-  const { title, dueDate, sendReminder, note } = parseBody(event)
+  const { title, dueDate, sendReminder, note, templateKey } = parseBody(event)
 
   if (!title || typeof title !== 'string' || !title.trim()) {
     return fail(400, 'Title is required and must be a non-empty string')
@@ -654,15 +657,18 @@ async function handlePostDeadline(userId: string, event: any): Promise<ApiRespon
   const dueDateObj = new Date(dueDate)
   if (isNaN(dueDateObj.getTime())) return fail(400, 'Invalid date format')
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  if (dueDateObj < today) return fail(400, 'Due date cannot be in the past')
-
   if (typeof sendReminder !== 'boolean') {
     return fail(400, 'sendReminder must be a boolean')
   }
 
-  const deadline = await createDeadline(userId, title.trim(), dueDate, sendReminder, note?.trim())
+  const deadline = await createDeadline(
+    userId,
+    title.trim(),
+    dueDate,
+    sendReminder,
+    note?.trim(),
+    typeof templateKey === 'string' ? templateKey : undefined,
+  )
   return ok({ deadline }, 201)
 }
 

@@ -341,6 +341,7 @@ export interface Deadline {
   dueDate: string
   sendReminder: boolean
   note?: string
+  templateKey?: string
   createdAt: string
   updatedAt: string
 }
@@ -390,7 +391,8 @@ export async function createDeadline(
   title: string,
   dueDate: string,
   sendReminder: boolean,
-  note?: string
+  note?: string,
+  templateKey?: string,
 ): Promise<Deadline> {
   try {
     const headers = await getAuthHeaders()
@@ -402,7 +404,7 @@ export async function createDeadline(
       path: '/deadlines',
       options: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        body: { title, dueDate, sendReminder, ...(note !== undefined ? { note } : {}) } as any,
+        body: { title, dueDate, sendReminder, ...(note !== undefined ? { note } : {}), ...(templateKey ? { templateKey } : {}) } as any,
         headers: {
           'Content-Type': 'application/json',
           ...headers,

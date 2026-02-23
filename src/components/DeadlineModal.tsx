@@ -5,13 +5,16 @@ import type { Deadline } from '../lib/api'
 interface DeadlineModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (data: { title: string; dueDate: string; sendReminder: boolean; note?: string }) => Promise<void>
+  onSave: (data: { title: string; dueDate: string; sendReminder: boolean; note?: string; templateKey?: string }) => Promise<void>
   initialData?: Deadline
+  /** Pre-fill when the user clicks a suggested milestone dot to claim it */
+  prefill?: { title: string; suggestedDate: string; templateKey: string }
   onDelete?: () => Promise<void>
 }
 
-export default function DeadlineModal({ isOpen, onClose, onSave, initialData, onDelete }: DeadlineModalProps) {
+export default function DeadlineModal({ isOpen, onClose, onSave, initialData, prefill, onDelete }: DeadlineModalProps) {
   const isEditMode = !!initialData
+  const isClaimMode = !initialData && !!prefill
 
   const [title, setTitle] = useState('')
   const [dueDate, setDueDate] = useState('')
@@ -21,7 +24,7 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, on
   const [isLoading, setIsLoading] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  // Pre-fill when opening in edit mode
+  // Pre-fill when opening in edit mode or claim mode
   useEffect(() => {
     if (isOpen && initialData) {
       setTitle(initialData.title)
@@ -29,6 +32,13 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, on
       setDueDate(initialData.dueDate.slice(0, 10))
       setSendReminder(initialData.sendReminder)
       setNote(initialData.note ?? '')
+      setErrors({})
+      setConfirmDelete(false)
+    } else if (isOpen && prefill) {
+      setTitle(prefill.title)
+      setDueDate(prefill.suggestedDate)
+      setSendReminder(false)
+      setNote('')
       setErrors({})
       setConfirmDelete(false)
     } else if (isOpen && !initialData) {
@@ -39,7 +49,7 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, on
       setErrors({})
       setConfirmDelete(false)
     }
-  }, [isOpen, initialData])
+  }, [isOpen, initialData, prefill])
 
   if (!isOpen) return null
 
@@ -60,7 +70,7 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, on
     if (!validate()) return
     setIsLoading(true)
     try {
-      await onSave({ title: title.trim(), dueDate, sendReminder, note: note.trim() || undefined })
+      await onSave({ title: title.trim(), dueDate, sendReminder, note: note.trim() || undefined, templateKey: prefill?.templateKey })
       onClose()
     } catch {
       setErrors({ submit: 'Failed to save deadline. Please try again.' })
@@ -95,9 +105,14 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, on
         <div className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-            <h2 className="text-xl font-semibold text-slate-900">
-              {isEditMode ? 'Edit Deadline' : 'Add Deadline'}
-            </h2>
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">
+                {isEditMode ? 'Edit Deadline' : isClaimMode ? 'Set your date' : 'Add Deadline'}
+              </h2>
+              {isClaimMode && (
+                <p className="mt-0.5 text-sm text-slate-500">Personalise the suggested milestone</p>
+              )}
+            </div>
             <button
               onClick={handleClose}
               disabled={isLoading}
