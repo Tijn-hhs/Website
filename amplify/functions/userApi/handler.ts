@@ -185,7 +185,7 @@ function extractRoute(event: any): { method: string; path: string } {
       : event.requestContext?.httpMethod || event.httpMethod || 'UNKNOWN',
     path: isV2
       ? event.requestContext.http.path
-      : event.requestContext?.resourcePath || event.path || event.rawPath || 'UNKNOWN',
+      : event.path || event.rawPath || event.requestContext?.resourcePath || 'UNKNOWN',
   }
 }
 
@@ -1046,7 +1046,17 @@ async function persistChatMessages(
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 export async function handler(event: any): Promise<ApiResponse> {
-  const { method, path } = extractRoute(event)
+  let { method, path } = extractRoute(event)
+
+  // API Gateway v1 passes the resource template (e.g. /deadlines/{deadlineId})
+  // in event.path instead of the actual URL. Substitute real values from
+  // event.pathParameters when available so routing works correctly.
+  if (event.pathParameters && typeof event.pathParameters === 'object') {
+    for (const [key, val] of Object.entries(event.pathParameters as Record<string, string>)) {
+      path = path.replace(`{${key}}`, val)
+    }
+  }
+
   console.log(`[Handler] Received request: ${method} ${path}`)
 
   // CORS preflight
