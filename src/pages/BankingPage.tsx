@@ -273,7 +273,7 @@ export default function BankingPage() {
           userInfoFields={[
             { key: 'destinationCountry', label: 'Country' },
             { key: 'destinationCity', label: 'City' },
-            { key: 'bankAccountNeeded', label: 'Bank Account Needed' },
+            { key: 'needsBankAccount', label: 'Bank Account Needed' },
           ]}
           checklistItems={checklistItems}
           onChecklistItemToggle={handleChecklistToggle}

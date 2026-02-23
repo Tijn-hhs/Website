@@ -9,7 +9,6 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "sandbox": "npx ampx sandbox",
     "amplify:outputs": "npx ampx generate outputs",
     "amplify:pull": "npx ampx generate outputs"
   },
@@ -26,6 +25,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^6.30.3",
     "uuid": "^9.0.0"
   },

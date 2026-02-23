@@ -1,4 +1,4 @@
-import { fetchMe, saveProfile } from '../lib/api'
+import { saveProfile } from '../lib/api'
 
 const DRAFT_LOCAL_KEY = 'leavs:onboardingDraft'
 

@@ -29,7 +29,7 @@ interface StepPageLayoutProps {
   checklistItems?: ChecklistItem[]
   onChecklistItemToggle?: (id: string, completed: boolean) => void
   showChecklist?: boolean
-  children: ReactNode
+  children?: ReactNode
   useGradientBar?: boolean
   /** Skip the inner grid wrapper; children fill full width */
   fullWidth?: boolean

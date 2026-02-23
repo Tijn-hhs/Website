@@ -38,9 +38,9 @@ function ConfigErrorFallback() {
         }}>
           <h2 style={{ color: '#991b1b', fontSize: '16px', marginBottom: '12px' }}>To fix this:</h2>
           <ol style={{ margin: '0', paddingLeft: '20px', color: '#374151', lineHeight: '1.8' }}>
-            <li>Run in your terminal: <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>npx amplify sandbox</code></li>
-            <li>Wait for the sandbox to start (creates local AWS resources)</li>
-            <li>The file <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>public/amplify_outputs.json</code> will be generated automatically</li>
+            <li>Pull the latest outputs: <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>npm run amplify:pull</code></li>
+            <li>Make sure you are authenticated with AWS CLI (<code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>aws configure</code>)</li>
+            <li>The file <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>public/amplify_outputs.json</code> will be regenerated from the deployed main branch</li>
             <li>Restart this app: <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>npm run dev</code></li>
           </ol>
         </div>
@@ -63,7 +63,7 @@ async function initializeApp() {
     console.log('[Amplify] Starting initialization...')
     
     // Fetch amplify outputs from public folder
-    // For local dev: run `amplify sandbox` to generate amplify_outputs.json with Cognito config
+    // For local dev: run `npm run amplify:pull` to regenerate amplify_outputs.json from the deployed main branch
     console.log('[Amplify] Fetching /amplify_outputs.json...')
     const response = await fetch('/amplify_outputs.json')
     
@@ -71,8 +71,8 @@ async function initializeApp() {
       throw new Error(
         `Failed to fetch /amplify_outputs.json (${response.status})\n\n` +
         'To fix:\n' +
-        '1. Run: npx amplify sandbox\n' +
-        '   (This generates public/amplify_outputs.json with Cognito auth config)\n' +
+        '1. Run: npm run amplify:pull\n' +
+        '   (Regenerates public/amplify_outputs.json from the deployed main branch)\n' +
         '2. Restart dev server: npm run dev\n\n' +
         'See LOCAL_DEV_SETUP.md for detailed instructions.'
       )
@@ -107,8 +107,8 @@ async function initializeApp() {
         '❌ Auth configuration missing from amplify_outputs.json\n\n' +
         '⚠️  LOCAL DEVELOPMENT: This file must contain Cognito UserPool config for authentication to work.\n\n' +
         'SOLUTION:\n' +
-        '1. Run: npx amplify sandbox\n' +
-        '   This will generate public/amplify_outputs.json with full Cognito configuration\n' +
+        '1. Run: npm run amplify:pull\n' +
+        '   Regenerates public/amplify_outputs.json from the deployed main branch\n' +
         '2. Verify: Visit http://localhost:5173/amplify_outputs.json in browser\n' +
         '   Should show auth.user_pool_id and auth.user_pool_client_id (or camelCase equivalents)\n' +
         '3. Restart: npm run dev\n\n' +
@@ -117,7 +117,7 @@ async function initializeApp() {
       )
       
       throw new Error(
-        'Auth configuration not found. Please run: npx amplify sandbox'
+        'Auth configuration not found. Please run: npm run amplify:pull'
       )
     }
     
@@ -141,7 +141,7 @@ async function initializeApp() {
         '❌ REST API name missing or invalid in amplify_outputs.json\n\n' +
         'Expected: custom.API.apiName = "leavsRest"\n' +
         `Found: ${apiName || 'undefined'}\n\n` +
-        'Run: npx amplify sandbox (to regenerate configuration)'
+        'Run: npm run amplify:pull (to regenerate configuration)'
       )
     }
     
@@ -152,7 +152,7 @@ async function initializeApp() {
         '❌ REST API endpoint missing or invalid in amplify_outputs.json\n\n' +
         'Expected: custom.API.endpoint = "https://..."\n' +
         `Found: ${apiEndpoint || 'undefined'}\n\n` +
-        'Run: npx amplify sandbox (to regenerate configuration)'
+        'Run: npm run amplify:pull (to regenerate configuration)'
       )
     }
     
@@ -163,7 +163,7 @@ async function initializeApp() {
         '❌ REST API region missing or invalid in amplify_outputs.json\n\n' +
         'Expected: custom.API.region = "eu-north-1"\n' +
         `Found: ${apiRegion || 'undefined'}\n\n` +
-        'Run: npx amplify sandbox (to regenerate configuration)'
+        'Run: npm run amplify:pull (to regenerate configuration)'
       )
     }
     

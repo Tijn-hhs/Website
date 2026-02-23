@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
 import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
@@ -201,7 +202,25 @@ function MessageBubble({ msg }: { msg: Message }) {
             ? 'bg-blue-600 text-white rounded-br-sm'
             : 'bg-white border border-slate-200 text-slate-800 rounded-bl-sm shadow-sm'
         }`}>
-          {msg.content}
+          {isUser ? msg.content : (
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-0.5">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-0.5">{children}</ol>,
+                li: ({ children }) => <li className="ml-1">{children}</li>,
+                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                em: ({ children }) => <em className="italic">{children}</em>,
+                code: ({ children }) => <code className="bg-slate-100 rounded px-1 py-0.5 text-xs font-mono">{children}</code>,
+                h1: ({ children }) => <h1 className="font-bold text-base mb-1">{children}</h1>,
+                h2: ({ children }) => <h2 className="font-bold mb-1">{children}</h2>,
+                h3: ({ children }) => <h3 className="font-semibold mb-1">{children}</h3>,
+                a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">{children}</a>,
+              }}
+            >
+              {msg.content}
+            </ReactMarkdown>
+          )}
         </div>
         <span className="text-xs text-slate-400 px-1">{formatTime(msg.timestamp)}</span>
       </div>
@@ -244,7 +263,7 @@ export default function AISupportPage() {
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -270,7 +289,9 @@ export default function AISupportPage() {
   }, [])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesContainerRef.current
+    if (!container) return
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
   }, [messages, isTyping])
 
   const sendMessage = async (text: string) => {
@@ -368,12 +389,11 @@ export default function AISupportPage() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 bg-slate-50/50" style={{ maxHeight: 420 }}>
+              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-4 bg-slate-50/50" style={{ maxHeight: 420 }}>
                 {messages.map((msg) => (
                   <MessageBubble key={msg.id} msg={msg} />
                 ))}
                 {isTyping && <TypingIndicator />}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Suggestion chips — only show when just the welcome message */}

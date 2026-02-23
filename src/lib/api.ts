@@ -1,4 +1,4 @@
-import { get, put, post } from 'aws-amplify/api'
+import { get, put, post, del } from 'aws-amplify/api'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { UserProfile, UserData, StepProgress } from '../types/user'
 
@@ -433,6 +433,50 @@ export async function createDeadline(
       )
     }
     
+    throw error
+  }
+}
+
+// ─── Admin ────────────────────────────────────────────────────────────────────
+
+export async function updateDeadline(
+  deadlineId: string,
+  title: string,
+  dueDate: string,
+  sendReminder: boolean,
+  note?: string,
+): Promise<Deadline> {
+  try {
+    const headers = await getAuthHeaders()
+    const restOperation = put({
+      apiName: API_NAME,
+      path: `/deadlines/${deadlineId}`,
+      options: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        body: { title, dueDate, sendReminder, ...(note !== undefined ? { note } : {}) } as any,
+        headers: { 'Content-Type': 'application/json', ...headers },
+      },
+    })
+    const response = await restOperation.response
+    const json = await response.body.json() as Record<string, unknown>
+    return json.deadline as Deadline
+  } catch (error) {
+    console.error('[API] Error in updateDeadline:', error)
+    throw error
+  }
+}
+
+export async function deleteDeadline(deadlineId: string): Promise<void> {
+  try {
+    const headers = await getAuthHeaders()
+    const restOperation = del({
+      apiName: API_NAME,
+      path: `/deadlines/${deadlineId}`,
+      options: { headers },
+    })
+    await restOperation.response
+  } catch (error) {
+    console.error('[API] Error in deleteDeadline:', error)
     throw error
   }
 }

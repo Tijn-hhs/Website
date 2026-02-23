@@ -27,7 +27,7 @@ export default function CostOfLivingPage() {
   const navigate = useNavigate()
   // Use a custom approach to prevent auto-marking as started
   const [showIntroModal, setShowIntroModal] = useState(false)
-  const [isCheckingStatus, setIsCheckingStatus] = useState(true)
+  const [, setIsCheckingStatus] = useState(true)
   const [showGuidedOnboarding, setShowGuidedOnboarding] = useState(false)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -138,7 +138,8 @@ export default function CostOfLivingPage() {
   }
 
   // Handle updates from the guided onboarding
-  const handleOnboardingUpdate = (updates: Partial<typeof profile>) => {
+  const handleOnboardingUpdate = (updates: Partial<UserProfile> | null) => {
+    if (!updates) return
     if (updates.housingType !== undefined) setHousingType(updates.housingType as string)
     if (updates.rentCost !== undefined) setRentCost(updates.rentCost as number)
     if (updates.utilitiesCost !== undefined) setUtilitiesCost(updates.utilitiesCost as number)
@@ -412,10 +413,9 @@ export default function CostOfLivingPage() {
         userInfoTitle="Your Budget Information"
         userInfoFields={[
           { key: 'destinationCity', label: 'City' },
-          { key: 'monthlyBudget', label: 'Monthly Budget' },
-          { key: 'budgetCurrency', label: 'Currency' },
+          { key: 'monthlyBudgetRange', label: 'Monthly Budget' },
           { key: 'housingBudget', label: 'Housing Budget' },
-          { key: 'accommodationType', label: 'Housing Type' },
+          { key: 'housingPreference', label: 'Housing Type' },
         ]}
         checklistItems={checklistItems}
         onChecklistItemToggle={handleChecklistToggle}

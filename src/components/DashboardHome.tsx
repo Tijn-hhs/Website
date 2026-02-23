@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import StepCard from './StepCard'
-import { fetchMe, saveStepProgress } from '../lib/api'
+import DeadlineModal from './DeadlineModal'
+import { fetchMe, saveStepProgress, fetchDeadlines, createDeadline, updateDeadline, deleteDeadline } from '../lib/api'
+import type { Deadline } from '../lib/api'
 import { StepProgress, UserProfile } from '../types/user'
 import {
   GraduationCap,
@@ -17,6 +19,7 @@ import {
   Hash,
   Users,
   Sparkles,
+  Plus,
 } from 'lucide-react'
 
 const numberedSteps = [
@@ -104,6 +107,275 @@ const stepDescriptions: Record<string, string> = {
   'AI Support': 'Get personalised answers about your move to Italy from an AI that knows your profile.',
 }
 
+interface TimelineMilestone {
+  id: string
+  label: string
+  date: Date
+  isProgramStart?: boolean
+  isMock?: boolean
+  emoji: string
+}
+
+// Default suggested milestones relative to program start (in days)
+const MOCK_MILESTONES: { label: string; daysOffset: number; emoji: string }[] = [
+  { label: 'Book your flight',         daysOffset: -90, emoji: '🔖' },
+  { label: 'Find your apartment',      daysOffset: -60, emoji: '🏠' },
+  { label: 'Get health insurance',     daysOffset: -30, emoji: '🩺' },
+  { label: 'Fly to Italy ✈️',          daysOffset: -5,  emoji: '✈️' },
+  { label: 'Move into apartment',      daysOffset: -2,  emoji: '📦' },
+]
+
+function getMilestoneStyle(date: Date, today: Date, isProgramStart?: boolean) {
+  if (isProgramStart) return 'end'
+  const diff = date.getTime() - today.getTime()
+  if (diff < 0)              return 'past'
+  if (diff < 3  * 86400000) return 'urgent'
+  if (diff < 14 * 86400000) return 'soon'
+  return 'future'
+}
+
+function ProgramTimeline({
+  programStartMonth,
+  deadlines,
+  onAddDeadline,
+  onEditDeadline,
+}: {
+  programStartMonth: string
+  deadlines: Deadline[]
+  onAddDeadline: () => void
+  onEditDeadline: (deadline: Deadline) => void
+}) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const programStartDate = new Date(`${programStartMonth}-01`)
+  const daysToStart = Math.ceil((programStartDate.getTime() - today.getTime()) / 86400000)
+
+  // Merge mock defaults + user deadlines + program start, sorted by date
+  const milestones: TimelineMilestone[] = [
+    ...MOCK_MILESTONES.map((m) => ({
+      id: `mock-${m.daysOffset}`,
+      label: m.label,
+      date: new Date(programStartDate.getTime() + m.daysOffset * 86400000),
+      isMock: true,
+      emoji: m.emoji,
+    })),
+    ...deadlines.map((d) => ({
+      id: d.deadlineId,
+      label: d.title,
+      date: new Date(d.dueDate),
+      emoji: '📌',
+    })),
+    {
+      id: 'program-start',
+      label: 'Program Start',
+      date: programStartDate,
+      isProgramStart: true,
+      emoji: '🎓',
+    },
+  ].sort((a, b) => a.date.getTime() - b.date.getTime())
+
+  // Range for today marker: first milestone → program start + small padding
+  const rangeStart = new Date(milestones[0].date.getTime() - 4 * 86400000)
+  const rangeEnd   = new Date(programStartDate.getTime()  + 4 * 86400000)
+  const totalMs    = rangeEnd.getTime() - rangeStart.getTime()
+
+  // Today marker uses real proportional position on the track
+  const todayPct = Math.max(0, Math.min(100,
+    ((today.getTime() - rangeStart.getTime()) / totalMs) * 100
+  ))
+  const programStartPct = Math.max(0, Math.min(100,
+    ((programStartDate.getTime() - rangeStart.getTime()) / totalMs) * 100
+  ))
+
+  // Cushioned-proportional spacing:
+  // 1. Start from real proportional positions (preserves relative distance feel).
+  // 2. Forward-push any dot that's too close to its left neighbour.
+  // 3. If the last dot would exceed the track, squeeze everything back.
+  const MIN_GAP = 12   // % – wide enough so 6.5rem labels never collide
+  const TRACK_START = 2
+  const TRACK_END   = 97
+
+  const rawPcts = milestones.map(m =>
+    Math.max(TRACK_START, Math.min(TRACK_END,
+      ((m.date.getTime() - rangeStart.getTime()) / totalMs) * 100
+    ))
+  )
+
+  const dotPcts = [...rawPcts]
+  // Forward pass: push right if too close
+  for (let i = 1; i < dotPcts.length; i++) {
+    if (dotPcts[i] < dotPcts[i - 1] + MIN_GAP) {
+      dotPcts[i] = dotPcts[i - 1] + MIN_GAP
+    }
+  }
+  // If last dot overflowed, scale the entire array back into [TRACK_START, TRACK_END]
+  if (dotPcts[dotPcts.length - 1] > TRACK_END) {
+    const lo = dotPcts[0]
+    const hi = dotPcts[dotPcts.length - 1]
+    for (let i = 0; i < dotPcts.length; i++) {
+      dotPcts[i] = TRACK_START + ((dotPcts[i] - lo) / (hi - lo)) * (TRACK_END - TRACK_START)
+    }
+  }
+
+  const trackDot: Record<string, string> = {
+    past:    'bg-slate-300 border-2 border-slate-300',
+    urgent:  'bg-red-500   border-2 border-red-400   ring-4 ring-red-100',
+    soon:    'bg-amber-400 border-2 border-amber-400 ring-4 ring-amber-100',
+    future:  'bg-blue-500  border-2 border-blue-400  ring-4 ring-blue-100',
+    end:     'bg-gradient-to-br from-blue-600 to-purple-600 border-2 border-purple-500 ring-4 ring-purple-100',
+  }
+
+  const labelCls: Record<string, string> = {
+    past:   'text-slate-400',
+    urgent: 'text-red-600 font-semibold',
+    soon:   'text-amber-600 font-semibold',
+    future: 'text-slate-700 font-medium',
+    end:    'text-purple-700 font-bold',
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-5 bg-gradient-to-r from-[#1e1b4b] to-[#1e3a5f] flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-white">Journey Timeline</h2>
+          <p className="mt-0.5 text-sm text-blue-200">
+            {daysToStart > 0
+              ? `${daysToStart} days until program start`
+              : daysToStart === 0
+              ? '🎉 Program starts today!'
+              : '✈️ You have arrived!'}
+          </p>
+        </div>
+        <button
+          onClick={onAddDeadline}
+          className="flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 text-sm font-medium text-white"
+        >
+          <Plus size={14} />
+          Add deadline
+        </button>
+      </div>
+
+      {/* Horizontal timeline */}
+      <div className="px-6 pb-8 pt-2">
+        {/* date range labels */}
+        <div className="flex justify-between mb-1">
+          <span className="text-[10px] text-slate-400">
+            {milestones[0].date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+          </span>
+          <span className="text-[10px] text-slate-400">
+            {programStartDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          </span>
+        </div>
+
+        {/* The track area — labels alternate above/below */}
+        <div className="relative" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
+          {/* Track */}
+          <div className="relative h-1.5 bg-slate-100 rounded-full">
+            {/* Filled portion up to today */}
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-slate-300 to-slate-400"
+              style={{ width: `${Math.min(todayPct, programStartPct)}%` }}
+            />
+            {/* Upcoming portion today → program start */}
+            {todayPct < programStartPct && (
+              <div
+                className="absolute inset-y-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 opacity-30"
+                style={{ left: `${todayPct}%`, width: `${programStartPct - todayPct}%` }}
+              />
+            )}
+
+            {/* Milestone dots — cushioned-proportional spacing */}
+            {milestones.map((m, i) => {
+              const pct     = dotPcts[i]
+              const style   = getMilestoneStyle(m.date, today, m.isProgramStart)
+              const isAbove = i % 2 === 0
+
+              return (
+                <div
+                  key={m.id}
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
+                  style={{ left: `${pct}%` }}
+                >
+                  {/* Tick */}
+                  <div
+                    className={`absolute left-1/2 -translate-x-1/2 w-px bg-slate-200 ${
+                      isAbove ? 'bottom-full mb-1 h-5' : 'top-full mt-1 h-5'
+                    }`}
+                  />
+
+                  {/* Dot */}
+                  <div
+                    onClick={() => !m.isMock && !m.isProgramStart && onEditDeadline(deadlines.find(d => d.deadlineId === m.id)!)}
+                    className={`flex items-center justify-center rounded-full transition-all ${
+                      m.isProgramStart ? 'w-8 h-8' : 'w-5 h-5'
+                    } ${trackDot[style]} ${
+                      !m.isMock && !m.isProgramStart ? 'cursor-pointer hover:scale-125' : ''
+                    }`}
+                  >
+                    <span className={m.isProgramStart ? 'text-sm' : 'text-[10px]'}>{m.emoji}</span>
+                  </div>
+
+                  {/* Label card */}
+                  <div
+                    className={`absolute left-1/2 -translate-x-1/2 text-center ${
+                      isAbove ? 'bottom-[calc(100%+1.75rem)]' : 'top-[calc(100%+1.75rem)]'
+                    }`}
+                    style={{ width: '6.5rem' }}
+                  >
+                    <p className={`text-[11px] leading-tight ${labelCls[style]}`}>{m.label}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {m.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                    {m.isMock && (
+                      <span className="inline-block mt-1 text-[9px] text-slate-300 italic">suggested</span>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+
+            {/* Today marker */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20"
+              style={{ left: `${todayPct}%` }}
+            >
+              <div className="w-3.5 h-3.5 rounded-full bg-red-500 ring-[3px] ring-red-200 animate-pulse" />
+              <span className="absolute top-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-red-500 whitespace-nowrap">
+                Today
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-1">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-slate-300" />
+            <span className="text-[10px] text-slate-400">Past</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-[10px] text-slate-400">Coming up</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-[10px] text-slate-400">Upcoming</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-blue-600 to-purple-600" />
+            <span className="text-[10px] text-slate-400">Program Start</span>
+          </div>
+          <div className="flex items-center gap-1.5 ml-auto">
+            <span className="text-[10px] text-slate-300 italic">Suggested milestones shown in grey</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardHome() {
   const [progress, setProgress] = useState<Record<string, boolean>>({})
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -111,10 +383,39 @@ export default function DashboardHome() {
   const [visaStepDisabled, setVisaStepDisabled] = useState(false)
   const [preferredName, setPreferredName] = useState<string>('')
   const [destinationUniversity, setDestinationUniversity] = useState<string>('')
+  const [deadlines, setDeadlines] = useState<Deadline[]>([])
+  const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false)
+  const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null)
 
   useEffect(() => {
     loadProgress()
+    loadDeadlines()
   }, [])
+
+  async function loadDeadlines() {
+    try {
+      const data = await fetchDeadlines()
+      setDeadlines(data)
+    } catch (error) {
+      console.error('Error loading deadlines:', error)
+    }
+  }
+
+  async function handleAddDeadline(data: { title: string; dueDate: string; sendReminder: boolean; note?: string }) {
+    if (editingDeadline) {
+      await updateDeadline(editingDeadline.deadlineId, data.title, data.dueDate, data.sendReminder, data.note)
+    } else {
+      await createDeadline(data.title, data.dueDate, data.sendReminder, data.note)
+    }
+    // Always refetch from server so the timeline stays in sync
+    await loadDeadlines()
+  }
+
+  async function handleDeleteDeadline() {
+    if (!editingDeadline) return
+    await deleteDeadline(editingDeadline.deadlineId)
+    await loadDeadlines()
+  }
 
   async function loadProgress() {
     try {
@@ -156,42 +457,6 @@ export default function DashboardHome() {
     }
   }
 
-  function calculateDaysUntilStart(): number | null {
-    if (!profile?.programStartMonth) return null
-    // programStartMonth is in "YYYY-MM" format, convert to first day of month
-    const startDate = new Date(`${profile.programStartMonth}-01`)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const timeDiff = startDate.getTime() - today.getTime()
-    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24))
-    return daysDiff
-  }
-
-  function getCountdownDisplay(): { daysLeft: number; percentProgress: number; status: string } | null {
-    const daysLeft = calculateDaysUntilStart()
-    if (daysLeft === null) return null
-
-    const maxDays = 365
-    let percentProgress = 100 - (daysLeft / maxDays) * 100
-    if (percentProgress < 0) percentProgress = 100
-    if (percentProgress > 100) percentProgress = 0
-
-    let status = ''
-    if (daysLeft < 0) {
-      status = '✈️ You have arrived!'
-    } else if (daysLeft === 0) {
-      status = '🎉 Today is the day!'
-    } else if (daysLeft <= 7) {
-      status = '⏰ Just around the corner'
-    } else if (daysLeft <= 30) {
-      status = '📅 Coming up soon'
-    } else {
-      status = '📢 Mark your calendars'
-    }
-
-    return { daysLeft: Math.max(0, daysLeft), percentProgress, status }
-  }
-
   async function handleStepComplete(stepTitle: string, completed: boolean) {
     // Prevent unmarking student visa as done for EU citizens
     if (stepTitle === 'Student Visa' && visaStepDisabled && !completed) {
@@ -215,7 +480,6 @@ export default function DashboardHome() {
   const firstIncompleteIndex = numberedSteps.findIndex(
     (step) => !progress[stepKeys[step]]
   )
-  const countdownData = getCountdownDisplay()
 
   return (
     <section className="space-y-8">
@@ -235,38 +499,22 @@ export default function DashboardHome() {
         </p>
       </div>
 
-      {!isLoading && countdownData && (
-        <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">
-                Days until Program Start
-              </h2>
-              <p className="mt-1 text-sm text-slate-600">{countdownData.status}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-4xl font-bold text-blue-700">
-                {countdownData.daysLeft}
-              </p>
-              <p className="text-xs text-slate-500">days left</p>
-            </div>
-          </div>
-          <div className="h-3 w-full rounded-full bg-slate-200">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
-              style={{ width: `${countdownData.percentProgress}%` }}
-            />
-          </div>
-          <p className="mt-3 text-xs text-slate-500">
-            {profile?.programStartMonth
-              ? `Program starts: ${new Date(`${profile.programStartMonth}-01`).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                })}`
-              : 'No start date set'}
-          </p>
-        </div>
+      {!isLoading && profile?.programStartMonth && (
+        <ProgramTimeline
+          programStartMonth={profile.programStartMonth}
+          deadlines={deadlines}
+          onAddDeadline={() => { setEditingDeadline(null); setIsDeadlineModalOpen(true) }}
+          onEditDeadline={(d) => { setEditingDeadline(d); setIsDeadlineModalOpen(true) }}
+        />
       )}
+
+      <DeadlineModal
+        isOpen={isDeadlineModalOpen}
+        onClose={() => { setIsDeadlineModalOpen(false); setEditingDeadline(null) }}
+        onSave={handleAddDeadline}
+        initialData={editingDeadline ?? undefined}
+        onDelete={editingDeadline ? handleDeleteDeadline : undefined}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

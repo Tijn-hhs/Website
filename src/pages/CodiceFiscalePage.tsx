@@ -396,7 +396,6 @@ export default function CodiceFiscalePage() {
           ]}
           checklistItems={checklistItems}
           onChecklistItemToggle={handleChecklistToggle}
-          useGradientBar={true}
           isTabMerged={tabsMerged}
           mergedTabBar={
             <StickyMergedTabBar activeId={activeSection} onSelect={handleTabSelect} />

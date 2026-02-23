@@ -2,6 +2,7 @@ import {
   DynamoDBClient,
   GetItemCommand,
   PutItemCommand,
+  DeleteItemCommand,
   UpdateItemCommand,
   QueryCommand,
   ScanCommand,
@@ -150,7 +151,7 @@ const FEEDBACK_EMAIL = process.env.FEEDBACK_EMAIL || 'tijn@eendenburg.eu'
 const CORS_HEADERS: Record<string, string> = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
 
@@ -325,6 +326,42 @@ async function getUserDeadlines(userId: string): Promise<Deadline[]> {
     })
   )
   return (Items ?? []).map((item) => unmarshall(item) as Deadline)
+}
+
+async function updateDeadlineInDb(
+  userId: string,
+  deadlineId: string,
+  updates: { title: string; dueDate: string; sendReminder: boolean; note?: string },
+): Promise<Deadline> {
+  const { Item } = await dynamo.send(
+    new GetItemCommand({ TableName: TABLE.deadlines, Key: marshall({ userId, deadlineId }) })
+  )
+  if (!Item) throw new Error('Deadline not found')
+  const existing = unmarshall(Item) as Deadline
+  const updated: Deadline = {
+    ...existing,
+    title: updates.title,
+    dueDate: updates.dueDate,
+    sendReminder: updates.sendReminder,
+    note: updates.note,
+    updatedAt: new Date().toISOString(),
+  }
+  await dynamo.send(
+    new PutItemCommand({
+      TableName: TABLE.deadlines,
+      Item: marshall(updated, { removeUndefinedValues: true }),
+    })
+  )
+  return updated
+}
+
+async function deleteDeadlineFromDb(userId: string, deadlineId: string): Promise<void> {
+  await dynamo.send(
+    new DeleteItemCommand({
+      TableName: TABLE.deadlines,
+      Key: marshall({ userId, deadlineId }),
+    })
+  )
 }
 
 async function createDeadline(
@@ -627,6 +664,26 @@ async function handlePostDeadline(userId: string, event: any): Promise<ApiRespon
 
   const deadline = await createDeadline(userId, title.trim(), dueDate, sendReminder, note?.trim())
   return ok({ deadline }, 201)
+}
+
+async function handlePutDeadline(userId: string, deadlineId: string, event: any): Promise<ApiResponse> {
+  const { title, dueDate, sendReminder, note } = parseBody(event)
+  if (!title || typeof title !== 'string' || !title.trim()) return fail(400, 'Title is required')
+  if (!dueDate || typeof dueDate !== 'string') return fail(400, 'Due date is required')
+  if (isNaN(new Date(dueDate).getTime())) return fail(400, 'Invalid date format')
+  if (typeof sendReminder !== 'boolean') return fail(400, 'sendReminder must be a boolean')
+  const deadline = await updateDeadlineInDb(userId, deadlineId, {
+    title: title.trim(),
+    dueDate,
+    sendReminder,
+    note: note?.trim() || undefined,
+  })
+  return ok({ deadline })
+}
+
+async function handleDeleteDeadline(userId: string, deadlineId: string): Promise<ApiResponse> {
+  await deleteDeadlineFromDb(userId, deadlineId)
+  return ok({ message: 'Deadline deleted' })
 }
 
 async function handlePostFeedback(event: any): Promise<ApiResponse> {
@@ -1010,6 +1067,9 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'PUT'  && path === '/progress/start')   return await handlePutProgressStart(userId, event)
     if (method === 'GET'  && path === '/deadlines')  return await handleGetDeadlines(userId)
     if (method === 'POST' && path === '/deadlines')  return await handlePostDeadline(userId, event)
+    const deadlineMatch = path.match(/^\/deadlines\/([^/]+)$/)
+    if (method === 'PUT'    && deadlineMatch) return await handlePutDeadline(userId, deadlineMatch[1], event)
+    if (method === 'DELETE' && deadlineMatch) return await handleDeleteDeadline(userId, deadlineMatch[1])
     if (method === 'GET'  && path === '/admin/stats') return await handleGetAdminStats(event)
     if (method === 'GET'  && path === '/admin/whatsapp-messages') return await handleGetAdminWhatsappMessages(event)
     if (method === 'GET'  && path === '/admin/feedback') return await handleGetAdminFeedback(event)

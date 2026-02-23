@@ -15,11 +15,8 @@ import {
   AlertTriangle,
   Info,
   FileText,
-  MapPin,
-  Lightbulb,
   Link as LinkIcon,
   HelpCircle,
-  ClipboardList,
   Plane,
   Compass,
   Clock,
@@ -224,20 +221,6 @@ function DocItem({
           : <Badge label="Optional" variant="optional" />}
       </div>
     </div>
-  )
-}
-
-function StepItem({ number, title, description }: { number: number; title: string; description: string }) {
-  return (
-    <li className="flex items-start gap-3">
-      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
-        {number}
-      </span>
-      <div>
-        <p className="text-sm font-semibold text-slate-800">{title}</p>
-        <p className="mt-0.5 text-sm text-slate-500">{description}</p>
-      </div>
-    </li>
   )
 }
 
@@ -465,7 +448,7 @@ export default function BeforeDeparturePage() {
   const [flightBooked, setFlightBooked] = useState<string | null>(null)
   const [departureDate, setDepartureDate] = useState<string | null>(null)
   const [passportExpiry, setPassportExpiry] = useState<string | null>(null)
-  const [nationality, setNationality] = useState<string | null>(null)
+  const [, setNationality] = useState<string | null>(null)
 
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [isSaving, setIsSaving] = useState(false)

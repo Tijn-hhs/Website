@@ -1,265 +1,256 @@
-import { useState } from 'react'
-import { X, Calendar, Bell, FileText } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Calendar, Bell, FileText, Trash2 } from 'lucide-react'
+import type { Deadline } from '../lib/api'
 
 interface DeadlineModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (data: { title: string; dueDate: string; sendReminder: boolean; note?: string }) => Promise<void>
+  initialData?: Deadline
+  onDelete?: () => Promise<void>
 }
 
-export default function DeadlineModal({ isOpen, onClose, onSave }: DeadlineModalProps) {
+export default function DeadlineModal({ isOpen, onClose, onSave, initialData, onDelete }: DeadlineModalProps) {
+  const isEditMode = !!initialData
+
   const [title, setTitle] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [sendReminder, setSendReminder] = useState(false)
   const [note, setNote] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  // Pre-fill when opening in edit mode
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setTitle(initialData.title)
+      // dueDate may come as ISO string "YYYY-MM-DD" or full ISO, trim to date part
+      setDueDate(initialData.dueDate.slice(0, 10))
+      setSendReminder(initialData.sendReminder)
+      setNote(initialData.note ?? '')
+      setErrors({})
+      setConfirmDelete(false)
+    } else if (isOpen && !initialData) {
+      setTitle('')
+      setDueDate('')
+      setSendReminder(false)
+      setNote('')
+      setErrors({})
+      setConfirmDelete(false)
+    }
+  }, [isOpen, initialData])
 
   if (!isOpen) return null
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
-
-    if (!title.trim()) {
-      newErrors.title = 'Deadline name is required'
-    }
-
+    if (!title.trim()) newErrors.title = 'Deadline name is required'
     if (!dueDate) {
       newErrors.dueDate = 'Date is required'
-    } else {
-      const selectedDate = new Date(dueDate)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      
-      if (selectedDate < today) {
-        newErrors.dueDate = 'Date cannot be in the past'
-      }
+    } else if (isNaN(new Date(dueDate).getTime())) {
+      newErrors.dueDate = 'Invalid date'
     }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!validate()) {
-      return
-    }
-
+    if (!validate()) return
     setIsLoading(true)
     try {
-      await onSave({
-        title: title.trim(),
-        dueDate,
-        sendReminder,
-        note: note.trim() || undefined,
-      })
-
-      // Reset form
-      setTitle('')
-      setDueDate('')
-      setSendReminder(false)
-      setNote('')
-      setErrors({})
+      await onSave({ title: title.trim(), dueDate, sendReminder, note: note.trim() || undefined })
       onClose()
-    } catch (error) {
-      console.error('Error saving deadline:', error)
+    } catch {
       setErrors({ submit: 'Failed to save deadline. Please try again.' })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleClose = () => {
-    if (!isLoading) {
-      setTitle('')
-      setDueDate('')
-      setSendReminder(false)
-      setNote('')
-      setErrors({})
+  const handleDelete = async () => {
+    if (!onDelete) return
+    setIsLoading(true)
+    try {
+      await onDelete()
       onClose()
+    } catch {
+      setErrors({ submit: 'Failed to delete deadline. Please try again.' })
+    } finally {
+      setIsLoading(false)
+      setConfirmDelete(false)
     }
+  }
+
+  const handleClose = () => {
+    if (!isLoading) onClose()
   }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4">
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-black bg-opacity-25 transition-opacity"
-          onClick={handleClose}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-25 transition-opacity" onClick={handleClose} />
 
-        {/* Modal */}
-        <div className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+        <div className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-slate-900">Add Deadline</h2>
+          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <h2 className="text-xl font-semibold text-slate-900">
+              {isEditMode ? 'Edit Deadline' : 'Add Deadline'}
+            </h2>
             <button
               onClick={handleClose}
               disabled={isLoading}
-              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-500 transition-colors disabled:opacity-50"
+              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors disabled:opacity-50"
             >
-              <X size={24} />
+              <X size={22} />
             </button>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Deadline Name */}
+          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+            {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-2">
-                Deadline Name <span className="text-red-500">*</span>
+              <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1.5">
+                Deadline name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FileText size={18} className="text-slate-400" />
-                </div>
+                <FileText size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <input
                   type="text"
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    errors.title ? 'border-red-500' : 'border-slate-300'
-                  }`}
-                  placeholder="e.g., Submit visa application"
                   disabled={isLoading}
+                  placeholder="e.g., Book flight to Milan"
+                  className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.title ? 'border-red-400' : 'border-slate-300'
+                  }`}
                 />
               </div>
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-              )}
+              {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
             </div>
 
-            {/* Deadline Date */}
+            {/* Date */}
             <div>
-              <label htmlFor="dueDate" className="block text-sm font-medium text-slate-700 mb-2">
-                Deadline Date <span className="text-red-500">*</span>
+              <label htmlFor="dueDate" className="block text-sm font-medium text-slate-700 mb-1.5">
+                Date <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Calendar size={18} className="text-slate-400" />
-                </div>
+                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <input
                   type="date"
                   id="dueDate"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    errors.dueDate ? 'border-red-500' : 'border-slate-300'
-                  }`}
                   disabled={isLoading}
+                  className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.dueDate ? 'border-red-400' : 'border-slate-300'
+                  }`}
                 />
               </div>
-              {errors.dueDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.dueDate}</p>
-              )}
+              {errors.dueDate && <p className="mt-1 text-xs text-red-600">{errors.dueDate}</p>}
             </div>
 
-            {/* Send Reminder */}
+            {/* Reminder */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-3">
-                Send Reminder? <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Send reminder?
               </label>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setSendReminder(true)}
-                  disabled={isLoading}
-                  className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-medium transition-all disabled:opacity-50 ${
-                    sendReminder
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Bell size={18} />
-                    <span>Yes</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSendReminder(false)}
-                  disabled={isLoading}
-                  className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-medium transition-all disabled:opacity-50 ${
-                    !sendReminder
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'
-                  }`}
-                >
-                  No
-                </button>
+              <div className="flex gap-3">
+                {[{ label: 'Yes', value: true }, { label: 'No', value: false }].map(({ label, value }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setSendReminder(value)}
+                    disabled={isLoading}
+                    className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-all disabled:opacity-50 ${
+                      sendReminder === value
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    {value && <Bell size={13} className="inline mr-1.5 -mt-0.5" />}
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Note */}
             <div>
-              <label htmlFor="note" className="block text-sm font-medium text-slate-700 mb-2">
-                Note <span className="text-slate-500 text-xs">(optional)</span>
+              <label htmlFor="note" className="block text-sm font-medium text-slate-700 mb-1.5">
+                Note <span className="text-slate-400 font-normal text-xs">(optional)</span>
               </label>
               <textarea
                 id="note"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-colors"
-                placeholder="Add any additional details..."
+                rows={2}
                 disabled={isLoading}
+                placeholder="Any extra details..."
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-colors"
               />
             </div>
 
-            {/* Submit Error */}
             {errors.submit && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-2.5">
                 <p className="text-sm text-red-600">{errors.submit}</p>
               </div>
             )}
 
             {/* Actions */}
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={isLoading}
-                className="flex-1 py-2.5 px-4 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex-1 py-2.5 px-4 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <span className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
+            <div className="flex gap-3 pt-1">
+              {/* Delete button (edit mode only) */}
+              {isEditMode && onDelete && (
+                confirmDelete ? (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={isLoading}
+                      className="py-2.5 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
                     >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Saving...
-                  </span>
+                      {isLoading ? 'Deleting…' : 'Confirm delete'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={isLoading}
+                      className="py-2.5 px-3 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 ) : (
-                  'Save Deadline'
-                )}
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(true)}
+                    disabled={isLoading}
+                    className="flex items-center gap-1.5 py-2.5 px-4 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </button>
+                )
+              )}
+
+              <div className="flex gap-3 ml-auto">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  disabled={isLoading}
+                  className="py-2.5 px-5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="py-2.5 px-5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  {isLoading ? 'Saving…' : isEditMode ? 'Save changes' : 'Add deadline'}
+                </button>
+              </div>
             </div>
           </form>
         </div>

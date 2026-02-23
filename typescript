@@ -1,0 +1,207 @@
+Script started on Sun Feb 22 23:25:31 2026
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  node /tmp/test-gemini.m [Kjjs[?2004l
+node:internal/modules/package_json_reader:314
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@aws-sdk/client-secrets-manager' imported from /private/tmp/test-gemini.mjs
+[90m    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)[39m
+[90m    at packageResolve (node:internal/modules/esm/resolve:767:81)[39m
+[90m    at moduleResolve (node:internal/modules/esm/resolve:853:18)[39m
+[90m    at defaultResolve (node:internal/modules/esm/resolve:983:11)[39m
+[90m    at #cachedDefaultResolve (node:internal/modules/esm/loader:731:20)[39m
+[90m    at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)[39m
+[90m    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:310:38)[39m
+[90m    at ModuleJob._link (node:internal/modules/esm/module_job:182:49)[39m {
+  code: [32m'ERR_MODULE_NOT_FOUND'[39m
+}
+
+Node.js v22.22.0
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cp /tmp/test-gemini.mjs [K  test-gemini.mjs && node test-gemini.mjs; rm test-gemini.mjs[?2004l
+Key resolved, length: 39, prefix: AIzaSyCN...
+GEMINI ERROR: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\nPlease retry in 903.418892ms.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "0s"
+      }
+    ]
+  }
+}
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cp /tmp/test-gemini.mjs [K  test-gemini.mjs && node test-gemini.mjs; rm test-gemini.mjs[?2004l
+Key resolved, length: 39, prefix: AIzaSyCN...
+GEMINI ERROR: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+          {
+            "description": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field."
+          }
+        ]
+      }
+    ]
+  }
+}
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cp /tmp/test-gemini.mjs [K  test-gemini.mjs && node test-gemini.mjs; rm test-gemini.mjs[?2004l
+Key resolved, length: 39, prefix: AIzaSyCN...
+GEMINI ERROR: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cd "/Users/tijnvaneende [Knnburg/Documents/Bocconi/leavs/startup/leavs code" && node --input-type=module << [K''EOF'[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004hiimport { SecretsManagerClient, GetSecretValueCommand } from "@aw [Kss-sdk/client-secrets-manager"[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004hcconst { SecretString } = await new SecretsManagerClient({ region [K:: "eu-north-1" }).send([?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h   new GetSecretValueCommand({ SecretId: "Gemini_API_Key" })[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h)[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004hcconst parsed = JSON.parse(SecretString)[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004hcconst apiKey = parsed.Gemini_API_Key ?? Object.keys(parsed)[0][?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004hcconst res = await fetch([?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h   `https://generativelanguage.googleapis.com/v1beta/models/gemin [Kii-2.5-flash:generateContent?key=${apiKey}`,[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h   {[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h     method: "POST",[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h     headers: { "Content-Type": "application/json" },[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h     body: JSON.stringify({[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h       system_instruction: { parts: [{ text: "You are a helpful a [Ksssistant." }] },[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h       contents: [{ role: "user", parts: [{ text: "Say hello in o [Knne sentence." }] }],[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h       generationConfig: { maxOutputTokens: 100 }[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h     })[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h   }[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004h)[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004hcconst data = await res.json()[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004hcconsole.log("Status:", res.status)[?2004l
+[0m[27m[24m[Jcmdand heredoc> [K[?2004hcconsole.log("Reply:", data?.candidaimport { SecretsManagerClient [K,, GetSecretValueCommand } from "@aws[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cd "/Users/tijnvaneende [Knnburg/Documents/Bocconi/leavs/startup/leavs code" && node /tmp/test-gemini-25.mj [Ks[?2004l
+node:internal/modules/package_json_reader:314
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@aws-sdk/client-secrets-manager' imported from /private/tmp/test-gemini-25.mjs
+[90m    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)[39m
+[90m    at packageResolve (node:internal/modules/esm/resolve:767:81)[39m
+[90m    at moduleResolve (node:internal/modules/esm/resolve:853:18)[39m
+[90m    at defaultResolve (node:internal/modules/esm/resolve:983:11)[39m
+[90m    at #cachedDefaultResolve (node:internal/modules/esm/loader:731:20)[39m
+[90m    at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)[39m
+[90m    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:310:38)[39m
+[90m    at ModuleJob._link (node:internal/modules/esm/module_job:182:49)[39m {
+  code: [32m'ERR_MODULE_NOT_FOUND'[39m
+}
+
+Node.js v22.22.0
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cp /tmp/test-gemini-25. [Kmmjs "/Users/tijnvaneendenburg/Documents/Bocconi/leavs/startup/leavs code/test-ge [Kmmini-25.mjs" && cd "/Users/tijnvaneendenburg/Documents/Bocconi/leavs/startup/lea [Kvvs code" && node test-gemini-25.mjs[?2004l
+Key length: [33m39[39m
+Status: [33m200[39m
+Reply: Hello there, I hope you're having a good day!
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cd "/Users/tijnvaneende [Knnburg/Documents/Bocconi/leavs/startup/leavs code" && rm test-gemini-25.mjs && gi [Ktt add amplify/functions/userApi/handler.ts && git commit -m "fix: switch to gemi [Knni-2.5-flash model" && git push[?2004l
+[main 3daa44a] fix: switch to gemini-2.5-flash model
+ Committer: Tijn van Eendenburg <tijnvaneendenburg@Tijns-MacBook-Pro.local>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+Enumerating objects: 11, done.
+Counting objects:   9% (1/11)Counting objects:  18% (2/11)Counting objects:  27% (3/11)Counting objects:  36% (4/11)Counting objects:  45% (5/11)Counting objects:  54% (6/11)Counting objects:  63% (7/11)Counting objects:  72% (8/11)Counting objects:  81% (9/11)Counting objects:  90% (10/11)Counting objects: 100% (11/11)Counting objects: 100% (11/11), done.
+Delta compression using up to 10 threads
+Compressing objects:  20% (1/5)Compressing objects:  40% (2/5)Compressing objects:  60% (3/5)Compressing objects:  80% (4/5)Compressing objects: 100% (5/5)Compressing objects: 100% (5/5), done.
+Writing objects:  16% (1/6)Writing objects:  33% (2/6)Writing objects:  50% (3/6)Writing objects:  66% (4/6)Writing objects:  83% (5/6)Writing objects: 100% (6/6)Writing objects: 100% (6/6), 521 bytes | 521.00 KiB/s, done.
+Total 6 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas:   0% (0/3)[Kremote: Resolving deltas:  33% (1/3)[Kremote: Resolving deltas:  66% (2/3)[Kremote: Resolving deltas: 100% (3/3)[Kremote: Resolving deltas: 100% (3/3), completed with 3 local objects.[K
+To https://github.com/Tijn-hhs/Website
+   b31b244..3daa44a  main -> main
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cd "/Users/tijnvaneende [Knnburg/Documents/Bocconi/leavs/startup/leavs code" && npx tsc --noEmit 2>&1 | tai [Kll -20[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h  cd "/Users/tijnvaneende [Knnburg/Documents/Bocconi/leavs/startup/leavs code" && git add amplify/functions/u [KsserApi/handler.ts && git commit -m "fix: add GET /chat handler and make chat mes [Kssage saves non-fatal" && git push[?2004l
+[main dff436f] fix: add GET /chat handler and make chat message saves non-fatal
+ Committer: Tijn van Eendenburg <tijnvaneendenburg@Tijns-MacBook-Pro.local>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 62 insertions(+), 7 deletions(-)
+Enumerating objects: 11, done.
+Counting objects:   9% (1/11)Counting objects:  18% (2/11)Counting objects:  27% (3/11)Counting objects:  36% (4/11)Counting objects:  45% (5/11)Counting objects:  54% (6/11)Counting objects:  63% (7/11)Counting objects:  72% (8/11)Counting objects:  81% (9/11)Counting objects:  90% (10/11)Counting objects: 100% (11/11)Counting objects: 100% (11/11), done.
+Delta compression using up to 10 threads
+Compressing objects:  20% (1/5)Compressing objects:  40% (2/5)Compressing objects:  60% (3/5)Compressing objects:  80% (4/5)Compressing objects: 100% (5/5)Compressing objects: 100% (5/5), done.
+Writing objects:  16% (1/6)Writing objects:  33% (2/6)Writing objects:  50% (3/6)Writing objects:  66% (4/6)Writing objects:  83% (5/6)Writing objects: 100% (6/6)Writing objects: 100% (6/6), 1.03 KiB | 1.03 MiB/s, done.
+Total 6 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas:   0% (0/3)[Kremote: Resolving deltas:  33% (1/3)[Kremote: Resolving deltas:  66% (2/3)[Kremote: Resolving deltas: 100% (3/3)[Kremote: Resolving deltas: 100% (3/3), completed with 3 local objects.[K
+To https://github.com/Tijn-hhs/Website
+   3daa44a..dff436f  main -> main
+[1m[7m%[27m[1m[0m                                                                                [0m[27m[24m[J(base) tijnvaneendenburg@Tijns-MacBook-Pro leavs code % [K[?2004h

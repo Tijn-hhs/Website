@@ -17,7 +17,7 @@ const apiStack = Stack.of(backend.userApi.resources.lambda)
 // Environment identifier for table naming:
 // - Branch deployments (CI/CD): AWS_BRANCH is set (e.g. "main", "prod")
 // - Sandbox: falls back to "dev"
-const env = process.env.AWS_BRANCH || 'dev'
+const env = process.env.AWS_BRANCH || 'main'
 
 // Create DynamoDB tables with explicit, human-readable physical names
 const userProfileTable = new dynamodb.Table(apiStack, 'UserProfileTable', {
@@ -273,6 +273,21 @@ deadlinesResource.addMethod('POST', lambdaIntegration, {
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
 
+// /deadlines/{deadlineId} — for PUT (update) and DELETE
+const deadlineIdResource = deadlinesResource.addResource('{deadlineId}')
+
+// PUT /deadlines/{deadlineId}
+deadlineIdResource.addMethod('PUT', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// DELETE /deadlines/{deadlineId}
+deadlineIdResource.addMethod('DELETE', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
 // Create /admin/stats resource (Cognito-protected; admin check happens inside Lambda)
 const adminResource = restApi.root.addResource('admin')
 const adminStatsResource = adminResource.addResource('stats')
@@ -361,7 +376,7 @@ restApi.addGatewayResponse('Default4XX', {
   responseHeaders: {
     'Access-Control-Allow-Origin': "'*'",
     'Access-Control-Allow-Headers': "'Content-Type,Authorization'",
-    'Access-Control-Allow-Methods': "'GET,POST,PUT,OPTIONS'",
+    'Access-Control-Allow-Methods': "'GET,POST,PUT,DELETE,OPTIONS'",
   },
 })
 
@@ -370,7 +385,7 @@ restApi.addGatewayResponse('Default5XX', {
   responseHeaders: {
     'Access-Control-Allow-Origin': "'*'",
     'Access-Control-Allow-Headers': "'Content-Type,Authorization'",
-    'Access-Control-Allow-Methods': "'GET,POST,PUT,OPTIONS'",
+    'Access-Control-Allow-Methods': "'GET,POST,PUT,DELETE,OPTIONS'",
   },
 })
 
