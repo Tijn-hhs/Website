@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X, Calendar, Bell, FileText, Trash2 } from 'lucide-react'
 import type { Deadline } from '../lib/api'
 
@@ -20,36 +20,43 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, pr
   const [dueDate, setDueDate] = useState('')
   const [sendReminder, setSendReminder] = useState(false)
   const [note, setNote] = useState('')
+  const [templateKey, setTemplateKey] = useState<string | undefined>(undefined)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  // Pre-fill when opening in edit mode or claim mode
+  // Only initialise form state when the modal OPENS (false → true).
+  // Using a ref to track previous open state avoids reacting to prefill/initialData
+  // reference changes, which caused controlled ↔ uncontrolled input warnings.
+  const wasOpen = useRef(false)
   useEffect(() => {
-    if (isOpen && initialData) {
+    const justOpened = isOpen && !wasOpen.current
+    wasOpen.current = isOpen
+    if (!justOpened) return
+
+    if (initialData) {
       setTitle(initialData.title)
-      // dueDate may come as ISO string "YYYY-MM-DD" or full ISO, trim to date part
       setDueDate(initialData.dueDate.slice(0, 10))
       setSendReminder(initialData.sendReminder)
       setNote(initialData.note ?? '')
-      setErrors({})
-      setConfirmDelete(false)
-    } else if (isOpen && prefill) {
+      setTemplateKey(initialData.templateKey)
+    } else if (prefill) {
       setTitle(prefill.title)
       setDueDate(prefill.suggestedDate)
       setSendReminder(false)
       setNote('')
-      setErrors({})
-      setConfirmDelete(false)
-    } else if (isOpen && !initialData) {
+      setTemplateKey(prefill.templateKey)
+    } else {
       setTitle('')
       setDueDate('')
       setSendReminder(false)
       setNote('')
-      setErrors({})
-      setConfirmDelete(false)
+      setTemplateKey(undefined)
     }
-  }, [isOpen, initialData, prefill])
+    setErrors({})
+    setConfirmDelete(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -70,7 +77,7 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, pr
     if (!validate()) return
     setIsLoading(true)
     try {
-      await onSave({ title: title.trim(), dueDate, sendReminder, note: note.trim() || undefined, templateKey: prefill?.templateKey })
+      await onSave({ title: title.trim(), dueDate, sendReminder, note: note.trim() || undefined, templateKey })
       onClose()
     } catch {
       setErrors({ submit: 'Failed to save deadline. Please try again.' })
@@ -133,7 +140,7 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, pr
                 <input
                   type="text"
                   id="title"
-                  value={title}
+                  value={title ?? ''}
                   onChange={(e) => setTitle(e.target.value)}
                   disabled={isLoading}
                   placeholder="e.g., Book flight to Milan"
@@ -155,7 +162,7 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, pr
                 <input
                   type="date"
                   id="dueDate"
-                  value={dueDate}
+                  value={dueDate ?? ''}
                   onChange={(e) => setDueDate(e.target.value)}
                   disabled={isLoading}
                   className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
@@ -198,7 +205,7 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, pr
               </label>
               <textarea
                 id="note"
-                value={note}
+                value={note ?? ''}
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
                 disabled={isLoading}
