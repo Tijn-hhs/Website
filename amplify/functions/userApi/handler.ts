@@ -145,7 +145,8 @@ const TABLE = {
   chatMessages: process.env.CHAT_MESSAGES_TABLE_NAME!,
 } as const
 
-const FEEDBACK_EMAIL = process.env.FEEDBACK_EMAIL || 'tijn@eendenburg.eu'
+const SENDER_EMAIL = 'hello@weleav.com'
+const FEEDBACK_RECIPIENT = process.env.FEEDBACK_EMAIL || 'hello@weleav.com'
 
 // ─── Response Helpers ────────────────────────────────────────────────────────
 
@@ -304,8 +305,8 @@ async function sendFeedbackEmail(userId: string, message: string, page: string):
   try {
     await ses.send(
       new SendEmailCommand({
-        Source: FEEDBACK_EMAIL,
-        Destination: { ToAddresses: [FEEDBACK_EMAIL] },
+        Source: SENDER_EMAIL,
+        Destination: { ToAddresses: [FEEDBACK_RECIPIENT] },
         Message: {
           Subject: { Data: `[Leavs Feedback] New feedback from ${userId}` },
           Body: { Text: { Data: `User ID: ${userId}\nPage: ${page}\n\nMessage:\n${message}` } },
@@ -812,6 +813,34 @@ async function handleGetBuddyMatch(userId: string): Promise<ApiResponse> {
   })
 }
 
+/** POST /admin/test-email — send a test email via SES to verify the integration. */
+async function handlePostAdminTestEmail(event: any): Promise<ApiResponse> {
+  const adminCheck = await checkAdmin(event)
+  if (adminCheck) return adminCheck
+
+  const body = parseBody(event)
+  const to: string = body.to || 'tijn@eendenburg.eu'
+  const subject = body.subject || 'Leavs SES Test Email'
+  const html = body.html || `
+    <h2>SES test from Leavs ✅</h2>
+    <p>If you received this, sending from <strong>hello@weleav.com</strong> via AWS SES is working correctly.</p>
+    <p>Sent at: ${new Date().toISOString()}</p>
+  `
+
+  await ses.send(
+    new SendEmailCommand({
+      Source: 'hello@weleav.com',
+      Destination: { ToAddresses: [to] },
+      Message: {
+        Subject: { Data: subject },
+        Body: { Html: { Data: html } },
+      },
+    })
+  )
+
+  return ok({ success: true, sentTo: to })
+}
+
 /** GET /admin/buddy-pool — list all users who opted into the buddy system. */
 async function handleGetAdminBuddyPool(event: any): Promise<ApiResponse> {
   const adminSecret = process.env.ADMIN_SECRET
@@ -1093,6 +1122,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/admin/users') return await handleGetAdminUsers(event)
     if (method === 'GET'  && path === '/admin/buddy-pool') return await handleGetAdminBuddyPool(event)
     if (method === 'POST' && path === '/admin/buddy-match') return await handlePostAdminBuddyMatch(event)
+    if (method === 'POST' && path === '/admin/test-email')  return await handlePostAdminTestEmail(event)
     if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
 

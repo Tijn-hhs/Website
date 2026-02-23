@@ -123,7 +123,7 @@ backend.userApi.resources.lambda.addToRolePolicy(
   new iam.PolicyStatement({
     effect: iam.Effect.ALLOW,
     actions: ['ses:SendEmail', 'ses:SendRawEmail'],
-    resources: ['*'],
+    resources: ['arn:aws:ses:eu-west-1:293221314187:identity/weleav.com'],
   })
 )
 
@@ -155,7 +155,7 @@ backend.userApi.resources.lambda.addEnvironment(
 )
 backend.userApi.resources.lambda.addEnvironment(
   'FEEDBACK_EMAIL',
-  'tijn@eendenburg.eu'
+  'hello@weleav.com'
 )
 backend.userApi.resources.lambda.addEnvironment(
   'WHATSAPP_MESSAGES_TABLE_NAME',
@@ -340,6 +340,15 @@ const adminBuddyMatchResource = adminResource.addResource('buddy-match')
 
 // POST /admin/buddy-match
 adminBuddyMatchResource.addMethod('POST', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// ─── /admin/test-email ───────────────────────────────────────────────────────
+const adminTestEmailResource = adminResource.addResource('test-email')
+
+// POST /admin/test-email
+adminTestEmailResource.addMethod('POST', lambdaIntegration, {
   authorizer: cognitoAuthorizer,
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
