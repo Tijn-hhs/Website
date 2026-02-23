@@ -8,7 +8,7 @@ interface DeadlineModalProps {
   onSave: (data: { title: string; dueDate: string; sendReminder: boolean; note?: string; templateKey?: string }) => Promise<void>
   initialData?: Deadline
   /** Pre-fill when the user clicks a suggested milestone dot to claim it */
-  prefill?: { title: string; suggestedDate: string; templateKey: string }
+  prefill?: { title: string; suggestedDate: string; templateKey: string; emoji: string }
   onDelete?: () => Promise<void>
 }
 
@@ -21,6 +21,7 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, pr
   const [sendReminder, setSendReminder] = useState(false)
   const [note, setNote] = useState('')
   const [templateKey, setTemplateKey] = useState<string | undefined>(undefined)
+  const [milestoneEmoji, setMilestoneEmoji] = useState<string | undefined>(undefined)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -40,18 +41,21 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, pr
       setSendReminder(initialData.sendReminder)
       setNote(initialData.note ?? '')
       setTemplateKey(initialData.templateKey)
+      setMilestoneEmoji(undefined)
     } else if (prefill) {
       setTitle(prefill.title)
       setDueDate(prefill.suggestedDate)
       setSendReminder(false)
       setNote('')
       setTemplateKey(prefill.templateKey)
+      setMilestoneEmoji(prefill.emoji)
     } else {
       setTitle('')
       setDueDate('')
       setSendReminder(false)
       setNote('')
       setTemplateKey(undefined)
+      setMilestoneEmoji(undefined)
     }
     setErrors({})
     setConfirmDelete(false)
@@ -132,23 +136,31 @@ export default function DeadlineModal({ isOpen, onClose, onSave, initialData, pr
           <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1.5">
-                Deadline name <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {isClaimMode ? 'Milestone' : <>Deadline name <span className="text-red-500">*</span></>}
               </label>
-              <div className="relative">
-                <FileText size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                <input
-                  type="text"
-                  id="title"
-                  value={title ?? ''}
-                  onChange={(e) => setTitle(e.target.value)}
-                  disabled={isLoading}
-                  placeholder="e.g., Book flight to Milan"
-                  className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    errors.title ? 'border-red-400' : 'border-slate-300'
-                  }`}
-                />
-              </div>
+              {isClaimMode ? (
+                <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg">
+                  <span className="text-xl">{milestoneEmoji}</span>
+                  <span className="text-sm font-medium text-slate-800">{title}</span>
+                  <span className="ml-auto text-[10px] text-slate-400 bg-slate-100 rounded px-2 py-0.5">fixed</span>
+                </div>
+              ) : (
+                <div className="relative">
+                  <FileText size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    id="title"
+                    value={title ?? ''}
+                    onChange={(e) => setTitle(e.target.value)}
+                    disabled={isLoading}
+                    placeholder="e.g., Book flight to Milan"
+                    className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                      errors.title ? 'border-red-400' : 'border-slate-300'
+                    }`}
+                  />
+                </div>
+              )}
               {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
             </div>
 

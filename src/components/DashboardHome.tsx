@@ -39,6 +39,7 @@ const extraInformationSteps = [
   'Cost of Living',
   'Buddy System',
   'AI Support',
+  'Find Your Peers',
 ]
 
 const steps = [...numberedSteps, ...extraInformationSteps]
@@ -57,6 +58,7 @@ const stepRoutes: Record<string, string | undefined> = {
   'Cost of Living': '/dashboard/cost-of-living',
   'Buddy System': '/dashboard/buddy-system',
   'AI Support': '/dashboard/ai-support',
+  'Find Your Peers': '/dashboard/find-your-peers',
 }
 
 const stepKeys: Record<string, string> = {
@@ -73,6 +75,7 @@ const stepKeys: Record<string, string> = {
   'Cost of Living': 'cost-of-living',
   'Buddy System': 'buddy-system',
   'AI Support': 'ai-support',
+  'Find Your Peers': 'find-your-peers',
 }
 
 const stepIcons: Record<string, React.ReactNode> = {
@@ -89,6 +92,7 @@ const stepIcons: Record<string, React.ReactNode> = {
   'Cost of Living': <DollarSign size={20} className="flex-shrink-0" />,
   'Buddy System': <Users size={20} className="flex-shrink-0" />,
   'AI Support': <Sparkles size={20} className="flex-shrink-0" />,
+  'Find Your Peers': <Users size={20} className="flex-shrink-0" />,
 }
 
 const stepDescriptions: Record<string, string> = {
@@ -105,6 +109,7 @@ const stepDescriptions: Record<string, string> = {
   'Cost of Living': 'Understand expenses and budget for your stay.',
   'Buddy System': 'Connect with fellow students for housing, bureaucracy help, and friendship.',
   'AI Support': 'Get personalised answers about your move to Italy from an AI that knows your profile.',
+  'Find Your Peers': 'Find the WhatsApp, Telegram, or Discord group chat for your programme and intake year.',
 }
 
 interface TimelineMilestone {
@@ -146,7 +151,7 @@ function ProgramTimeline({
   deadlines: Deadline[]
   onAddDeadline: () => void
   onEditDeadline: (deadline: Deadline) => void
-  onClaimMilestone: (m: { label: string; suggestedDate: string; templateKey: string }) => void
+  onClaimMilestone: (m: { label: string; suggestedDate: string; templateKey: string; emoji: string }) => void
 }) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -325,6 +330,7 @@ function ProgramTimeline({
                           label: m.label,
                           suggestedDate: m.date.toISOString().slice(0, 10),
                           templateKey: m.templateKey,
+                          emoji: m.emoji,
                         })
                       } else if (!m.isMock && !m.isProgramStart) {
                         onEditDeadline(deadlines.find(d => d.deadlineId === m.id)!)
@@ -409,7 +415,7 @@ export default function DashboardHome() {
   const [deadlines, setDeadlines] = useState<Deadline[]>([])
   const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false)
   const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null)
-  const [claimingMilestone, setClaimingMilestone] = useState<{ label: string; suggestedDate: string; templateKey: string } | null>(null)
+  const [claimingMilestone, setClaimingMilestone] = useState<{ label: string; suggestedDate: string; templateKey: string; emoji: string } | null>(null)
 
   useEffect(() => {
     loadProgress()
