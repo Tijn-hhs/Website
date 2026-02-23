@@ -151,7 +151,7 @@ function ProgramTimeline({
   deadlines: Deadline[]
   onAddDeadline: () => void
   onEditDeadline: (deadline: Deadline) => void
-  onClaimMilestone: (m: { label: string; suggestedDate: string; templateKey: string; emoji: string }) => void
+  onClaimMilestone: (m: { title: string; suggestedDate: string; templateKey: string; emoji: string }) => void
 }) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -327,7 +327,7 @@ function ProgramTimeline({
                     onClick={() => {
                       if (m.isMock && m.templateKey) {
                         onClaimMilestone({
-                          label: m.label,
+                          title: m.label,
                           suggestedDate: m.date.toISOString().slice(0, 10),
                           templateKey: m.templateKey,
                           emoji: m.emoji,
@@ -415,7 +415,7 @@ export default function DashboardHome() {
   const [deadlines, setDeadlines] = useState<Deadline[]>([])
   const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false)
   const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null)
-  const [claimingMilestone, setClaimingMilestone] = useState<{ label: string; suggestedDate: string; templateKey: string; emoji: string } | null>(null)
+  const [claimingMilestone, setClaimingMilestone] = useState<{ title: string; suggestedDate: string; templateKey: string; emoji: string } | null>(null)
 
   useEffect(() => {
     loadProgress()
