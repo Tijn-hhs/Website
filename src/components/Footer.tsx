@@ -43,7 +43,7 @@ export default function Footer() {
   return (
     <footer
       className={`bg-white border-t border-slate-200 mt-auto transition-all duration-75 ease-in-out ${
-        hasSidebar ? (isCollapsed ? 'ml-[88px]' : 'ml-[280px]') : ''
+        hasSidebar ? (isCollapsed ? 'md:ml-[88px]' : 'md:ml-[280px]') : ''
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
