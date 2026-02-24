@@ -1022,3 +1022,127 @@ export async function postChat(messages: ChatMessage[], userTimestamp?: string):
   const data = await res.json() as { reply: string }
   return data.reply
 }
+
+// ─── Admin: Content Management ────────────────────────────────────────────────
+
+async function adminApiUrl(path: string): Promise<string> {
+  if (import.meta.env.DEV) return `/api-proxy${path}`
+  const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+  const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+  return `${endpoint}${path}`
+}
+
+async function adminFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers = await getAuthHeaders()
+  const url = await adminApiUrl(path)
+  const res = await fetch(url, {
+    headers: { 'Content-Type': 'application/json', ...headers },
+    ...options,
+  })
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+  return res.json() as Promise<T>
+}
+
+export interface ContentCountry {
+  countryId: string
+  name: string
+  code: string          // ISO 3166-1 alpha-2 e.g. "IT"
+  flagEmoji?: string
+  active: boolean
+  createdAt?: string
+}
+
+export interface ContentCity {
+  cityId: string
+  countryId: string
+  name: string
+  active: boolean
+  createdAt?: string
+}
+
+export interface ContentUniversity {
+  universityId: string
+  cityId: string
+  countryId: string
+  name: string
+  shortName?: string
+  active: boolean
+  createdAt?: string
+}
+
+export interface ContentModule {
+  moduleId: string
+  label: string
+  icon?: string
+  description?: string
+  stepNumber?: number
+  visibilityRules: {
+    destinationCountry?: string
+    destinationCity?: string
+    universityId?: string
+    originEu?: boolean
+    degreeType?: string
+  }
+  active?: boolean
+  createdAt?: string
+}
+
+// Countries
+export async function fetchAdminContentCountries(): Promise<ContentCountry[]> {
+  return adminFetch<ContentCountry[]>('/admin/content/countries')
+}
+export async function createContentCountry(body: Omit<ContentCountry, 'countryId' | 'createdAt'>): Promise<ContentCountry> {
+  return adminFetch<ContentCountry>('/admin/content/countries', { method: 'POST', body: JSON.stringify(body) })
+}
+export async function updateContentCountry(countryId: string, body: Partial<ContentCountry>): Promise<ContentCountry> {
+  return adminFetch<ContentCountry>(`/admin/content/countries/${countryId}`, { method: 'PUT', body: JSON.stringify(body) })
+}
+export async function deleteContentCountry(countryId: string): Promise<void> {
+  await adminFetch<unknown>(`/admin/content/countries/${countryId}`, { method: 'DELETE' })
+}
+
+// Cities
+export async function fetchAdminContentCities(): Promise<ContentCity[]> {
+  return adminFetch<ContentCity[]>('/admin/content/cities')
+}
+export async function createContentCity(body: Omit<ContentCity, 'cityId' | 'createdAt'>): Promise<ContentCity> {
+  return adminFetch<ContentCity>('/admin/content/cities', { method: 'POST', body: JSON.stringify(body) })
+}
+export async function updateContentCity(cityId: string, body: Partial<ContentCity>): Promise<ContentCity> {
+  return adminFetch<ContentCity>(`/admin/content/cities/${cityId}`, { method: 'PUT', body: JSON.stringify(body) })
+}
+export async function deleteContentCity(cityId: string): Promise<void> {
+  await adminFetch<unknown>(`/admin/content/cities/${cityId}`, { method: 'DELETE' })
+}
+
+// Universities
+export async function fetchAdminContentUniversities(): Promise<ContentUniversity[]> {
+  return adminFetch<ContentUniversity[]>('/admin/content/universities')
+}
+export async function createContentUniversity(body: Omit<ContentUniversity, 'universityId' | 'createdAt'>): Promise<ContentUniversity> {
+  return adminFetch<ContentUniversity>('/admin/content/universities', { method: 'POST', body: JSON.stringify(body) })
+}
+export async function updateContentUniversity(universityId: string, body: Partial<ContentUniversity>): Promise<ContentUniversity> {
+  return adminFetch<ContentUniversity>(`/admin/content/universities/${universityId}`, { method: 'PUT', body: JSON.stringify(body) })
+}
+export async function deleteContentUniversity(universityId: string): Promise<void> {
+  await adminFetch<unknown>(`/admin/content/universities/${universityId}`, { method: 'DELETE' })
+}
+
+// Modules
+export async function fetchAdminContentModules(): Promise<ContentModule[]> {
+  return adminFetch<ContentModule[]>('/admin/content/modules')
+}
+export async function createContentModule(body: Omit<ContentModule, 'moduleId' | 'createdAt'>): Promise<ContentModule> {
+  return adminFetch<ContentModule>('/admin/content/modules', { method: 'POST', body: JSON.stringify(body) })
+}
+export async function updateContentModule(moduleId: string, body: Partial<ContentModule>): Promise<ContentModule> {
+  return adminFetch<ContentModule>(`/admin/content/modules/${moduleId}`, { method: 'PUT', body: JSON.stringify(body) })
+}
+export async function deleteContentModule(moduleId: string): Promise<void> {
+  await adminFetch<unknown>(`/admin/content/modules/${moduleId}`, { method: 'DELETE' })
+}

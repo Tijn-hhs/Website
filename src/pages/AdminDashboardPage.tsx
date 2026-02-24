@@ -31,8 +31,12 @@ import {
   EyeOff,
   Send,
   Bell,
+  Plus,
+  Pencil,
+  Trash2,
+  Database,
 } from 'lucide-react'
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -1423,10 +1427,545 @@ function EmailsTab() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TAB 6 — Content Management
+// ═══════════════════════════════════════════════════════════════════════════════
+
+type ContentSubTab = 'destinations' | 'modules'
+
+function slugify(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
+
+function ContentTab() {
+  const [sub, setSub] = useState<ContentSubTab>('destinations')
+
+  const [countries, setCountries] = useState<ContentCountry[]>([])
+  const [cities, setCities] = useState<ContentCity[]>([])
+  const [universities, setUniversities] = useState<ContentUniversity[]>([])
+  const [modules, setModules] = useState<ContentModule[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  const [expandedCountry, setExpandedCountry] = useState<string | null>(null)
+  const [expandedCity, setExpandedCity] = useState<string | null>(null)
+  const [showAddCountry, setShowAddCountry] = useState(false)
+  const [newCountry, setNewCountry] = useState({ name: '', code: '', flagEmoji: '' })
+  const [showAddCity, setShowAddCity] = useState<string | null>(null)
+  const [newCity, setNewCity] = useState({ name: '' })
+  const [showAddUni, setShowAddUni] = useState<string | null>(null)
+  const [newUni, setNewUni] = useState({ name: '', shortName: '' })
+
+  const [showModuleForm, setShowModuleForm] = useState(false)
+  const [editingModule, setEditingModule] = useState<ContentModule | null>(null)
+  const [moduleForm, setModuleForm] = useState<Partial<ContentModule>>({
+    label: '', icon: '', description: '', stepNumber: undefined,
+    visibilityRules: {}, active: true,
+  })
+  const [modFilter, setModFilter] = useState('')
+
+  async function loadAll() {
+    setLoading(true); setError(null)
+    try {
+      const [c, ci, u, m] = await Promise.all([
+        fetchAdminContentCountries(),
+        fetchAdminContentCities(),
+        fetchAdminContentUniversities(),
+        fetchAdminContentModules(),
+      ])
+      setCountries(c); setCities(ci); setUniversities(u); setModules(m)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to load content')
+    } finally { setLoading(false) }
+  }
+
+  useEffect(() => { loadAll() }, [])
+
+  async function addCountry() {
+    if (!newCountry.name || !newCountry.code) return
+    setSaving(true)
+    try {
+      await createContentCountry({ name: newCountry.name, code: newCountry.code.toUpperCase(), flagEmoji: newCountry.flagEmoji || undefined, active: true })
+      setNewCountry({ name: '', code: '', flagEmoji: '' }); setShowAddCountry(false)
+      await loadAll(); setMsg({ ok: true, text: `Country "${newCountry.name}" added.` })
+    } catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  async function removeCountry(countryId: string) {
+    if (!confirm('Delete this country? Cities and universities under it will be orphaned.')) return
+    setSaving(true)
+    try { await deleteContentCountry(countryId); await loadAll(); setMsg({ ok: true, text: 'Country deleted.' }) }
+    catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  async function addCity(countryId: string) {
+    if (!newCity.name) return
+    setSaving(true)
+    try {
+      await createContentCity({ name: newCity.name, countryId, active: true })
+      setNewCity({ name: '' }); setShowAddCity(null)
+      await loadAll(); setMsg({ ok: true, text: `City "${newCity.name}" added.` })
+    } catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  async function removeCity(cityId: string) {
+    if (!confirm('Delete this city? Universities under it will be orphaned.')) return
+    setSaving(true)
+    try { await deleteContentCity(cityId); await loadAll(); setMsg({ ok: true, text: 'City deleted.' }) }
+    catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  async function addUniversity(cityId: string) {
+    if (!newUni.name) return
+    const city = cities.find(c => c.cityId === cityId)
+    if (!city) return
+    setSaving(true)
+    try {
+      await createContentUniversity({ name: newUni.name, shortName: newUni.shortName || undefined, cityId, countryId: city.countryId, active: true })
+      setNewUni({ name: '', shortName: '' }); setShowAddUni(null)
+      await loadAll(); setMsg({ ok: true, text: `University "${newUni.name}" added.` })
+    } catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  async function removeUniversity(universityId: string) {
+    if (!confirm('Delete this university?')) return
+    setSaving(true)
+    try { await deleteContentUniversity(universityId); await loadAll(); setMsg({ ok: true, text: 'University deleted.' }) }
+    catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  function openAddModule() {
+    setEditingModule(null)
+    setModuleForm({ label: '', icon: '', description: '', stepNumber: undefined, visibilityRules: {}, active: true })
+    setShowModuleForm(true)
+  }
+
+  function openEditModule(m: ContentModule) {
+    setEditingModule(m)
+    setModuleForm({ ...m })
+    setShowModuleForm(true)
+  }
+
+  async function saveModule() {
+    if (!moduleForm.label) return
+    setSaving(true)
+    try {
+      if (editingModule) {
+        await updateContentModule(editingModule.moduleId, moduleForm)
+      } else {
+        const id = slugify(moduleForm.label!)
+        await createContentModule({ moduleId: id, label: moduleForm.label!, icon: moduleForm.icon, description: moduleForm.description, stepNumber: moduleForm.stepNumber, visibilityRules: moduleForm.visibilityRules ?? {}, active: moduleForm.active ?? true } as Omit<ContentModule, 'createdAt'>)
+      }
+      setShowModuleForm(false)
+      await loadAll()
+      setMsg({ ok: true, text: `Module "${moduleForm.label}" ${editingModule ? 'updated' : 'created'}.` })
+    } catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  async function removeModule(moduleId: string) {
+    if (!confirm('Delete this module?')) return
+    setSaving(true)
+    try { await deleteContentModule(moduleId); await loadAll(); setMsg({ ok: true, text: 'Module deleted.' }) }
+    catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  const filteredModules = useMemo(() => {
+    if (!modFilter.trim()) return modules
+    const q = modFilter.toLowerCase()
+    return modules.filter(m =>
+      m.label.toLowerCase().includes(q) || m.moduleId.toLowerCase().includes(q) ||
+      (m.visibilityRules?.destinationCountry || '').toLowerCase().includes(q) ||
+      (m.visibilityRules?.destinationCity || '').toLowerCase().includes(q)
+    )
+  }, [modules, modFilter])
+
+  if (loading) return <div className="flex items-center justify-center py-24"><RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" /></div>
+
+  if (error) return (
+    <div className="flex items-start gap-3 bg-red-950/40 border border-red-800 rounded-xl p-5">
+      <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+      <div>
+        <p className="text-red-300 font-medium">Failed to load content data</p>
+        <p className="text-red-400/70 text-sm mt-0.5">{error}</p>
+        <p className="text-gray-500 text-xs mt-2">The content tables will be available after the next Amplify deploy.</p>
+        <button onClick={loadAll} className="mt-3 text-xs text-red-400 hover:text-red-300 underline underline-offset-2">Try again</button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-5">
+      {/* Sub-nav */}
+      <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1 w-fit">
+        {(['destinations', 'modules'] as ContentSubTab[]).map((s) => (
+          <button key={s} onClick={() => setSub(s)}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              sub === s ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+            }`}>
+            {s === 'destinations' ? '🌍 Destinations' : '🧩 Modules'}
+          </button>
+        ))}
+      </div>
+
+      {/* Toast */}
+      {msg && (
+        <div className={`flex items-start gap-3 rounded-xl border p-3 ${
+          msg.ok ? 'bg-emerald-950/40 border-emerald-700 text-emerald-300' : 'bg-red-950/40 border-red-700 text-red-300'
+        }`}>
+          {msg.ok ? <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+          <p className="text-sm flex-1">{msg.text}</p>
+          <button onClick={() => setMsg(null)} className="text-xs opacity-60 hover:opacity-100">✕</button>
+        </div>
+      )}
+
+      {/* ── DESTINATIONS ────────────────────────────────────────────────────── */}
+      {sub === 'destinations' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white">Countries ({countries.length})</h2>
+            <button onClick={() => setShowAddCountry(v => !v)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Add Country
+            </button>
+          </div>
+
+          {showAddCountry && (
+            <div className="bg-gray-900 border border-indigo-700/50 rounded-xl p-4 space-y-3">
+              <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">New Country</p>
+              <div className="grid grid-cols-3 gap-3">
+                <input placeholder="Name (e.g. Italy)" value={newCountry.name} onChange={e => setNewCountry(v => ({ ...v, name: e.target.value }))}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                <input placeholder="ISO code (e.g. IT)" value={newCountry.code} onChange={e => setNewCountry(v => ({ ...v, code: e.target.value }))} maxLength={2}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                <input placeholder="Flag emoji (e.g. 🇮🇹)" value={newCountry.flagEmoji} onChange={e => setNewCountry(v => ({ ...v, flagEmoji: e.target.value }))}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={addCountry} disabled={saving || !newCountry.name || !newCountry.code}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">
+                  <Save className="w-3.5 h-3.5" /> Save
+                </button>
+                <button onClick={() => setShowAddCountry(false)} className="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white transition-colors">Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {countries.length === 0 ? (
+            <div className="text-center py-12 text-gray-600">
+              <Globe className="w-8 h-8 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">No countries yet</p>
+              <p className="text-xs mt-1">Add the first country to get started.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {countries.map(country => {
+                const countryCities = cities.filter(c => c.countryId === country.countryId)
+                const isExpanded = expandedCountry === country.countryId
+                return (
+                  <div key={country.countryId} className="rounded-xl border border-gray-800 bg-gray-900 overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      <button onClick={() => setExpandedCountry(isExpanded ? null : country.countryId)}
+                        className="flex-1 flex items-center gap-3 text-left">
+                        <span className="text-lg">{country.flagEmoji || '🏳️'}</span>
+                        <div>
+                          <p className="text-white font-semibold text-sm">{country.name}</p>
+                          <p className="text-gray-500 text-xs">{country.code} · {countryCities.length} cit{countryCities.length === 1 ? 'y' : 'ies'}</p>
+                        </div>
+                        <span className={`ml-2 text-xs px-1.5 py-0.5 rounded border ${
+                          country.active ? 'border-emerald-700 text-emerald-400 bg-emerald-900/20' : 'border-gray-700 text-gray-500'
+                        }`}>{country.active ? 'active' : 'inactive'}</span>
+                        <span className="ml-auto text-gray-600">{isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</span>
+                      </button>
+                      <button onClick={() => removeCountry(country.countryId)} title="Delete country"
+                        className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-900/20 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="border-t border-gray-800 pl-8 pr-4 py-3 space-y-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Cities</p>
+                          <button onClick={() => setShowAddCity(showAddCity === country.countryId ? null : country.countryId)}
+                            className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                            <Plus className="w-3 h-3" /> Add City
+                          </button>
+                        </div>
+                        {showAddCity === country.countryId && (
+                          <div className="bg-gray-800 border border-indigo-700/40 rounded-lg p-3 flex gap-2">
+                            <input placeholder="City name" value={newCity.name} onChange={e => setNewCity({ name: e.target.value })}
+                              className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                            <button onClick={() => addCity(country.countryId)} disabled={saving || !newCity.name}
+                              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">Save</button>
+                            <button onClick={() => setShowAddCity(null)} className="px-2 py-1.5 text-xs text-gray-500 hover:text-white transition-colors">✕</button>
+                          </div>
+                        )}
+                        {countryCities.length === 0 && !showAddCity && (
+                          <p className="text-xs text-gray-600 italic">No cities yet.</p>
+                        )}
+                        {countryCities.map(city => {
+                          const cityUnis = universities.filter(u => u.cityId === city.cityId)
+                          const isCityExpanded = expandedCity === city.cityId
+                          return (
+                            <div key={city.cityId} className="rounded-lg border border-gray-800 bg-gray-950 overflow-hidden">
+                              <div className="flex items-center gap-3 px-3 py-2.5">
+                                <button onClick={() => setExpandedCity(isCityExpanded ? null : city.cityId)}
+                                  className="flex-1 flex items-center gap-2 text-left">
+                                  <Map className="w-3.5 h-3.5 text-gray-500" />
+                                  <span className="text-sm text-white">{city.name}</span>
+                                  <span className="text-xs text-gray-600">{cityUnis.length} uni{cityUnis.length !== 1 ? 's' : ''}</span>
+                                  <span className="ml-auto text-gray-600">{isCityExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}</span>
+                                </button>
+                                <button onClick={() => removeCity(city.cityId)} className="p-1 rounded text-gray-600 hover:text-red-400 hover:bg-red-900/20 transition-colors">
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                              {isCityExpanded && (
+                                <div className="border-t border-gray-800 pl-6 pr-3 py-2 space-y-1.5">
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <p className="text-xs text-gray-600 uppercase tracking-widest">Universities</p>
+                                    <button onClick={() => setShowAddUni(showAddUni === city.cityId ? null : city.cityId)}
+                                      className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                                      <Plus className="w-3 h-3" /> Add University
+                                    </button>
+                                  </div>
+                                  {showAddUni === city.cityId && (
+                                    <div className="bg-gray-900 border border-indigo-700/40 rounded-lg p-2 flex gap-2 flex-wrap">
+                                      <input placeholder="Full name" value={newUni.name} onChange={e => setNewUni(v => ({ ...v, name: e.target.value }))}
+                                        className="flex-1 min-w-32 bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                                      <input placeholder="Short name (e.g. Bocconi)" value={newUni.shortName} onChange={e => setNewUni(v => ({ ...v, shortName: e.target.value }))}
+                                        className="flex-1 min-w-28 bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                                      <button onClick={() => addUniversity(city.cityId)} disabled={saving || !newUni.name}
+                                        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">Save</button>
+                                      <button onClick={() => setShowAddUni(null)} className="px-2 py-1.5 text-xs text-gray-500 hover:text-white transition-colors">✕</button>
+                                    </div>
+                                  )}
+                                  {cityUnis.length === 0 && !showAddUni && <p className="text-xs text-gray-600 italic">No universities yet.</p>}
+                                  {cityUnis.map(u => (
+                                    <div key={u.universityId} className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-800/50 group">
+                                      <div className="flex items-center gap-2">
+                                        <GraduationCap className="w-3.5 h-3.5 text-gray-600" />
+                                        <span className="text-xs text-white">{u.name}</span>
+                                        {u.shortName && <span className="text-xs text-gray-500">({u.shortName})</span>}
+                                      </div>
+                                      <button onClick={() => removeUniversity(u.universityId)}
+                                        className="p-1 rounded text-gray-700 hover:text-red-400 group-hover:text-gray-500 transition-colors opacity-0 group-hover:opacity-100">
+                                        <Trash2 className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── MODULES ──────────────────────────────────────────────────────────── */}
+      {sub === 'modules' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white">Dashboard Modules ({modules.length})</h2>
+            <button onClick={openAddModule}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Add Module
+            </button>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+            <input type="text" value={modFilter} onChange={e => setModFilter(e.target.value)}
+              placeholder="Filter by label, ID, country, city…"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600 transition-colors" />
+          </div>
+
+          {showModuleForm && (
+            <div className="bg-gray-900 border border-indigo-700/50 rounded-xl p-5 space-y-4">
+              <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">
+                {editingModule ? `Edit: ${editingModule.label}` : 'New Module'}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Label *</label>
+                  <input placeholder="e.g. Student Visa" value={moduleForm.label || ''} onChange={e => setModuleForm(v => ({ ...v, label: e.target.value }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Icon (emoji or name)</label>
+                  <input placeholder="e.g. ✈️" value={moduleForm.icon || ''} onChange={e => setModuleForm(v => ({ ...v, icon: e.target.value }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs text-gray-500 mb-1 block">Description</label>
+                  <input placeholder="Short description shown to users" value={moduleForm.description || ''} onChange={e => setModuleForm(v => ({ ...v, description: e.target.value }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Step number</label>
+                  <input type="number" placeholder="e.g. 3" value={moduleForm.stepNumber ?? ''} onChange={e => setModuleForm(v => ({ ...v, stepNumber: e.target.value ? Number(e.target.value) : undefined }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Status</label>
+                  <select value={moduleForm.active ? 'true' : 'false'} onChange={e => setModuleForm(v => ({ ...v, active: e.target.value === 'true' }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                </div>
+              </div>
+              <div className="border-t border-gray-800 pt-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                  Visibility Rules <span className="text-gray-600 font-normal normal-case">(leave blank = show to everyone)</span>
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Destination Country</label>
+                    <select value={moduleForm.visibilityRules?.destinationCountry ?? ''}
+                      onChange={e => setModuleForm(v => ({ ...v, visibilityRules: { ...v.visibilityRules, destinationCountry: e.target.value || undefined } }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                      <option value="">Any country</option>
+                      {countries.map(c => <option key={c.countryId} value={c.countryId}>{c.flagEmoji} {c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Destination City</label>
+                    <select value={moduleForm.visibilityRules?.destinationCity ?? ''}
+                      onChange={e => setModuleForm(v => ({ ...v, visibilityRules: { ...v.visibilityRules, destinationCity: e.target.value || undefined } }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                      <option value="">Any city</option>
+                      {cities
+                        .filter(c => !moduleForm.visibilityRules?.destinationCountry || c.countryId === moduleForm.visibilityRules.destinationCountry)
+                        .map(c => <option key={c.cityId} value={c.cityId}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">University</label>
+                    <select value={moduleForm.visibilityRules?.universityId ?? ''}
+                      onChange={e => setModuleForm(v => ({ ...v, visibilityRules: { ...v.visibilityRules, universityId: e.target.value || undefined } }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                      <option value="">Any university</option>
+                      {universities
+                        .filter(u => !moduleForm.visibilityRules?.destinationCity || u.cityId === moduleForm.visibilityRules.destinationCity)
+                        .map(u => <option key={u.universityId} value={u.universityId}>{u.shortName || u.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Origin EU</label>
+                    <select
+                      value={moduleForm.visibilityRules?.originEu === undefined ? '' : String(moduleForm.visibilityRules.originEu)}
+                      onChange={e => setModuleForm(v => ({ ...v, visibilityRules: { ...v.visibilityRules, originEu: e.target.value === '' ? undefined : e.target.value === 'true' } }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                      <option value="">Any</option>
+                      <option value="true">EU only</option>
+                      <option value="false">Non-EU only</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Degree Type</label>
+                    <select value={moduleForm.visibilityRules?.degreeType ?? ''}
+                      onChange={e => setModuleForm(v => ({ ...v, visibilityRules: { ...v.visibilityRules, degreeType: e.target.value || undefined } }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                      <option value="">Any</option>
+                      <option value="bachelor">Bachelor</option>
+                      <option value="master">Master</option>
+                      <option value="phd">PhD</option>
+                      <option value="exchange">Exchange</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button onClick={saveModule} disabled={saving || !moduleForm.label}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">
+                  <Save className="w-3.5 h-3.5" /> {editingModule ? 'Update Module' : 'Create Module'}
+                </button>
+                <button onClick={() => setShowModuleForm(false)} className="px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white transition-colors">Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {filteredModules.length === 0 ? (
+            <div className="text-center py-12 text-gray-600">
+              <Database className="w-8 h-8 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">{modules.length === 0 ? 'No modules yet' : 'No results'}</p>
+              <p className="text-xs mt-1">
+                {modules.length === 0 ? 'Modules define dashboard steps for specific user situations.' : 'Try adjusting your filter.'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 pb-8">
+              {filteredModules.map(m => {
+                const rules = m.visibilityRules ?? {}
+                const country = countries.find(c => c.countryId === rules.destinationCountry)
+                const city = cities.find(c => c.cityId === rules.destinationCity)
+                const uni = universities.find(u => u.universityId === rules.universityId)
+                return (
+                  <div key={m.moduleId} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-center gap-4 hover:border-gray-600 transition-colors group">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {m.icon && <span className="text-sm">{m.icon}</span>}
+                        <span className="text-white font-semibold text-sm">{m.label}</span>
+                        {m.stepNumber != null && <span className="text-xs text-gray-600">#{m.stepNumber}</span>}
+                        <span className={`text-xs px-1.5 py-0.5 rounded border ${
+                          (m.active ?? true) ? 'border-emerald-700 text-emerald-400 bg-emerald-900/20' : 'border-gray-700 text-gray-500'
+                        }`}>{(m.active ?? true) ? 'active' : 'inactive'}</span>
+                      </div>
+                      {m.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{m.description}</p>}
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {country && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-900/30 border border-blue-700/50 text-blue-300 text-xs">{country.flagEmoji} {country.name}</span>}
+                        {city && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-900/30 border border-purple-700/50 text-purple-300 text-xs"><Map className="w-3 h-3" />{city.name}</span>}
+                        {uni && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-900/30 border border-indigo-700/50 text-indigo-300 text-xs"><GraduationCap className="w-3 h-3" />{uni.shortName || uni.name}</span>}
+                        {rules.originEu === true && <span className="px-1.5 py-0.5 rounded-md bg-green-900/30 border border-green-700/50 text-green-300 text-xs">EU only</span>}
+                        {rules.originEu === false && <span className="px-1.5 py-0.5 rounded-md bg-orange-900/30 border border-orange-700/50 text-orange-300 text-xs">Non-EU only</span>}
+                        {rules.degreeType && <span className="px-1.5 py-0.5 rounded-md bg-yellow-900/30 border border-yellow-700/50 text-yellow-300 text-xs capitalize">{rules.degreeType}</span>}
+                        {!country && !city && !uni && rules.originEu === undefined && !rules.degreeType && (
+                          <span className="text-xs text-gray-600 italic">shown to all users</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openEditModule(m)} className="p-1.5 rounded-lg text-gray-500 hover:text-indigo-400 hover:bg-indigo-900/20 transition-colors">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => removeModule(m.moduleId)} className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-900/20 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-700 font-mono hidden lg:block">{m.moduleId}</p>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Main Admin Dashboard Page
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails'
+type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails' | 'content'
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
@@ -1461,6 +2000,7 @@ export default function AdminDashboardPage() {
     { id: 'users',     label: 'Users',             icon: <UserCheck className="w-3.5 h-3.5" /> },
     { id: 'buddy',     label: 'Buddy System',      icon: <Heart className="w-3.5 h-3.5" /> },
     { id: 'emails',    label: 'Email Templates',   icon: <Mail className="w-3.5 h-3.5" /> },
+    { id: 'content',   label: 'Content',            icon: <Database className="w-3.5 h-3.5" /> },
   ]
 
   return (
@@ -1519,6 +2059,7 @@ export default function AdminDashboardPage() {
         {activeTab === 'users' && <UsersTab />}
         {activeTab === 'buddy' && <BuddyTab />}
         {activeTab === 'emails' && <EmailsTab />}
+        {activeTab === 'content' && <ContentTab />}
       </main>
     </div>
   )
