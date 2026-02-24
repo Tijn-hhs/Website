@@ -20,10 +20,12 @@ import {
   Users,
   Sparkles,
   Plus,
+  Award,
 } from 'lucide-react'
 
 const numberedSteps = [
   'University Application',
+  'Funding & Scholarships',
   'Student Visa',
   'Codice Fiscale',
   'Before Departure',
@@ -46,6 +48,7 @@ const steps = [...numberedSteps, ...extraInformationSteps]
 
 const stepRoutes: Record<string, string | undefined> = {
   'University Application': '/dashboard/university-application',
+  'Funding & Scholarships': '/dashboard/funding-scholarships',
   'Student Visa': '/dashboard/student-visa',
   'Codice Fiscale': '/dashboard/codice-fiscale',
   'Before Departure': '/dashboard/before-departure',
@@ -63,6 +66,7 @@ const stepRoutes: Record<string, string | undefined> = {
 
 const stepKeys: Record<string, string> = {
   'University Application': 'university-application',
+  'Funding & Scholarships': 'funding-scholarships',
   'Student Visa': 'student-visa',
   'Codice Fiscale': 'codice-fiscale',
   'Before Departure': 'before-departure',
@@ -80,6 +84,7 @@ const stepKeys: Record<string, string> = {
 
 const stepIcons: Record<string, React.ReactNode> = {
   'University Application': <GraduationCap size={20} className="flex-shrink-0" />,
+  'Funding & Scholarships': <Award size={20} className="flex-shrink-0" />,
   'Student Visa': <FileText size={20} className="flex-shrink-0" />,
   'Codice Fiscale': <Hash size={20} className="flex-shrink-0" />,
   'Before Departure': <Plane size={20} className="flex-shrink-0" />,
@@ -97,6 +102,7 @@ const stepIcons: Record<string, React.ReactNode> = {
 
 const stepDescriptions: Record<string, string> = {
   'University Application': 'Research programs, prepare documents, and submit your university applications.',
+  'Funding & Scholarships': 'Discover merit awards, income-based grants, and external scholarships to fund your studies.',
   'Student Visa': 'Apply for your student visa and prepare all required documentation.',
   'Codice Fiscale': 'Obtain your Italian tax identification number (codice fiscale).',
   'Before Departure': 'Get vaccinations, arrange travel, and prepare for your move.',

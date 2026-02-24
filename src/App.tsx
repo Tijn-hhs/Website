@@ -8,6 +8,7 @@ import LandingPage from './pages/LandingPage'
 import AuthPage from './pages/AuthPage'
 import MySituationPage from './pages/MySituationPage'
 import UniversityApplicationPage from './pages/UniversityApplicationPage'
+import FundingScholarshipPage from './pages/FundingScholarshipPage'
 import StudentVisaPage from './pages/StudentVisaPage'
 import CodiceFiscalePage from './pages/CodiceFiscalePage'
 import BeforeDeparturePage from './pages/BeforeDeparturePage'
@@ -20,6 +21,7 @@ import InformationCentrePage from './pages/InformationCentrePage'
 import CostOfLivingPage from './pages/CostOfLivingPage'
 import BuddySystemPage from './pages/BuddySystemPage'
 import AISupportPage from './pages/AISupportPage'
+import FindYourPeersPage from './pages/FindYourPeersPage'
 import BlogOverviewPage from './pages/BlogOverviewPage'
 import BlogPostPage from './pages/BlogPostPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -58,6 +60,14 @@ export default function App() {
           element={
             <AuthGate>
               <UniversityApplicationPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/dashboard/funding-scholarships"
+          element={
+            <AuthGate>
+              <FundingScholarshipPage />
             </AuthGate>
           }
         />
@@ -149,6 +159,14 @@ export default function App() {
             </AuthGate>} />
             <Route path="/dashboard/ai-support" element={<AuthGate>
               <AISupportPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/dashboard/find-your-peers"
+          element={
+            <AuthGate>
+              <FindYourPeersPage />
             </AuthGate>
           }
         />

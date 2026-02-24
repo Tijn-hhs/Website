@@ -9,6 +9,14 @@ export type StepRequirement = {
 }
 
 export const stepRequirements: Record<string, StepRequirement[]> = {
+  'funding-scholarships': [
+    { id: 'research-merit', label: 'Research Bocconi merit awards (Excellence & Merit Award)', description: 'Auto-considered when you apply — no separate form needed' },
+    { id: 'prepare-gmat', label: 'Prepare GMAT/GRE score for scholarship boost (MSc)', description: 'Strongly increases Excellence Award chances' },
+    { id: 'check-external', label: 'Check external scholarships (gov\'t, Rotary, bilateral)', description: 'Apply 6–18 months before program start' },
+    { id: 'prepare-isee', label: 'Start ISEE / ISEE parificato for income-based aid', description: 'Non-EU: begin income document legalisation before leaving home' },
+    { id: 'apply-dsu', label: 'Apply for DSU Borse di Studio (after enrollment)', description: 'Opens July–September via ISU Bocconi portal' },
+    { id: 'attend-isu-info', label: 'Attend ISU Bocconi financial aid info session', description: 'Held in September for incoming students' },
+  ],
   'university-application': [
     { id: 'choose-program', label: 'Choose your Bocconi program', description: 'BSc, MSc, or Law — and the specific track' },
     { id: 'check-round', label: 'Pick your application round', description: 'Earlier rounds = more places + higher scholarship priority' },
