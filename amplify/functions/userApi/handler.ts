@@ -815,11 +815,17 @@ async function handleGetBuddyMatch(userId: string): Promise<ApiResponse> {
 
 /** POST /admin/test-email — send a test email via SES to verify the integration. */
 async function handlePostAdminTestEmail(event: any): Promise<ApiResponse> {
-  const adminCheck = await checkAdmin(event)
-  if (adminCheck) return adminCheck
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  if (adminSecret && providedSecret !== adminSecret) {
+    return fail(403, 'Forbidden')
+  }
 
   const body = parseBody(event)
-  const to: string = body.to || 'tijn@eendenburg.eu'
+  const to: string = body.to || 'hallo@weleav.com'
   const subject = body.subject || 'Leavs SES Test Email'
   const html = body.html || `
     <h2>SES test from Leavs ✅</h2>
@@ -827,18 +833,22 @@ async function handlePostAdminTestEmail(event: any): Promise<ApiResponse> {
     <p>Sent at: ${new Date().toISOString()}</p>
   `
 
-  await ses.send(
-    new SendEmailCommand({
-      Source: 'hallo@weleav.com',
-      Destination: { ToAddresses: [to] },
-      Message: {
-        Subject: { Data: subject },
-        Body: { Html: { Data: html } },
-      },
-    })
-  )
-
-  return ok({ success: true, sentTo: to })
+  try {
+    await ses.send(
+      new SendEmailCommand({
+        Source: 'hallo@weleav.com',
+        Destination: { ToAddresses: [to] },
+        Message: {
+          Subject: { Data: subject },
+          Body: { Html: { Data: html } },
+        },
+      })
+    )
+    return ok({ success: true, sentTo: to })
+  } catch (err: any) {
+    console.error('[test-email] SES error:', err)
+    return fail(502, `SES error: ${err?.message ?? String(err)}`)
+  }
 }
 
 /** GET /admin/buddy-pool — list all users who opted into the buddy system. */

@@ -123,7 +123,7 @@ backend.userApi.resources.lambda.addToRolePolicy(
   new iam.PolicyStatement({
     effect: iam.Effect.ALLOW,
     actions: ['ses:SendEmail', 'ses:SendRawEmail'],
-    resources: ['arn:aws:ses:eu-west-1:293221314187:identity/weleav.com'],
+    resources: ['*'],
   })
 )
 

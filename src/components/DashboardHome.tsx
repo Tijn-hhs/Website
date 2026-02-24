@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import StepCard from './StepCard'
 import DeadlineModal from './DeadlineModal'
-import { fetchMe, saveStepProgress, fetchDeadlines, createDeadline, updateDeadline, deleteDeadline, sendTestEmail } from '../lib/api'
-import { checkAdminStatus } from '../lib/adminAuth'
+import { fetchMe, saveStepProgress, fetchDeadlines, createDeadline, updateDeadline, deleteDeadline } from '../lib/api'
 import type { Deadline } from '../lib/api'
 import { StepProgress, UserProfile } from '../types/user'
 import {
@@ -21,7 +20,6 @@ import {
   Users,
   Sparkles,
   Plus,
-  Mail,
 } from 'lucide-react'
 
 const numberedSteps = [
@@ -418,28 +416,11 @@ export default function DashboardHome() {
   const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false)
   const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null)
   const [claimingMilestone, setClaimingMilestone] = useState<{ title: string; suggestedDate: string; templateKey: string; emoji: string } | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [emailTestState, setEmailTestState] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle')
-  const [emailTestError, setEmailTestError] = useState('')
 
   useEffect(() => {
-    checkAdminStatus().then(({ isAdmin }) => setIsAdmin(isAdmin))
     loadProgress()
     loadDeadlines()
   }, [])
-
-  async function handleSendTestEmail() {
-    setEmailTestState('sending')
-    setEmailTestError('')
-    try {
-      await sendTestEmail('Tijn@Eendenburg.eu')
-      setEmailTestState('ok')
-      setTimeout(() => setEmailTestState('idle'), 4000)
-    } catch (err: any) {
-      setEmailTestState('error')
-      setEmailTestError(err?.message ?? 'Unknown error')
-    }
-  }
 
   async function loadDeadlines() {
     try {
@@ -708,34 +689,6 @@ export default function DashboardHome() {
           ))}
         </div>
       </div>
-
-      {isAdmin && (
-        <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-5">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-0.5">Admin — Email test</p>
-              <p className="text-sm text-amber-800">Send a test email from <strong>hallo@weleav.com</strong> to Tijn@Eendenburg.eu</p>
-              {emailTestState === 'error' && (
-                <p className="text-xs text-red-600 mt-1">{emailTestError}</p>
-              )}
-            </div>
-            <button
-              onClick={handleSendTestEmail}
-              disabled={emailTestState === 'sending'}
-              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-                emailTestState === 'ok'
-                  ? 'bg-green-500 text-white'
-                  : emailTestState === 'error'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-amber-500 hover:bg-amber-600 text-white'
-              } disabled:opacity-50`}
-            >
-              <Mail size={15} />
-              {emailTestState === 'sending' ? 'Sending…' : emailTestState === 'ok' ? '✓ Sent!' : emailTestState === 'error' ? 'Failed' : 'Send test email'}
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-slate-900">Tools</h2>
