@@ -471,6 +471,7 @@ export async function updateDeadline(
 export async function deleteDeadline(deadlineId: string): Promise<void> {
   try {
     const headers = await getAuthHeaders()
+    console.log('[API] Calling deleteDeadline:', { deadlineId })
     const restOperation = del({
       apiName: API_NAME,
       path: `/deadlines/${deadlineId}`,
@@ -481,6 +482,34 @@ export async function deleteDeadline(deadlineId: string): Promise<void> {
     console.error('[API] Error in deleteDeadline:', error)
     throw error
   }
+}
+
+// ─── Admin: Test Email ──────────────────────────────────────────────────────
+
+export async function sendTestEmail(to: string): Promise<{ success: boolean; sentTo: string }> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/test-email'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/test-email`
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify({ to }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`HTTP ${res.status}: ${body}`)
+  }
+
+  return res.json()
 }
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
