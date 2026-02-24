@@ -853,9 +853,11 @@ async function handlePostAdminTestEmail(event: any): Promise<ApiResponse> {
 
 /** POST /user/me/welcome-email — send a welcome email to the newly-onboarded user. */
 async function handlePostWelcomeEmail(userId: string, event: any): Promise<ApiResponse> {
-  // Extract email from Cognito JWT claims forwarded by API Gateway
+  // Extract email from Cognito JWT claims forwarded by API Gateway.
+  // Lowercase to normalise casing (e.g. "Tijn@Eendenburg.eu" → "tijn@eendenburg.eu")
+  // since SES verified-address checks are case-sensitive in sandbox mode.
   const auth = event.requestContext?.authorizer || event.authorizer || {}
-  const userEmail: string = auth?.claims?.email || auth?.email || ''
+  const userEmail: string = (auth?.claims?.email || auth?.email || '').toLowerCase()
   if (!userEmail) return fail(400, 'Could not determine user email from token')
 
   const body = parseBody(event)
