@@ -223,8 +223,13 @@ const cognitoAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(
 )
 
 // Create Lambda integration
+// allowTestInvoke: false — CDK would otherwise add TWO permission entries per
+// route (one for real invocations, one for API GW console test-invoke). With
+// 20+ routes the default doubles the Lambda resource policy size, exceeding
+// the 20 KB hard limit. Disabling test-invoke halves policy size.
 const lambdaIntegration = new apigateway.LambdaIntegration(
-  backend.userApi.resources.lambda
+  backend.userApi.resources.lambda,
+  { allowTestInvoke: false }
 )
 
 // Create /user resource
