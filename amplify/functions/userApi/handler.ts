@@ -145,8 +145,8 @@ const TABLE = {
   chatMessages: process.env.CHAT_MESSAGES_TABLE_NAME!,
 } as const
 
-const SENDER_EMAIL = 'hello@weleav.com'
-const FEEDBACK_RECIPIENT = process.env.FEEDBACK_EMAIL || 'hello@weleav.com'
+const SENDER_EMAIL = 'hallo@weleav.com'
+const FEEDBACK_RECIPIENT = process.env.FEEDBACK_EMAIL || 'hallo@weleav.com'
 
 // ─── Response Helpers ────────────────────────────────────────────────────────
 
@@ -823,13 +823,13 @@ async function handlePostAdminTestEmail(event: any): Promise<ApiResponse> {
   const subject = body.subject || 'Leavs SES Test Email'
   const html = body.html || `
     <h2>SES test from Leavs ✅</h2>
-    <p>If you received this, sending from <strong>hello@weleav.com</strong> via AWS SES is working correctly.</p>
+    <p>If you received this, sending from <strong>hallo@weleav.com</strong> via AWS SES is working correctly.</p>
     <p>Sent at: ${new Date().toISOString()}</p>
   `
 
   await ses.send(
     new SendEmailCommand({
-      Source: 'hello@weleav.com',
+      Source: 'hallo@weleav.com',
       Destination: { ToAddresses: [to] },
       Message: {
         Subject: { Data: subject },

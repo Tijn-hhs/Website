@@ -155,7 +155,7 @@ backend.userApi.resources.lambda.addEnvironment(
 )
 backend.userApi.resources.lambda.addEnvironment(
   'FEEDBACK_EMAIL',
-  'hello@weleav.com'
+  'hallo@weleav.com'
 )
 backend.userApi.resources.lambda.addEnvironment(
   'WHATSAPP_MESSAGES_TABLE_NAME',
