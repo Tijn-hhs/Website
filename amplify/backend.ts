@@ -295,61 +295,30 @@ const cognitoAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(
 )
 
 // Create Lambda integration
-// allowTestInvoke: false — CDK would otherwise add TWO permission entries per
-// route (one for real invocations, one for API GW console test-invoke). With
-// 20+ routes the default doubles the Lambda resource policy size, exceeding
-// the 20 KB hard limit. Disabling test-invoke halves policy size.
 const lambdaIntegration = new apigateway.LambdaIntegration(
   backend.userApi.resources.lambda,
   { allowTestInvoke: false }
 )
 
-// Create /user resource
-const userResource = restApi.root.addResource('user')
-const meResource = userResource.addResource('me')
-
-// GET /user/me
-meResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
+// ─── Single proxy resource ────────────────────────────────────────────────────
+// Instead of declaring every route explicitly in CDK (which creates one
+// AWS::Lambda::Permission per method), we use a catch-all {proxy+} resource.
+// This creates only ~2 Lambda permissions total, staying well under the 20 KB
+// Lambda resource policy size limit.  The Lambda handler already contains its
+// own if/else router, so all routing logic stays in code — nothing is lost.
+restApi.root.addProxy({
+  anyMethod: true,
+  defaultIntegration: lambdaIntegration,
+  defaultMethodOptions: {
+    authorizer: cognitoAuthorizer,
+    authorizationType: apigateway.AuthorizationType.COGNITO,
+  },
 })
 
-// PUT /user/me
-meResource.addMethod('PUT', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// POST /user/me/welcome-email
-const welcomeEmailResource = meResource.addResource('welcome-email')
-welcomeEmailResource.addMethod('POST', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// Create /progress resource
-const progressResource = restApi.root.addResource('progress')
-
-// PUT /progress
-progressResource.addMethod('PUT', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// Create /progress/start resource
-const progressStartResource = progressResource.addResource('start')
-
-// PUT /progress/start
-progressStartResource.addMethod('PUT', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// Create /feedback resource
+// /feedback POST is the one unauthenticated route (public feedback widget).
+// Explicit resources take precedence over the proxy, so this bypasses Cognito.
 const feedbackResource = restApi.root.addResource('feedback')
-
-// POST /feedback with CORS (no authentication required for public feedback)
-// OPTIONS is automatically handled by defaultCorsPreflightOptions
+// POST /feedback — no auth required (public feedback widget)
 feedbackResource.addMethod('POST', lambdaIntegration, {
   methodResponses: [
     {
@@ -360,247 +329,6 @@ feedbackResource.addMethod('POST', lambdaIntegration, {
     },
   ],
 })
-
-// Create /deadlines resource
-const deadlinesResource = restApi.root.addResource('deadlines')
-
-// GET /deadlines
-deadlinesResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// POST /deadlines
-deadlinesResource.addMethod('POST', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// /deadlines/{deadlineId} — for PUT (update) and DELETE
-const deadlineIdResource = deadlinesResource.addResource('{deadlineId}')
-
-// PUT /deadlines/{deadlineId}
-deadlineIdResource.addMethod('PUT', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// DELETE /deadlines/{deadlineId}
-deadlineIdResource.addMethod('DELETE', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// Create /admin/stats resource (Cognito-protected; admin check happens inside Lambda)
-const adminResource = restApi.root.addResource('admin')
-const adminStatsResource = adminResource.addResource('stats')
-
-// GET /admin/stats
-adminStatsResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /admin/whatsapp-messages ────────────────────────────────────────────────
-
-const adminWhatsappResource = adminResource.addResource('whatsapp-messages')
-
-// GET /admin/whatsapp-messages
-adminWhatsappResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /admin/feedback ─────────────────────────────────────────────────────────
-const adminFeedbackResource = adminResource.addResource('feedback')
-
-// GET /admin/feedback
-adminFeedbackResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /admin/users ────────────────────────────────────────────────────────────
-const adminUsersResource = adminResource.addResource('users')
-
-// GET /admin/users
-adminUsersResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /admin/buddy-pool ────────────────────────────────────────────────────────
-const adminBuddyPoolResource = adminResource.addResource('buddy-pool')
-
-// GET /admin/buddy-pool
-adminBuddyPoolResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /admin/buddy-match ───────────────────────────────────────────────────────
-const adminBuddyMatchResource = adminResource.addResource('buddy-match')
-
-// POST /admin/buddy-match
-adminBuddyMatchResource.addMethod('POST', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /admin/test-email ───────────────────────────────────────────────────────
-const adminTestEmailResource = adminResource.addResource('test-email')
-
-// POST /admin/test-email
-adminTestEmailResource.addMethod('POST', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /admin/email-templates ──────────────────────────────────────────────────
-const adminEmailTemplatesResource = adminResource.addResource('email-templates')
-
-// GET /admin/email-templates
-adminEmailTemplatesResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// PUT /admin/email-templates/{key}
-const adminEmailTemplateKeyResource = adminEmailTemplatesResource.addResource('{key}')
-adminEmailTemplateKeyResource.addMethod('PUT', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /buddy/match ─────────────────────────────────────────────────────────────
-const buddyResource = restApi.root.addResource('buddy')
-const buddyMatchResource = buddyResource.addResource('match')
-
-// GET /buddy/match
-buddyMatchResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /chat ───────────────────────────────────────────────────────────────────
-const chatResource = restApi.root.addResource('chat')
-
-// GET /chat — load chat history
-chatResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// POST /chat — send message
-chatResource.addMethod('POST', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /content — public read routes for destination content ───────────────────
-// These are authenticated (Cognito) but not admin-only.
-// The rule engine in the Lambda filters modules by the situation query params.
-
-const contentResource = restApi.root.addResource('content')
-
-// GET /content/modules?destinationCountry=italy&originEu=false&...
-const contentModulesResource = contentResource.addResource('modules')
-contentModulesResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// GET /content/countries
-const contentCountriesResource = contentResource.addResource('countries')
-contentCountriesResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-// GET /content/countries/{id}
-const contentCountryIdResource = contentCountriesResource.addResource('{id}')
-contentCountryIdResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// GET /content/cities?countryId=italy
-const contentCitiesResource = contentResource.addResource('cities')
-contentCitiesResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-// GET /content/cities/{id}
-const contentCityIdResource = contentCitiesResource.addResource('{id}')
-contentCityIdResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// GET /content/universities?cityId=milan
-const contentUniversitiesResource = contentResource.addResource('universities')
-contentUniversitiesResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-// GET /content/universities/{id}
-const contentUniversityIdResource = contentUniversitiesResource.addResource('{id}')
-contentUniversityIdResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// GET /content/neighborhoods/{cityId}
-const contentNeighborhoodsResource = contentResource.addResource('neighborhoods')
-const contentNeighborhoodsCityResource = contentNeighborhoodsResource.addResource('{cityId}')
-contentNeighborhoodsCityResource.addMethod('GET', lambdaIntegration, {
-  authorizer: cognitoAuthorizer,
-  authorizationType: apigateway.AuthorizationType.COGNITO,
-})
-
-// ─── /admin/content — admin CRUD routes for content management ────────────────
-// All routes require the user to be in the Cognito 'admin' group.
-// Note: adminResource is already declared above (for /admin/stats etc.)
-
-const adminContentResource = adminResource.addResource('content')
-
-// Countries: GET + POST /admin/content/countries
-const adminContentCountriesResource = adminContentResource.addResource('countries')
-adminContentCountriesResource.addMethod('GET',  lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentCountriesResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-const adminContentCountryIdResource = adminContentCountriesResource.addResource('{id}')
-adminContentCountryIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentCountryIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-
-// Cities: GET + POST /admin/content/cities
-const adminContentCitiesResource = adminContentResource.addResource('cities')
-adminContentCitiesResource.addMethod('GET',  lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentCitiesResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-const adminContentCityIdResource = adminContentCitiesResource.addResource('{id}')
-adminContentCityIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentCityIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-
-// Universities: GET + POST /admin/content/universities
-const adminContentUniversitiesResource = adminContentResource.addResource('universities')
-adminContentUniversitiesResource.addMethod('GET',  lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentUniversitiesResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-const adminContentUniversityIdResource = adminContentUniversitiesResource.addResource('{id}')
-adminContentUniversityIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentUniversityIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-
-// Neighborhoods: POST /admin/content/neighborhoods (cityId in body)
-const adminContentNeighborhoodsResource = adminContentResource.addResource('neighborhoods')
-adminContentNeighborhoodsResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-const adminContentNeighborhoodIdResource = adminContentNeighborhoodsResource.addResource('{neighborhoodId}')
-adminContentNeighborhoodIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentNeighborhoodIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-
-// Modules: GET + POST /admin/content/modules
-const adminContentModulesResource = adminContentResource.addResource('modules')
-adminContentModulesResource.addMethod('GET',  lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentModulesResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-const adminContentModuleIdResource = adminContentModulesResource.addResource('{id}')
-adminContentModuleIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
-adminContentModuleIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
 
 // Add Gateway Responses so that 4XX/5XX errors from API Gateway
 // (e.g. Cognito authorizer 401) include CORS headers.
