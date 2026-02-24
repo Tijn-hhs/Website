@@ -21,6 +21,11 @@ import {
   Sparkles,
   Plus,
   Award,
+  Bell,
+  X,
+  CalendarDays,
+  AlertCircle,
+  ChevronRight,
 } from 'lucide-react'
 
 const numberedSteps = [
@@ -269,9 +274,9 @@ function ProgramTimeline({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}
-      <div className="px-6 py-5 bg-gradient-to-r from-[#1e1b4b] to-[#1e3a5f] flex items-center justify-between">
+      <div className="px-6 py-5 bg-gradient-to-r from-[#1e1b4b] to-[#1e3a5f] flex items-center justify-between rounded-t-2xl">
         <div>
           <h2 className="text-lg font-semibold text-white">Journey Timeline</h2>
           <p className="mt-0.5 text-sm text-blue-200">
@@ -297,10 +302,7 @@ function ProgramTimeline({
       </div>
 
       {/* Horizontal timeline */}
-      <div className="px-6 pb-8 pt-2">
-        {/* Scrollable on mobile */}
-        <div className="overflow-x-auto -mx-6 px-6">
-        <div style={{ minWidth: '560px' }}>
+      <div className="px-6 pb-6 pt-2">
         {/* date range labels */}
         <div className="flex justify-between mb-1">
           <span className="text-[10px] text-slate-400">
@@ -311,23 +313,22 @@ function ProgramTimeline({
           </span>
         </div>
 
-        {/* The track area — labels alternate above/below */}
-        <div className="relative" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
-          {/* Track */}
+        {/* Track area — chips are absolute inside paddingTop/paddingBottom space */}
+        <div className="relative" style={{ paddingTop: '7rem', paddingBottom: '7rem' }}>
           <div className="relative h-2.5 bg-slate-100 rounded-full">
-            {/* Filled portion up to today */}
+            {/* Filled up to today */}
             <div
               className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-slate-300 to-slate-400"
               style={{ width: `${Math.min(todayPct, programStartPct)}%` }}
             />
-            {/* Amber segment: today → next upcoming milestone */}
+            {/* Amber: today → next up */}
             {todayPct < nextUpPct && (
               <div
                 className="absolute inset-y-0 rounded-full bg-gradient-to-r from-amber-400 to-amber-300 opacity-50"
                 style={{ left: `${todayPct}%`, width: `${nextUpPct - todayPct}%` }}
               />
             )}
-            {/* Blue segment: next upcoming → program start */}
+            {/* Blue: next up → program start */}
             {nextUpPct < programStartPct && (
               <div
                 className="absolute inset-y-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 opacity-30"
@@ -335,7 +336,7 @@ function ProgramTimeline({
               />
             )}
 
-            {/* Milestone dots — cushioned-proportional spacing */}
+            {/* Milestone dots + chips */}
             {milestones.map((m, i) => {
               const pct     = dotPcts[i]
               const style   = getMilestoneStyle(m.date, today, m.isProgramStart)
@@ -350,7 +351,7 @@ function ProgramTimeline({
                   {/* Tick */}
                   <div
                     className={`absolute left-1/2 -translate-x-1/2 w-px bg-slate-200 ${
-                      isAbove ? 'bottom-full mb-1 h-5' : 'top-full mt-1 h-5'
+                      isAbove ? 'bottom-full mb-1 h-4' : 'top-full mt-1 h-4'
                     }`}
                   />
 
@@ -358,12 +359,7 @@ function ProgramTimeline({
                   <div
                     onClick={() => {
                       if (m.isMock && m.templateKey) {
-                        onClaimMilestone({
-                          title: m.label,
-                          suggestedDate: m.date.toISOString().slice(0, 10),
-                          templateKey: m.templateKey,
-                          emoji: m.emoji,
-                        })
+                        onClaimMilestone({ title: m.label, suggestedDate: m.date.toISOString().slice(0, 10), templateKey: m.templateKey, emoji: m.emoji })
                       } else if (!m.isMock && !m.isProgramStart) {
                         onEditDeadline(deadlines.find(d => d.deadlineId === m.id)!)
                       }
@@ -373,50 +369,38 @@ function ProgramTimeline({
                       m.isProgramStart ? 'w-9 h-9' : 'w-6 h-6'
                     } ${trackDot[style]} ${
                       m.id === nextUpId ? 'ring-[5px] ring-amber-200 scale-110' : ''
-                    } ${
-                      !m.isProgramStart ? 'cursor-pointer hover:scale-125' : ''
-                    }`}
+                    } ${!m.isProgramStart ? 'cursor-pointer hover:scale-125' : ''}`}
                   >
                     <span className={m.isProgramStart ? 'text-sm' : 'text-[10px]'}>{m.emoji}</span>
                   </div>
 
-                  {/* Label chip */}
+                  {/* Chip */}
                   <div
                     className={`absolute left-1/2 -translate-x-1/2 text-center ${
-                      isAbove ? 'bottom-[calc(100%+1.75rem)]' : 'top-[calc(100%+1.75rem)]'
+                      isAbove ? 'bottom-[calc(100%+1.25rem)]' : 'top-[calc(100%+1.25rem)]'
                     }`}
-                    style={{ width: '7rem' }}
+                    style={{ width: '6.5rem' }}
                   >
                     {m.id === nextUpId && (
-                      <div className="mb-1 text-[8px] font-bold uppercase tracking-wide text-amber-500">Next up →</div>
+                      <p className="text-[8px] font-bold uppercase tracking-wide text-amber-500 mb-0.5">Next up →</p>
                     )}
-                    <div className={`inline-block w-full rounded-lg border px-1.5 py-1 shadow-sm ${
+                    <div className={`rounded-lg border px-1.5 py-1 shadow-sm ${
                       m.id === nextUpId
                         ? 'bg-amber-50 border-amber-200'
                         : m.isMock
-                        ? 'bg-slate-50 border-slate-200 border-dashed'
+                        ? 'bg-slate-50 border-dashed border-slate-200'
                         : 'bg-white border-slate-200'
                     }`}>
                       <p className={`text-[11px] leading-tight ${labelCls[style]}`}>{m.label}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">
                         {m.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
-                      {m.isMock && (
-                        <span className="inline-block mt-0.5 text-[9px] text-blue-400 italic">+ set date</span>
-                      )}
+                      {m.isMock && <span className="inline-block mt-0.5 text-[9px] text-blue-400 italic">+ set date</span>}
                       {!m.isMock && !m.isProgramStart && (() => {
                         const daysLeft = Math.ceil((m.date.getTime() - today.getTime()) / 86400000)
                         if (daysLeft > 0 && daysLeft <= 30) {
-                          const badgeCls = daysLeft <= 3
-                            ? 'bg-red-100 text-red-600'
-                            : daysLeft <= 14
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-blue-100 text-blue-600'
-                          return (
-                            <span className={`inline-block mt-0.5 rounded-full px-1.5 text-[9px] font-semibold ${badgeCls}`}>
-                              {daysLeft}d
-                            </span>
-                          )
+                          const badgeCls = daysLeft <= 3 ? 'bg-red-100 text-red-600' : daysLeft <= 14 ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-600'
+                          return <span className={`inline-block mt-0.5 rounded-full px-1.5 text-[9px] font-semibold ${badgeCls}`}>{daysLeft}d</span>
                         }
                         return null
                       })()}
@@ -427,10 +411,7 @@ function ProgramTimeline({
             })}
 
             {/* Today marker */}
-            <div
-              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20"
-              style={{ left: `${todayPct}%` }}
-            >
+            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20" style={{ left: `${todayPct}%` }}>
               <div className="w-3.5 h-3.5 rounded-full bg-red-500 ring-[3px] ring-red-200 animate-pulse" />
               <span className="absolute top-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-red-500 whitespace-nowrap">
                 Today
@@ -439,10 +420,8 @@ function ProgramTimeline({
           </div>
         </div>
 
-        </div>{/* end min-width */}
-        </div>{/* end overflow-x-auto */}
         {/* Legend */}
-        <div className="flex items-center gap-4 mt-1">
+        <div className="flex items-center gap-4 mt-3">
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-slate-300" />
             <span className="text-[10px] text-slate-400">Past</span>
@@ -479,11 +458,38 @@ export default function DashboardHome() {
   const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false)
   const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null)
   const [claimingMilestone, setClaimingMilestone] = useState<{ title: string; suggestedDate: string; templateKey: string; emoji: string } | null>(null)
+  const [dismissedNotifs, setDismissedNotifs] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('dismissed-notifs') || '[]') } catch { return [] }
+  })
 
   useEffect(() => {
     loadProgress()
     loadDeadlines()
   }, [])
+
+  function handleDismissNotif(deadlineId: string) {
+    setDismissedNotifs((prev) => {
+      const next = [...prev, deadlineId]
+      localStorage.setItem('dismissed-notifs', JSON.stringify(next))
+      return next
+    })
+  }
+
+  function formatDueDate(dueDate: string): { label: string; urgency: 'overdue' | 'urgent' | 'soon' | 'upcoming' } {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const due = new Date(dueDate)
+    due.setHours(0, 0, 0, 0)
+    const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    if (diffDays < 0) return { label: `${Math.abs(diffDays)}d overdue`, urgency: 'overdue' }
+    if (diffDays === 0) return { label: 'Today', urgency: 'urgent' }
+    if (diffDays === 1) return { label: 'Tomorrow', urgency: 'urgent' }
+    if (diffDays <= 7) return { label: `In ${diffDays} days`, urgency: 'soon' }
+    return {
+      label: due.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+      urgency: 'upcoming',
+    }
+  }
 
   async function loadDeadlines() {
     try {
@@ -575,7 +581,7 @@ export default function DashboardHome() {
   )
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-5">
       <div>
         <p className="text-sm font-semibold text-blue-600">Leavs</p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">Dashboard</h1>
@@ -591,6 +597,9 @@ export default function DashboardHome() {
           {!preferredName && "Your relocation journey at a glance."}
         </p>
       </div>
+
+      {/* Cohesive block group */}
+      <div className="space-y-2">
 
       {!isLoading && profile?.programStartMonth && (
         <ProgramTimeline
@@ -611,30 +620,103 @@ export default function DashboardHome() {
         onDelete={editingDeadline ? handleDeleteDeadline : undefined}
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Progress summary
-            </h2>
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-              {isLoading ? '...' : `${percentComplete}% done`}
-            </span>
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Bell size={18} className="text-slate-700" />
+              <h2 className="text-lg font-semibold text-slate-900">Notifications</h2>
+              {(() => {
+                const count = deadlines.filter((d) => !dismissedNotifs.includes(d.deadlineId)).length
+                return count > 0 ? (
+                  <span className="rounded-full bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 leading-none">{count}</span>
+                ) : null
+              })()}
+            </div>
+            <button
+              onClick={() => setIsDeadlineModalOpen(true)}
+              className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              <Plus size={13} /> Add
+            </button>
           </div>
-          <p className="mt-4 text-sm font-medium text-slate-600">
-            Steps completed: {isLoading ? '...' : `${completedCount} / ${totalSteps}`}
-          </p>
-          <div className="mt-4 h-2 w-full rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
-              style={{ width: `${percentComplete}%` }}
-            />
+
+          {/* Notification list */}
+          <div className="flex-1 space-y-2">
+            {isLoading ? (
+              <p className="text-sm text-slate-400 py-2">Loading...</p>
+            ) : (() => {
+              const visible = deadlines
+                .filter((d) => !dismissedNotifs.includes(d.deadlineId))
+                .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+
+              if (visible.length === 0) {
+                return (
+                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                    <CalendarDays size={28} className="text-slate-200 mb-2" />
+                    <p className="text-sm text-slate-400">No notifications</p>
+                    <p className="text-xs text-slate-300 mt-0.5">Add a deadline to see reminders here.</p>
+                  </div>
+                )
+              }
+
+              const urgencyStyles = {
+                overdue: { dot: 'bg-red-500', badge: 'bg-red-50 text-red-600', icon: <AlertCircle size={11} className="inline mr-0.5" /> },
+                urgent:  { dot: 'bg-orange-400', badge: 'bg-orange-50 text-orange-600', icon: null },
+                soon:    { dot: 'bg-amber-400', badge: 'bg-amber-50 text-amber-600', icon: null },
+                upcoming:{ dot: 'bg-blue-400', badge: 'bg-blue-50 text-blue-600', icon: null },
+              }
+
+              return visible.map((d) => {
+                const { label, urgency } = formatDueDate(d.dueDate)
+                const s = urgencyStyles[urgency]
+                return (
+                  <div
+                    key={d.deadlineId}
+                    className="group flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-3 hover:bg-white hover:shadow-sm transition-all"
+                  >
+                    {/* Urgency dot */}
+                    <div className="mt-1 flex-shrink-0">
+                      <div className={`w-2 h-2 rounded-full ${s.dot}`} />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">{d.title}</p>
+                      {d.note && (
+                        <p className="text-xs text-slate-400 truncate mt-0.5">{d.note}</p>
+                      )}
+                      <span className={`inline-flex items-center text-[10px] font-semibold mt-1.5 rounded-full px-2 py-0.5 ${s.badge}`}>
+                        {s.icon}{label}
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => {
+                          setEditingDeadline(d)
+                          setIsDeadlineModalOpen(true)
+                        }}
+                        className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        title="Edit"
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDismissNotif(d.deadlineId)}
+                        className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Dismiss"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })
+            })()}
           </div>
-          <p className="mt-3 text-xs text-slate-400">
-            {isLoading
-              ? 'Loading your progress...'
-              : 'Update your progress to track your journey.'}
-          </p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -728,6 +810,8 @@ export default function DashboardHome() {
           )}
         </div>
       </div>
+
+      </div>{/* end cohesive block group */}
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
