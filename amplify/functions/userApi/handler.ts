@@ -851,6 +851,104 @@ async function handlePostAdminTestEmail(event: any): Promise<ApiResponse> {
   }
 }
 
+/** POST /user/me/welcome-email — send a welcome email to the newly-onboarded user. */
+async function handlePostWelcomeEmail(userId: string, event: any): Promise<ApiResponse> {
+  // Extract email from Cognito JWT claims forwarded by API Gateway
+  const auth = event.requestContext?.authorizer || event.authorizer || {}
+  const userEmail: string = auth?.claims?.email || auth?.email || ''
+  if (!userEmail) return fail(400, 'Could not determine user email from token')
+
+  const body = parseBody(event)
+  const preferredName: string = body.preferredName || 'there'
+  const destinationUniversity: string = body.destinationUniversity || ''
+  const destinationCity: string = body.destinationCity || ''
+  const destinationCountry: string = body.destinationCountry || ''
+
+  const locationLine = [destinationCity, destinationCountry].filter(Boolean).join(', ')
+  const universityLine = destinationUniversity || 'your destination'
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Leavs</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#1a1a1a;padding:32px 40px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">Leavs</h1>
+              <p style="margin:8px 0 0;color:#aaaaaa;font-size:14px;">Your study abroad companion</p>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px 40px 32px;">
+              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:22px;font-weight:600;">Welcome, ${preferredName}! 🎉</h2>
+              <p style="margin:0 0 24px;color:#444444;font-size:16px;line-height:1.6;">
+                You've completed your onboarding — you're all set to make the most of your move to
+                <strong>${universityLine}</strong>${locationLine ? ` in ${locationLine}` : ''}.
+              </p>
+              <p style="margin:0 0 24px;color:#444444;font-size:16px;line-height:1.6;">
+                Your personalised dashboard is ready. Track your deadlines, explore your checklist, and find everything you need for a smooth relocation — all in one place.
+              </p>
+              <!-- CTA Button -->
+              <table cellpadding="0" cellspacing="0" style="margin:32px 0;">
+                <tr>
+                  <td style="background-color:#1a1a1a;border-radius:8px;padding:14px 28px;">
+                    <a href="https://www.weleav.com/dashboard"
+                       style="color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;display:inline-block;">
+                      Go to your dashboard →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0;color:#888888;font-size:14px;line-height:1.6;">
+                If you have any questions or feedback, simply reply to this email — we'd love to hear from you.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f9f9f9;border-top:1px solid #eeeeee;padding:24px 40px;text-align:center;">
+              <p style="margin:0;color:#aaaaaa;font-size:12px;">
+                © ${new Date().getFullYear()} Leavs · <a href="https://www.weleav.com" style="color:#aaaaaa;text-decoration:underline;">weleav.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim()
+
+  try {
+    await ses.send(
+      new SendEmailCommand({
+        Source: SENDER_EMAIL,
+        Destination: { ToAddresses: [userEmail] },
+        Message: {
+          Subject: { Data: `Welcome to Leavs, ${preferredName}! 🎉` },
+          Body: { Html: { Data: html } },
+        },
+      })
+    )
+    console.log(`[welcome-email] Sent welcome email to ${userEmail}`)
+    return ok({ success: true, sentTo: userEmail })
+  } catch (err: any) {
+    console.error('[welcome-email] SES error:', err)
+    return fail(502, `SES error: ${err?.message ?? String(err)}`)
+  }
+}
+
 /** GET /admin/buddy-pool — list all users who opted into the buddy system. */
 async function handleGetAdminBuddyPool(event: any): Promise<ApiResponse> {
   const adminSecret = process.env.ADMIN_SECRET
@@ -1132,6 +1230,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/admin/users') return await handleGetAdminUsers(event)
     if (method === 'GET'  && path === '/admin/buddy-pool') return await handleGetAdminBuddyPool(event)
     if (method === 'POST' && path === '/admin/buddy-match') return await handlePostAdminBuddyMatch(event)
+    if (method === 'POST' && path === '/user/me/welcome-email') return await handlePostWelcomeEmail(userId, event)
     if (method === 'POST' && path === '/admin/test-email')  return await handlePostAdminTestEmail(event)
     if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)

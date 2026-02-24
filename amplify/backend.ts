@@ -224,6 +224,13 @@ meResource.addMethod('PUT', lambdaIntegration, {
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
 
+// POST /user/me/welcome-email
+const welcomeEmailResource = meResource.addResource('welcome-email')
+welcomeEmailResource.addMethod('POST', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
 // Create /progress resource
 const progressResource = restApi.root.addResource('progress')
 

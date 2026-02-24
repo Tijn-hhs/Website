@@ -5,7 +5,7 @@ import OnboardingLayout from '../OnboardingLayout'
 import { cardBase } from '../ui'
 import { getPrevEnabledStepId, getStepConfig, stepIdToRoute } from '../steps'
 import { useOnboardingDraft } from '../useOnboardingDraft'
-import { fetchMe, saveProfile } from '../../lib/api'
+import { fetchMe, saveProfile, sendWelcomeEmail } from '../../lib/api'
 import { UserProfile } from '../../types/user'
 import { isSignedIn } from '../../lib/auth'
 import { clearOnboardingDraft, syncOnboardingDraftToProfileIfPresent } from '../sync'
@@ -232,7 +232,15 @@ export default function Step8ReviewFinish() {
 
       clearLocalDraft()
       clearOnboardingDraft()
-      
+
+      // Send welcome email — fire and forget, do not block navigation
+      sendWelcomeEmail({
+        preferredName: draft.preferredName,
+        destinationUniversity: draft.destinationUniversity,
+        destinationCity: draft.destinationCity,
+        destinationCountry: draft.destinationCountry,
+      }).catch(err => console.warn('[Onboarding] Welcome email failed (non-blocking):', err))
+
       console.log('[Onboarding] Navigating to dashboard...')
       navigate('/dashboard')
     } catch (error) {

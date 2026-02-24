@@ -512,6 +512,26 @@ export async function sendTestEmail(to: string): Promise<{ success: boolean; sen
   return res.json()
 }
 
+export async function sendWelcomeEmail(data: {
+  preferredName?: string
+  destinationUniversity?: string
+  destinationCity?: string
+  destinationCountry?: string
+}): Promise<void> {
+  const headers = await getAuthHeaders()
+
+  const restOperation = post({
+    apiName: API_NAME,
+    path: '/user/me/welcome-email',
+    options: {
+      body: data as any,
+      headers: { 'Content-Type': 'application/json', ...headers },
+    },
+  })
+
+  await restOperation.response
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export interface AdminStats {
