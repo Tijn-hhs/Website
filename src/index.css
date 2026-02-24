@@ -183,39 +183,59 @@ body {
   box-sizing: border-box !important;
 }
 
-/* Primary button - LiveCity blue gradient (replaces Amplify's green) */
+/* Primary button - Leavs blue (matches bg-blue-700 used site-wide) */
 .amplify-button--primary,
 .amplify-button[type="submit"] {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  background: #1d4ed8 !important;
   color: white !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
 }
 
 .amplify-button--primary:hover,
 .amplify-button--primary:focus,
 .amplify-button[type="submit"]:hover,
 .amplify-button[type="submit"]:focus {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  background: #1e40af !important;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
 }
 
 .amplify-button--primary:active,
 .amplify-button[type="submit"]:active {
   transform: translateY(0) !important;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
 }
 
-/* Secondary button - light gray */
-.amplify-button--secondary,
-.amplify-button[type="button"] {
+/* Secondary button - only using the class, NOT [type="button"] (too broad) */
+.amplify-button--secondary {
   background: #f1f5f9 !important;
   color: #0f172a !important;
   border: 1px solid #e2e8f0 !important;
 }
 
-.amplify-button--secondary:hover,
-.amplify-button[type="button"]:hover {
+.amplify-button--secondary:hover {
   background: #e2e8f0 !important;
+}
+
+/* Link-style buttons — "Forgot password?", "Back to Sign In", "Resend code" */
+.amplify-button--link {
+  background: transparent !important;
+  color: #1d4ed8 !important;
+  border: none !important;
+  padding: 0.25rem 0 !important;
+  width: auto !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+.amplify-button--link:hover {
+  background: transparent !important;
+  color: #1e40af !important;
+  text-decoration: underline !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .amplify-button:disabled {
@@ -354,4 +374,12 @@ body {
     padding: 0.625rem 0.875rem !important;
     font-size: 1rem !important; /* Prevent iOS zoom */
   }
+}
+
+/* ============================================================
+   Timeline animations
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

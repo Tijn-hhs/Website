@@ -241,6 +241,17 @@ function ProgramTimeline({
     }
   }
 
+  // Next upcoming milestone (soonest future, non-program-start)
+  const nextUpId = milestones
+    .filter(m => !m.isProgramStart && m.date.getTime() > today.getTime())
+    .sort((a, b) => a.date.getTime() - b.date.getTime())[0]?.id ?? null
+  const nextUpIdx = nextUpId ? milestones.findIndex(m => m.id === nextUpId) : -1
+  const nextUpPct = nextUpIdx >= 0 ? dotPcts[nextUpIdx] : programStartPct
+
+  // Header progress stat
+  const confirmedCount = deadlines.length
+  const totalMilestoneCount = milestones.length - 1 // exclude program-start dot
+
   const trackDot: Record<string, string> = {
     past:    'bg-slate-300 border-2 border-slate-300',
     urgent:  'bg-red-500   border-2 border-red-400   ring-4 ring-red-100',
@@ -271,17 +282,25 @@ function ProgramTimeline({
               : '✈️ You have arrived!'}
           </p>
         </div>
-        <button
-          onClick={onAddDeadline}
-          className="flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 text-sm font-medium text-white"
-        >
-          <Plus size={14} />
-          Add deadline
-        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-blue-200 bg-white/10 rounded-full px-3 py-1">
+            {confirmedCount} / {totalMilestoneCount} milestones set
+          </span>
+          <button
+            onClick={onAddDeadline}
+            className="flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 text-sm font-medium text-white"
+          >
+            <Plus size={14} />
+            Add deadline
+          </button>
+        </div>
       </div>
 
       {/* Horizontal timeline */}
       <div className="px-6 pb-8 pt-2">
+        {/* Scrollable on mobile */}
+        <div className="overflow-x-auto -mx-6 px-6">
+        <div style={{ minWidth: '560px' }}>
         {/* date range labels */}
         <div className="flex justify-between mb-1">
           <span className="text-[10px] text-slate-400">
@@ -295,17 +314,24 @@ function ProgramTimeline({
         {/* The track area — labels alternate above/below */}
         <div className="relative" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
           {/* Track */}
-          <div className="relative h-1.5 bg-slate-100 rounded-full">
+          <div className="relative h-2.5 bg-slate-100 rounded-full">
             {/* Filled portion up to today */}
             <div
               className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-slate-300 to-slate-400"
               style={{ width: `${Math.min(todayPct, programStartPct)}%` }}
             />
-            {/* Upcoming portion today → program start */}
-            {todayPct < programStartPct && (
+            {/* Amber segment: today → next upcoming milestone */}
+            {todayPct < nextUpPct && (
+              <div
+                className="absolute inset-y-0 rounded-full bg-gradient-to-r from-amber-400 to-amber-300 opacity-50"
+                style={{ left: `${todayPct}%`, width: `${nextUpPct - todayPct}%` }}
+              />
+            )}
+            {/* Blue segment: next upcoming → program start */}
+            {nextUpPct < programStartPct && (
               <div
                 className="absolute inset-y-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 opacity-30"
-                style={{ left: `${todayPct}%`, width: `${programStartPct - todayPct}%` }}
+                style={{ left: `${nextUpPct}%`, width: `${programStartPct - nextUpPct}%` }}
               />
             )}
 
@@ -319,7 +345,7 @@ function ProgramTimeline({
                 <div
                   key={m.id}
                   className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
-                  style={{ left: `${pct}%` }}
+                  style={{ left: `${pct}%`, opacity: 0, animation: `fadeIn 0.4s ease ${i * 0.07}s forwards` }}
                 >
                   {/* Tick */}
                   <div
@@ -344,28 +370,57 @@ function ProgramTimeline({
                     }}
                     title={m.isMock ? `Click to set your date for: ${m.label}` : undefined}
                     className={`flex items-center justify-center rounded-full transition-all ${
-                      m.isProgramStart ? 'w-8 h-8' : 'w-5 h-5'
+                      m.isProgramStart ? 'w-9 h-9' : 'w-6 h-6'
                     } ${trackDot[style]} ${
+                      m.id === nextUpId ? 'ring-[5px] ring-amber-200 scale-110' : ''
+                    } ${
                       !m.isProgramStart ? 'cursor-pointer hover:scale-125' : ''
                     }`}
                   >
                     <span className={m.isProgramStart ? 'text-sm' : 'text-[10px]'}>{m.emoji}</span>
                   </div>
 
-                  {/* Label card */}
+                  {/* Label chip */}
                   <div
                     className={`absolute left-1/2 -translate-x-1/2 text-center ${
                       isAbove ? 'bottom-[calc(100%+1.75rem)]' : 'top-[calc(100%+1.75rem)]'
                     }`}
-                    style={{ width: '6.5rem' }}
+                    style={{ width: '7rem' }}
                   >
-                    <p className={`text-[11px] leading-tight ${labelCls[style]}`}>{m.label}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
-                      {m.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
-                    {m.isMock && (
-                      <span className="inline-block mt-1 text-[9px] text-blue-400 italic">+ set date</span>
+                    {m.id === nextUpId && (
+                      <div className="mb-1 text-[8px] font-bold uppercase tracking-wide text-amber-500">Next up →</div>
                     )}
+                    <div className={`inline-block w-full rounded-lg border px-1.5 py-1 shadow-sm ${
+                      m.id === nextUpId
+                        ? 'bg-amber-50 border-amber-200'
+                        : m.isMock
+                        ? 'bg-slate-50 border-slate-200 border-dashed'
+                        : 'bg-white border-slate-200'
+                    }`}>
+                      <p className={`text-[11px] leading-tight ${labelCls[style]}`}>{m.label}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {m.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </p>
+                      {m.isMock && (
+                        <span className="inline-block mt-0.5 text-[9px] text-blue-400 italic">+ set date</span>
+                      )}
+                      {!m.isMock && !m.isProgramStart && (() => {
+                        const daysLeft = Math.ceil((m.date.getTime() - today.getTime()) / 86400000)
+                        if (daysLeft > 0 && daysLeft <= 30) {
+                          const badgeCls = daysLeft <= 3
+                            ? 'bg-red-100 text-red-600'
+                            : daysLeft <= 14
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-blue-100 text-blue-600'
+                          return (
+                            <span className={`inline-block mt-0.5 rounded-full px-1.5 text-[9px] font-semibold ${badgeCls}`}>
+                              {daysLeft}d
+                            </span>
+                          )
+                        }
+                        return null
+                      })()}
+                    </div>
                   </div>
                 </div>
               )
@@ -384,6 +439,8 @@ function ProgramTimeline({
           </div>
         </div>
 
+        </div>{/* end min-width */}
+        </div>{/* end overflow-x-auto */}
         {/* Legend */}
         <div className="flex items-center gap-4 mt-1">
           <div className="flex items-center gap-1.5">
