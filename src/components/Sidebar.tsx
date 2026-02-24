@@ -140,6 +140,11 @@ export default function Sidebar() {
       path: '/dashboard/ai-support',
       icon: <Sparkles size={20} className="flex-shrink-0" />,
     },
+    {
+      label: 'Find Your Peers',
+      path: '/dashboard/find-your-peers',
+      icon: <Users size={20} className="flex-shrink-0" />,
+    },
   ]
 
   // Blog items - Blog posts and articles
@@ -164,7 +169,7 @@ export default function Sidebar() {
   return (
     // Enhanced sidebar container with floating effect (margin, border-radius, shadow)
     <aside
-      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-lg flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${
+      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${
         isCollapsed ? 'w-16' : 'w-60'
       }`}
       aria-label="Navigation sidebar"

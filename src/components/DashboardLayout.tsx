@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import Sidebar from './Sidebar'
+import MobileNav from './MobileNav'
 
 type DashboardLayoutProps = {
   children: ReactNode
@@ -36,6 +37,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="bg-slate-50 min-h-screen">
       <Sidebar />
+      <MobileNav />
       {/* 
         Adaptive margin for main content:
         - When collapsed: ~88px (sidebar 64px + margin 16px on each side + 8px buffer)
@@ -43,8 +45,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         Uses transition-all for smooth animation
       */}
       <main
-        className={`transition-all duration-75 ease-in-out px-8 py-10 ${
-          isCollapsed ? 'ml-[88px]' : 'ml-[280px]'
+        className={`transition-all duration-75 ease-in-out px-4 md:px-8 py-6 md:py-10 pt-20 md:pt-10 ${
+          isCollapsed ? 'md:ml-[88px]' : 'md:ml-[280px]'
         }`}
       >
         <div className="mx-auto w-full max-w-6xl">{children}</div>

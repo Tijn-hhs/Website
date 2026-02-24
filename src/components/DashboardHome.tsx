@@ -276,7 +276,7 @@ function ProgramTimeline({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}
-      <div className="px-6 py-5 bg-gradient-to-r from-[#1e1b4b] to-[#1e3a5f] flex items-center justify-between rounded-t-2xl">
+      <div className="px-4 md:px-6 py-4 md:py-5 bg-gradient-to-r from-[#1e1b4b] to-[#1e3a5f] flex flex-wrap items-start justify-between gap-y-2 rounded-t-2xl">
         <div>
           <h2 className="text-lg font-semibold text-white">Journey Timeline</h2>
           <p className="mt-0.5 text-sm text-blue-200">
@@ -287,7 +287,7 @@ function ProgramTimeline({
               : '✈️ You have arrived!'}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-blue-200 bg-white/10 rounded-full px-3 py-1">
             {confirmedCount} / {totalMilestoneCount} milestones set
           </span>
@@ -302,7 +302,8 @@ function ProgramTimeline({
       </div>
 
       {/* Horizontal timeline */}
-      <div className="px-6 pb-6 pt-2">
+      <div className="pb-6 pt-2 overflow-x-auto">
+        <div className="px-6 min-w-[520px]">
         {/* date range labels */}
         <div className="flex justify-between mb-1">
           <span className="text-[10px] text-slate-400">
@@ -421,7 +422,7 @@ function ProgramTimeline({
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 mt-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-slate-300" />
             <span className="text-[10px] text-slate-400">Past</span>
@@ -442,6 +443,7 @@ function ProgramTimeline({
             <span className="text-[10px] text-blue-400 italic">Tap a suggested dot to set your own date</span>
           </div>
         </div>
+        </div>{/* end min-w inner */}
       </div>
     </div>
   )
@@ -601,6 +603,7 @@ export default function DashboardHome() {
       {/* Cohesive block group */}
       <div className="space-y-2">
 
+      <div className="hidden sm:block">
       {!isLoading && profile?.programStartMonth && (
         <ProgramTimeline
           programStartMonth={profile.programStartMonth}
@@ -610,6 +613,7 @@ export default function DashboardHome() {
           onClaimMilestone={(m) => { setEditingDeadline(null); setClaimingMilestone(m); setIsDeadlineModalOpen(true) }}
         />
       )}
+      </div>
 
       <DeadlineModal
         isOpen={isDeadlineModalOpen}
