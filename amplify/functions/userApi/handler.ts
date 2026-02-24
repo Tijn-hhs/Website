@@ -126,6 +126,155 @@ interface ApiResponse {
   body: string
 }
 
+// ─── Content System Types ────────────────────────────────────────────────────────────
+
+/**
+ * The situation object built from a user's profile (destination + origin).
+ * Passed as query params to GET /content/modules and evaluated by the rule engine.
+ */
+interface UserSituation {
+  destinationCountry?: string   // e.g. "italy"
+  destinationCity?: string      // e.g. "milan"
+  universityId?: string         // e.g. "bocconi"
+  originEu?: boolean            // true = EU citizen
+  originCountry?: string        // e.g. "United States"
+  degreeType?: string           // "bachelor" | "master" | "phd" | "exchange"
+  programLanguage?: string      // "english" | "italian"
+}
+
+/**
+ * Rules that determine whether a module is shown to a user.
+ * Any field left undefined = wildcard (matches any value).
+ * Arrays mean "any of these values".
+ */
+interface VisibilityRules {
+  destinationCountry?: string | string[]
+  destinationCity?: string
+  universityId?: string
+  originEu?: boolean
+  originCountry?: string | string[]
+  degreeType?: string | string[]
+  programLanguage?: string
+}
+
+interface ContentModuleStep {
+  title: string
+  body: string
+  tips?: string[]
+}
+
+interface ContentModuleDocument {
+  label: string
+  required: boolean
+  notes?: string
+}
+
+interface ContentModuleLink {
+  label: string
+  url: string
+}
+
+interface ContentModuleDeadline {
+  label: string
+  date: string
+  notes?: string
+}
+
+/** Structured content for a dashboard module page. */
+interface ContentModuleContent {
+  intro?: string
+  steps?: ContentModuleStep[]
+  tips?: string[]
+  documents?: ContentModuleDocument[]
+  links?: ContentModuleLink[]
+  deadlines?: ContentModuleDeadline[]
+}
+
+/**
+ * A content variant: if the user's situation matches `condition`,
+ * merge `contentOverrides` into the module's base content.
+ */
+interface ContentModuleVariant {
+  condition: Partial<UserSituation>
+  contentOverrides: Partial<ContentModuleContent>
+}
+
+/**
+ * A single dashboard module entry stored in `content-modules` DynamoDB table.
+ * The rule engine evaluates `visibilityRules` against the user's situation
+ * and returns matching modules sorted by `globalOrder`.
+ */
+interface ContentModule {
+  moduleId: string
+  title: string
+  route: string               // the dashboard route, e.g. "/student-visa"
+  category: string            // "legal" | "admin" | "financial" | "university" | "housing" | "general"
+  sidebarIcon?: string        // Lucide icon name
+  globalOrder: number         // lower = higher in sidebar
+  visibilityRules: VisibilityRules
+  pageVariant: string         // maps to a React component, e.g. "generic-steps" | "full-visa-process"
+  content: ContentModuleContent
+  variants?: ContentModuleVariant[]
+  lastVerified?: string       // ISO date — surfaced as warning in admin UI when stale
+  status: 'published' | 'draft'
+  updatedAt?: string
+}
+
+interface ContentCountry {
+  countryId: string
+  name: string
+  currency?: string
+  language?: string
+  euMember?: boolean
+  visaRequired?: { eu: boolean; nonEu: boolean }
+  updatedAt?: string
+}
+
+interface ContentCity {
+  cityId: string
+  countryId: string
+  name: string
+  costConfig?: Record<string, unknown>
+  bigMacPrice?: number
+  updatedAt?: string
+}
+
+interface ContentUniversity {
+  universityId: string
+  cityId: string
+  countryId: string
+  name: string
+  shortName?: string
+  applyUrl?: string
+  tuitionRange?: Record<string, string>
+  applicationRounds?: unknown[]
+  documents?: Record<string, unknown[]>
+  languageRequirements?: Record<string, unknown>
+  selectionCriteria?: Record<string, string[]>
+  tips?: string[]
+  keyLinks?: Array<{ label: string; url: string }>
+  lastVerified?: string
+  updatedAt?: string
+}
+
+interface ContentNeighborhood {
+  cityId: string
+  neighborhoodId: string
+  name: string
+  lat?: number
+  lng?: number
+  avgRent?: number
+  walkabilityScore?: number
+  vibe?: string
+  shortDescription?: string
+  longDescription?: string
+  distancesToUniversities?: Record<string, string>  // { bocconi: "8 min walk" }
+  bestFor?: string[]
+  notFor?: string[]
+  photoUrl?: string
+  updatedAt?: string
+}
+
 // ─── Clients & Config ────────────────────────────────────────────────────────
 
 const dynamo = new DynamoDBClient({})
@@ -144,6 +293,12 @@ const TABLE = {
   whatsappMessages: process.env.WHATSAPP_MESSAGES_TABLE_NAME!,
   chatMessages: process.env.CHAT_MESSAGES_TABLE_NAME!,
   emailTemplates: process.env.EMAIL_TEMPLATES_TABLE_NAME || '',
+  // ─ Content tables (multi-destination system) ─────────────────────────────────────
+  contentCountries:     process.env.CONTENT_COUNTRIES_TABLE_NAME     || '',
+  contentCities:        process.env.CONTENT_CITIES_TABLE_NAME         || '',
+  contentUniversities:  process.env.CONTENT_UNIVERSITIES_TABLE_NAME   || '',
+  contentNeighborhoods: process.env.CONTENT_NEIGHBORHOODS_TABLE_NAME  || '',
+  contentModules:       process.env.CONTENT_MODULES_TABLE_NAME        || '',
 } as const
 
 const SENDER_EMAIL = 'hallo@weleav.com'
@@ -1557,6 +1712,330 @@ async function persistChatMessages(
   }
 }
 
+// ─── Content System ───────────────────────────────────────────────────────────
+
+/** Returns true if the caller is in the Cognito 'admin' group or provides the ADMIN_SECRET. */
+function isAdminCaller(event: any): boolean {
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  const auth = event.requestContext?.authorizer || event.authorizer || {}
+  const groups: string[] = (auth?.claims?.['cognito:groups'] || '').split(',').filter(Boolean)
+  return groups.includes('admin') || !!(adminSecret && providedSecret === adminSecret)
+}
+
+/**
+ * Rule engine: given all published modules and a user situation,
+ * returns the matching modules sorted by globalOrder.
+ *
+ * - A rule field that is undefined on the module = wildcard (matches any value)
+ * - Arrays in rule fields mean "any of these values"
+ * - If the situation omits a field, the rule field is skipped (don't exclude on missing info)
+ */
+function evaluateModules(modules: ContentModule[], situation: UserSituation): ContentModule[] {
+  const matchField = (
+    ruleVal: string | string[] | boolean | undefined,
+    situationVal: string | boolean | undefined,
+  ): boolean => {
+    if (ruleVal === undefined || situationVal === undefined) return true
+    if (Array.isArray(ruleVal)) return ruleVal.includes(situationVal as string)
+    return ruleVal === situationVal
+  }
+
+  const matched = modules.filter((m) => {
+    if (m.status !== 'published') return false
+    const r = m.visibilityRules
+    if (!r) return true
+    return (
+      matchField(r.destinationCountry, situation.destinationCountry) &&
+      matchField(r.destinationCity,    situation.destinationCity) &&
+      matchField(r.universityId,       situation.universityId) &&
+      matchField(r.originEu,           situation.originEu) &&
+      matchField(r.originCountry,      situation.originCountry) &&
+      matchField(r.degreeType,         situation.degreeType) &&
+      matchField(r.programLanguage,    situation.programLanguage)
+    )
+  })
+
+  // Apply variants: when a variant's condition fully matches the situation,
+  // deep-merge its contentOverrides into the base content
+  const resolved = matched.map((m) => {
+    if (!m.variants || m.variants.length === 0) return m
+    const hit = m.variants.find((v) =>
+      Object.entries(v.condition).every(([k, val]) => (situation as Record<string, unknown>)[k] === val)
+    )
+    if (!hit) return m
+    return { ...m, content: { ...m.content, ...hit.contentOverrides } }
+  })
+
+  return resolved.sort((a, b) => a.globalOrder - b.globalOrder)
+}
+
+// ─ Content read handlers (any authenticated user) ─────────────────────────────
+
+async function handleGetContentModules(event: any): Promise<ApiResponse> {
+  if (!TABLE.contentModules) return fail(503, 'Content modules table not yet provisioned')
+  const qp = event.queryStringParameters || {}
+  const returnAll = qp.all === 'true' && isAdminCaller(event)
+  const allModules = (await scanAll(TABLE.contentModules)) as unknown as ContentModule[]
+  if (returnAll) return ok({ modules: allModules })
+  const situation: UserSituation = {
+    destinationCountry: qp.destinationCountry,
+    destinationCity:    qp.destinationCity,
+    universityId:       qp.universityId,
+    originEu:           qp.originEu === 'true' ? true : qp.originEu === 'false' ? false : undefined,
+    originCountry:      qp.originCountry,
+    degreeType:         qp.degreeType,
+    programLanguage:    qp.programLanguage,
+  }
+  const modules = evaluateModules(allModules, situation)
+  return ok({ modules, situation })
+}
+
+async function handleGetContentCountries(): Promise<ApiResponse> {
+  if (!TABLE.contentCountries) return fail(503, 'Content countries table not yet provisioned')
+  const items = await scanAll(TABLE.contentCountries)
+  items.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+  return ok({ countries: items })
+}
+
+async function handleGetContentCountry(countryId: string): Promise<ApiResponse> {
+  if (!TABLE.contentCountries) return fail(503, 'Content countries table not yet provisioned')
+  const { Item } = await dynamo.send(
+    new GetItemCommand({ TableName: TABLE.contentCountries, Key: marshall({ countryId }) })
+  )
+  if (!Item) return fail(404, `Country '${countryId}' not found`)
+  return ok({ country: unmarshall(Item) })
+}
+
+async function handleGetContentCities(event: any): Promise<ApiResponse> {
+  if (!TABLE.contentCities) return fail(503, 'Content cities table not yet provisioned')
+  const countryId = event.queryStringParameters?.countryId
+  const items = await scanAll(TABLE.contentCities)
+  const filtered = countryId ? items.filter((c) => c.countryId === countryId) : items
+  filtered.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+  return ok({ cities: filtered })
+}
+
+async function handleGetContentCity(cityId: string): Promise<ApiResponse> {
+  if (!TABLE.contentCities) return fail(503, 'Content cities table not yet provisioned')
+  const { Item } = await dynamo.send(
+    new GetItemCommand({ TableName: TABLE.contentCities, Key: marshall({ cityId }) })
+  )
+  if (!Item) return fail(404, `City '${cityId}' not found`)
+  return ok({ city: unmarshall(Item) })
+}
+
+async function handleGetContentUniversities(event: any): Promise<ApiResponse> {
+  if (!TABLE.contentUniversities) return fail(503, 'Content universities table not yet provisioned')
+  const { cityId, countryId } = event.queryStringParameters || {}
+  const items = await scanAll(TABLE.contentUniversities)
+  const filtered = items.filter((u) => {
+    if (cityId    && u.cityId    !== cityId)    return false
+    if (countryId && u.countryId !== countryId) return false
+    return true
+  })
+  filtered.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+  return ok({ universities: filtered })
+}
+
+async function handleGetContentUniversity(universityId: string): Promise<ApiResponse> {
+  if (!TABLE.contentUniversities) return fail(503, 'Content universities table not yet provisioned')
+  const { Item } = await dynamo.send(
+    new GetItemCommand({ TableName: TABLE.contentUniversities, Key: marshall({ universityId }) })
+  )
+  if (!Item) return fail(404, `University '${universityId}' not found`)
+  return ok({ university: unmarshall(Item) })
+}
+
+async function handleGetContentNeighborhoods(cityId: string): Promise<ApiResponse> {
+  if (!TABLE.contentNeighborhoods) return fail(503, 'Content neighborhoods table not yet provisioned')
+  const { Items } = await dynamo.send(
+    new QueryCommand({
+      TableName: TABLE.contentNeighborhoods,
+      KeyConditionExpression: 'cityId = :cid',
+      ExpressionAttributeValues: marshall({ ':cid': cityId }),
+    })
+  )
+  return ok({ neighborhoods: (Items ?? []).map((i) => unmarshall(i)) })
+}
+
+// ─ Admin content CRUD handlers ────────────────────────────────────────────────
+
+// Countries
+async function handleAdminGetCountries(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentCountries) return fail(503, 'Content countries table not yet provisioned')
+  return ok({ countries: await scanAll(TABLE.contentCountries) })
+}
+async function handleAdminPostCountry(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentCountries) return fail(503, 'Content countries table not yet provisioned')
+  const body = parseBody(event)
+  if (!body.countryId || typeof body.countryId !== 'string') return fail(400, 'countryId is required')
+  if (!body.name      || typeof body.name      !== 'string') return fail(400, 'name is required')
+  const item = { ...body, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentCountries, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ country: item }, 201)
+}
+async function handleAdminPutCountry(event: any, countryId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentCountries) return fail(503, 'Content countries table not yet provisioned')
+  const item = { ...parseBody(event), countryId, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentCountries, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ country: item })
+}
+async function handleAdminDeleteCountry(event: any, countryId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentCountries) return fail(503, 'Content countries table not yet provisioned')
+  await dynamo.send(new DeleteItemCommand({ TableName: TABLE.contentCountries, Key: marshall({ countryId }) }))
+  return ok({ message: 'Country deleted' })
+}
+
+// Cities
+async function handleAdminGetCities(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentCities) return fail(503, 'Content cities table not yet provisioned')
+  return ok({ cities: await scanAll(TABLE.contentCities) })
+}
+async function handleAdminPostCity(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentCities) return fail(503, 'Content cities table not yet provisioned')
+  const body = parseBody(event)
+  if (!body.cityId    || typeof body.cityId    !== 'string') return fail(400, 'cityId is required')
+  if (!body.countryId || typeof body.countryId !== 'string') return fail(400, 'countryId is required')
+  if (!body.name      || typeof body.name      !== 'string') return fail(400, 'name is required')
+  const item = { ...body, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentCities, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ city: item }, 201)
+}
+async function handleAdminPutCity(event: any, cityId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentCities) return fail(503, 'Content cities table not yet provisioned')
+  const item = { ...parseBody(event), cityId, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentCities, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ city: item })
+}
+async function handleAdminDeleteCity(event: any, cityId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentCities) return fail(503, 'Content cities table not yet provisioned')
+  await dynamo.send(new DeleteItemCommand({ TableName: TABLE.contentCities, Key: marshall({ cityId }) }))
+  return ok({ message: 'City deleted' })
+}
+
+// Universities
+async function handleAdminGetUniversities(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentUniversities) return fail(503, 'Content universities table not yet provisioned')
+  return ok({ universities: await scanAll(TABLE.contentUniversities) })
+}
+async function handleAdminPostUniversity(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentUniversities) return fail(503, 'Content universities table not yet provisioned')
+  const body = parseBody(event)
+  if (!body.universityId || typeof body.universityId !== 'string') return fail(400, 'universityId is required')
+  if (!body.name         || typeof body.name         !== 'string') return fail(400, 'name is required')
+  if (!body.cityId       || typeof body.cityId       !== 'string') return fail(400, 'cityId is required')
+  const item = { ...body, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentUniversities, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ university: item }, 201)
+}
+async function handleAdminPutUniversity(event: any, universityId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentUniversities) return fail(503, 'Content universities table not yet provisioned')
+  const item = { ...parseBody(event), universityId, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentUniversities, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ university: item })
+}
+async function handleAdminDeleteUniversity(event: any, universityId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentUniversities) return fail(503, 'Content universities table not yet provisioned')
+  await dynamo.send(new DeleteItemCommand({ TableName: TABLE.contentUniversities, Key: marshall({ universityId }) }))
+  return ok({ message: 'University deleted' })
+}
+
+// Neighborhoods
+async function handleAdminPostNeighborhood(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentNeighborhoods) return fail(503, 'Content neighborhoods table not yet provisioned')
+  const body = parseBody(event)
+  if (!body.cityId         || typeof body.cityId         !== 'string') return fail(400, 'cityId is required')
+  if (!body.neighborhoodId || typeof body.neighborhoodId !== 'string') return fail(400, 'neighborhoodId is required')
+  if (!body.name           || typeof body.name           !== 'string') return fail(400, 'name is required')
+  const item = { ...body, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentNeighborhoods, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ neighborhood: item }, 201)
+}
+async function handleAdminPutNeighborhood(event: any, neighborhoodId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentNeighborhoods) return fail(503, 'Content neighborhoods table not yet provisioned')
+  const body = parseBody(event)
+  if (!body.cityId || typeof body.cityId !== 'string') return fail(400, 'cityId is required in body')
+  const item = { ...body, neighborhoodId, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentNeighborhoods, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ neighborhood: item })
+}
+async function handleAdminDeleteNeighborhood(event: any, neighborhoodId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentNeighborhoods) return fail(503, 'Content neighborhoods table not yet provisioned')
+  const body = parseBody(event)
+  if (!body.cityId || typeof body.cityId !== 'string') return fail(400, 'cityId is required in body')
+  await dynamo.send(new DeleteItemCommand({
+    TableName: TABLE.contentNeighborhoods,
+    Key: marshall({ cityId: body.cityId, neighborhoodId }),
+  }))
+  return ok({ message: 'Neighborhood deleted' })
+}
+
+// Modules
+async function handleAdminGetModules(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentModules) return fail(503, 'Content modules table not yet provisioned')
+  const items = await scanAll(TABLE.contentModules)
+  items.sort((a, b) => (Number(a.globalOrder) || 0) - (Number(b.globalOrder) || 0))
+  return ok({ modules: items })
+}
+async function handleAdminPostModule(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentModules) return fail(503, 'Content modules table not yet provisioned')
+  const body = parseBody(event)
+  if (!body.moduleId || typeof body.moduleId !== 'string') return fail(400, 'moduleId is required')
+  if (!body.title    || typeof body.title    !== 'string') return fail(400, 'title is required')
+  if (!body.route    || typeof body.route    !== 'string') return fail(400, 'route is required')
+  const item: ContentModule = {
+    moduleId:        body.moduleId,
+    title:           body.title,
+    route:           body.route,
+    category:        body.category      || 'general',
+    sidebarIcon:     body.sidebarIcon,
+    globalOrder:     typeof body.globalOrder === 'number' ? body.globalOrder : 99,
+    visibilityRules: body.visibilityRules || {},
+    pageVariant:     body.pageVariant    || 'generic-steps',
+    content:         body.content        || {},
+    variants:        body.variants,
+    lastVerified:    body.lastVerified,
+    status:          body.status         || 'draft',
+    updatedAt:       new Date().toISOString(),
+  }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentModules, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ module: item }, 201)
+}
+async function handleAdminPutModule(event: any, moduleId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentModules) return fail(503, 'Content modules table not yet provisioned')
+  const item = { ...parseBody(event), moduleId, updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentModules, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ module: item })
+}
+async function handleAdminDeleteModule(event: any, moduleId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentModules) return fail(503, 'Content modules table not yet provisioned')
+  await dynamo.send(new DeleteItemCommand({ TableName: TABLE.contentModules, Key: marshall({ moduleId }) }))
+  return ok({ message: 'Module deleted' })
+}
+
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 export async function handler(event: any): Promise<ApiResponse> {
@@ -1615,6 +2094,46 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'POST' && path === '/admin/send-deadline-reminders') return await handlePostAdminSendDeadlineReminders(event)
     if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
+
+    // ─ Content read routes (any authenticated user) ──────────────────────────────────
+    if (method === 'GET' && path === '/content/modules')       return await handleGetContentModules(event)
+    if (method === 'GET' && path === '/content/countries')     return await handleGetContentCountries()
+    if (method === 'GET' && path === '/content/cities')        return await handleGetContentCities(event)
+    if (method === 'GET' && path === '/content/universities')  return await handleGetContentUniversities(event)
+    const contentCountryMatch      = path.match(/^\/content\/countries\/([^/]+)$/)
+    const contentCityMatch         = path.match(/^\/content\/cities\/([^/]+)$/)
+    const contentUniversityMatch   = path.match(/^\/content\/universities\/([^/]+)$/)
+    const contentNeighborhoodMatch = path.match(/^\/content\/neighborhoods\/([^/]+)$/)
+    if (method === 'GET' && contentCountryMatch)      return await handleGetContentCountry(contentCountryMatch[1])
+    if (method === 'GET' && contentCityMatch)         return await handleGetContentCity(contentCityMatch[1])
+    if (method === 'GET' && contentUniversityMatch)   return await handleGetContentUniversity(contentUniversityMatch[1])
+    if (method === 'GET' && contentNeighborhoodMatch) return await handleGetContentNeighborhoods(contentNeighborhoodMatch[1])
+
+    // ─ Admin content CRUD routes ───────────────────────────────────────────────────
+    if (method === 'GET'  && path === '/admin/content/countries')    return await handleAdminGetCountries(event)
+    if (method === 'POST' && path === '/admin/content/countries')    return await handleAdminPostCountry(event)
+    if (method === 'GET'  && path === '/admin/content/cities')       return await handleAdminGetCities(event)
+    if (method === 'POST' && path === '/admin/content/cities')       return await handleAdminPostCity(event)
+    if (method === 'GET'  && path === '/admin/content/universities') return await handleAdminGetUniversities(event)
+    if (method === 'POST' && path === '/admin/content/universities') return await handleAdminPostUniversity(event)
+    if (method === 'POST' && path === '/admin/content/neighborhoods') return await handleAdminPostNeighborhood(event)
+    if (method === 'GET'  && path === '/admin/content/modules')      return await handleAdminGetModules(event)
+    if (method === 'POST' && path === '/admin/content/modules')      return await handleAdminPostModule(event)
+    const adminCountryMatch      = path.match(/^\/admin\/content\/countries\/([^/]+)$/)
+    const adminCityMatch         = path.match(/^\/admin\/content\/cities\/([^/]+)$/)
+    const adminUniversityMatch   = path.match(/^\/admin\/content\/universities\/([^/]+)$/)
+    const adminNeighborhoodMatch = path.match(/^\/admin\/content\/neighborhoods\/([^/]+)$/)
+    const adminModuleMatch       = path.match(/^\/admin\/content\/modules\/([^/]+)$/)
+    if (method === 'PUT'    && adminCountryMatch)      return await handleAdminPutCountry(event, adminCountryMatch[1])
+    if (method === 'DELETE' && adminCountryMatch)      return await handleAdminDeleteCountry(event, adminCountryMatch[1])
+    if (method === 'PUT'    && adminCityMatch)         return await handleAdminPutCity(event, adminCityMatch[1])
+    if (method === 'DELETE' && adminCityMatch)         return await handleAdminDeleteCity(event, adminCityMatch[1])
+    if (method === 'PUT'    && adminUniversityMatch)   return await handleAdminPutUniversity(event, adminUniversityMatch[1])
+    if (method === 'DELETE' && adminUniversityMatch)   return await handleAdminDeleteUniversity(event, adminUniversityMatch[1])
+    if (method === 'PUT'    && adminNeighborhoodMatch) return await handleAdminPutNeighborhood(event, adminNeighborhoodMatch[1])
+    if (method === 'DELETE' && adminNeighborhoodMatch) return await handleAdminDeleteNeighborhood(event, adminNeighborhoodMatch[1])
+    if (method === 'PUT'    && adminModuleMatch)       return await handleAdminPutModule(event, adminModuleMatch[1])
+    if (method === 'DELETE' && adminModuleMatch)       return await handleAdminDeleteModule(event, adminModuleMatch[1])
 
     console.error(`[Handler] No route matched for ${method} ${path}`)
     return fail(404, 'Not found')

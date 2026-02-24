@@ -133,6 +133,58 @@ const emailTemplatesTable = new dynamodb.Table(apiStack, 'EmailTemplatesTable', 
 
 emailTemplatesTable.grantReadWriteData(backend.userApi.resources.lambda)
 
+// ─── Content Tables ──────────────────────────────────────────────────────────
+// These tables power the multi-destination content system.
+// Content is managed via the /admin/content routes and read via /content routes.
+// The rule engine in the Lambda evaluates visibilityRules to return the correct
+// modules for each user's situation (destination + origin).
+
+const contentCountriesTable = new dynamodb.Table(apiStack, 'ContentCountriesTable', {
+  tableName: `leavs-${env}-content-countries`,
+  partitionKey: { name: 'countryId', type: dynamodb.AttributeType.STRING },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
+const contentCitiesTable = new dynamodb.Table(apiStack, 'ContentCitiesTable', {
+  tableName: `leavs-${env}-content-cities`,
+  partitionKey: { name: 'cityId', type: dynamodb.AttributeType.STRING },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
+const contentUniversitiesTable = new dynamodb.Table(apiStack, 'ContentUniversitiesTable', {
+  tableName: `leavs-${env}-content-universities`,
+  partitionKey: { name: 'universityId', type: dynamodb.AttributeType.STRING },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
+// PK: cityId  SK: neighborhoodId — enables efficient querying by city
+const contentNeighborhoodsTable = new dynamodb.Table(apiStack, 'ContentNeighborhoodsTable', {
+  tableName: `leavs-${env}-content-neighborhoods`,
+  partitionKey: { name: 'cityId', type: dynamodb.AttributeType.STRING },
+  sortKey: { name: 'neighborhoodId', type: dynamodb.AttributeType.STRING },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
+// Stores every possible dashboard module with its visibilityRules, pageVariant,
+// content JSON, and content variants. The rule engine scans this table and returns
+// only matching modules for a given user situation.
+const contentModulesTable = new dynamodb.Table(apiStack, 'ContentModulesTable', {
+  tableName: `leavs-${env}-content-modules`,
+  partitionKey: { name: 'moduleId', type: dynamodb.AttributeType.STRING },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
+contentCountriesTable.grantReadWriteData(backend.userApi.resources.lambda)
+contentCitiesTable.grantReadWriteData(backend.userApi.resources.lambda)
+contentUniversitiesTable.grantReadWriteData(backend.userApi.resources.lambda)
+contentNeighborhoodsTable.grantReadWriteData(backend.userApi.resources.lambda)
+contentModulesTable.grantReadWriteData(backend.userApi.resources.lambda)
+
 // Grant Lambda permission to send emails via SES
 backend.userApi.resources.lambda.addToRolePolicy(
   new iam.PolicyStatement({
@@ -191,6 +243,26 @@ backend.userApi.resources.lambda.addEnvironment(
 backend.userApi.resources.lambda.addEnvironment(
   'EMAIL_TEMPLATES_TABLE_NAME',
   emailTemplatesTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'CONTENT_COUNTRIES_TABLE_NAME',
+  contentCountriesTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'CONTENT_CITIES_TABLE_NAME',
+  contentCitiesTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'CONTENT_UNIVERSITIES_TABLE_NAME',
+  contentUniversitiesTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'CONTENT_NEIGHBORHOODS_TABLE_NAME',
+  contentNeighborhoodsTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'CONTENT_MODULES_TABLE_NAME',
+  contentModulesTable.tableName
 )
 
 // Grant Lambda permission to read the Gemini API key from Secrets Manager
@@ -424,6 +496,111 @@ chatResource.addMethod('POST', lambdaIntegration, {
   authorizer: cognitoAuthorizer,
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })
+
+// ─── /content — public read routes for destination content ───────────────────
+// These are authenticated (Cognito) but not admin-only.
+// The rule engine in the Lambda filters modules by the situation query params.
+
+const contentResource = restApi.root.addResource('content')
+
+// GET /content/modules?destinationCountry=italy&originEu=false&...
+const contentModulesResource = contentResource.addResource('modules')
+contentModulesResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// GET /content/countries
+const contentCountriesResource = contentResource.addResource('countries')
+contentCountriesResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+// GET /content/countries/{id}
+const contentCountryIdResource = contentCountriesResource.addResource('{id}')
+contentCountryIdResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// GET /content/cities?countryId=italy
+const contentCitiesResource = contentResource.addResource('cities')
+contentCitiesResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+// GET /content/cities/{id}
+const contentCityIdResource = contentCitiesResource.addResource('{id}')
+contentCityIdResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// GET /content/universities?cityId=milan
+const contentUniversitiesResource = contentResource.addResource('universities')
+contentUniversitiesResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+// GET /content/universities/{id}
+const contentUniversityIdResource = contentUniversitiesResource.addResource('{id}')
+contentUniversityIdResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// GET /content/neighborhoods/{cityId}
+const contentNeighborhoodsResource = contentResource.addResource('neighborhoods')
+const contentNeighborhoodsCityResource = contentNeighborhoodsResource.addResource('{cityId}')
+contentNeighborhoodsCityResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// ─── /admin/content — admin CRUD routes for content management ────────────────
+// All routes require the user to be in the Cognito 'admin' group.
+// Note: adminResource is already declared above (for /admin/stats etc.)
+
+const adminContentResource = adminResource.addResource('content')
+
+// Countries: GET + POST /admin/content/countries
+const adminContentCountriesResource = adminContentResource.addResource('countries')
+adminContentCountriesResource.addMethod('GET',  lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentCountriesResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+const adminContentCountryIdResource = adminContentCountriesResource.addResource('{id}')
+adminContentCountryIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentCountryIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+
+// Cities: GET + POST /admin/content/cities
+const adminContentCitiesResource = adminContentResource.addResource('cities')
+adminContentCitiesResource.addMethod('GET',  lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentCitiesResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+const adminContentCityIdResource = adminContentCitiesResource.addResource('{id}')
+adminContentCityIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentCityIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+
+// Universities: GET + POST /admin/content/universities
+const adminContentUniversitiesResource = adminContentResource.addResource('universities')
+adminContentUniversitiesResource.addMethod('GET',  lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentUniversitiesResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+const adminContentUniversityIdResource = adminContentUniversitiesResource.addResource('{id}')
+adminContentUniversityIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentUniversityIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+
+// Neighborhoods: POST /admin/content/neighborhoods (cityId in body)
+const adminContentNeighborhoodsResource = adminContentResource.addResource('neighborhoods')
+adminContentNeighborhoodsResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+const adminContentNeighborhoodIdResource = adminContentNeighborhoodsResource.addResource('{neighborhoodId}')
+adminContentNeighborhoodIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentNeighborhoodIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+
+// Modules: GET + POST /admin/content/modules
+const adminContentModulesResource = adminContentResource.addResource('modules')
+adminContentModulesResource.addMethod('GET',  lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentModulesResource.addMethod('POST', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+const adminContentModuleIdResource = adminContentModulesResource.addResource('{id}')
+adminContentModuleIdResource.addMethod('PUT',    lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
+adminContentModuleIdResource.addMethod('DELETE', lambdaIntegration, { authorizer: cognitoAuthorizer, authorizationType: apigateway.AuthorizationType.COGNITO })
 
 // Add Gateway Responses so that 4XX/5XX errors from API Gateway
 // (e.g. Cognito authorizer 401) include CORS headers.
