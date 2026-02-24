@@ -895,6 +895,36 @@ export async function fetchAdminEmailTemplates(): Promise<EmailTemplate[]> {
   return json.templates ?? []
 }
 
+/** Admin: trigger 5-day deadline reminder emails for all users with matching deadlines. */
+export async function sendDeadlineReminders(
+  daysAhead = 5
+): Promise<{ sent: number; skipped: number; failed: number; targetDate: string; details?: string[] }> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/send-deadline-reminders'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/send-deadline-reminders`
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify({ daysAhead }),
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  return res.json()
+}
+
 /** Admin: save / update an email template. */
 export async function updateAdminEmailTemplate(
   key: string,

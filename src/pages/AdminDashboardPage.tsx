@@ -30,8 +30,9 @@ import {
   Eye,
   EyeOff,
   Send,
+  Bell,
 } from 'lucide-react'
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -1102,6 +1103,14 @@ const TEMPLATE_VARS: Record<string, { name: string; description: string }[]> = {
     { name: '{{locationSuffix}}', description: 'e.g. " in Milan, Italy" — empty if location unknown' },
     { name: '{{year}}',           description: 'Current calendar year' },
   ],
+  deadline_reminder: [
+    { name: '{{preferredName}}',   description: "User's preferred name" },
+    { name: '{{deadlineTitle}}',   description: 'Title of the deadline' },
+    { name: '{{dueDate}}',         description: 'Formatted due date, e.g. "Friday, 1 March 2026"' },
+    { name: '{{daysUntil}}',       description: 'Number of days until the deadline (default 5)' },
+    { name: '{{noteSection}}',     description: 'HTML block with deadline note — empty string if no note set' },
+    { name: '{{year}}',            description: 'Current calendar year' },
+  ],
 }
 
 function EmailsTab() {
@@ -1117,6 +1126,8 @@ function EmailsTab() {
   const [testTo, setTestTo] = useState('')
   const [testSending, setTestSending] = useState(false)
   const [testMsg, setTestMsg] = useState<string | null>(null)
+  const [reminderSending, setReminderSending] = useState(false)
+  const [reminderMsg, setReminderMsg] = useState<string | null>(null)
 
   async function loadTemplates(autoSelect = true) {
     setLoading(true)
@@ -1160,6 +1171,10 @@ function EmailsTab() {
         .replace(/\{\{preferredName\}\}/g, 'Alex')
         .replace(/\{\{universityLine\}\}/g, 'Bocconi University')
         .replace(/\{\{locationSuffix\}\}/g, ' in Milan, Italy')
+        .replace(/\{\{deadlineTitle\}\}/g, 'Submit Housing Application')
+        .replace(/\{\{dueDate\}\}/g, 'Friday, 1 March 2026')
+        .replace(/\{\{daysUntil\}\}/g, '5')
+        .replace(/\{\{noteSection\}\}/g, '<p style="margin:10px 0 0;color:#64748b;font-size:13px;"><strong>Note:</strong> Remember to attach proof of enrollment.</p>')
         .replace(/\{\{year\}\}/g, year)
       await sendTestEmail(testTo, { subject: subst(editSubject), html: subst(editHtml) })
       setTestMsg(`Test sent to ${testTo}`)
@@ -1189,6 +1204,19 @@ function EmailsTab() {
 
   const activeTpl = templates.find(t => t.templateKey === selected)
   const vars = selected ? (TEMPLATE_VARS[selected] ?? []) : []
+
+  async function sendReminders() {
+    setReminderSending(true)
+    setReminderMsg(null)
+    try {
+      const result = await sendDeadlineReminders(5)
+      setReminderMsg(`Done — sent ${result.sent}, skipped ${result.skipped}, failed ${result.failed} (target date: ${result.targetDate})`)
+    } catch (e: unknown) {
+      setReminderMsg(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`)
+    } finally {
+      setReminderSending(false)
+    }
+  }
 
   if (loading) return <div className="flex items-center justify-center py-24"><RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" /></div>
 
@@ -1270,6 +1298,32 @@ function EmailsTab() {
             <p className={`text-xs ${saveMsg.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{saveMsg}</p>
           )}
 
+          {/* Send deadline reminders action (only for deadline_reminder template) */}
+          {selected === 'deadline_reminder' && (
+            <div className="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 space-y-3">
+              <div className="flex items-start gap-2">
+                <Bell className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-300">Send reminders now</p>
+                  <p className="text-xs text-amber-500/80 mt-0.5 leading-snug">Emails all users with a deadline 5 days from today and <code className="text-amber-300">sendReminder: true</code>. This is safe to run multiple times — only deadlines due exactly 5 days out are matched.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={sendReminders}
+                  disabled={reminderSending}
+                  className="flex items-center gap-1.5 text-xs bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  {reminderSending ? 'Sending…' : 'Send 5-day reminders'}
+                </button>
+                {reminderMsg && (
+                  <p className={`text-xs ${reminderMsg.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{reminderMsg}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Send test email */}
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
@@ -1344,6 +1398,10 @@ function EmailsTab() {
                   .replace(/\{\{preferredName\}\}/g, 'Alex')
                   .replace(/\{\{universityLine\}\}/g, 'Bocconi University')
                   .replace(/\{\{locationSuffix\}\}/g, ' in Milan, Italy')
+                  .replace(/\{\{deadlineTitle\}\}/g, 'Submit Housing Application')
+                  .replace(/\{\{dueDate\}\}/g, 'Friday, 1 March 2026')
+                  .replace(/\{\{daysUntil\}\}/g, '5')
+                  .replace(/\{\{noteSection\}\}/g, '<p style="margin:10px 0 0;color:#64748b;font-size:13px;"><strong>Note:</strong> Remember to attach proof of enrollment.</p>')
                   .replace(/\{\{year\}\}/g, String(new Date().getFullYear()))
                 }
                 sandbox=""
