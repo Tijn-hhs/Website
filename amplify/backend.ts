@@ -118,6 +118,21 @@ const whatsappMessagesTable = new dynamodb.Table(apiStack, 'WhatsAppMessagesTabl
 // userApi needs read access to serve the admin dashboard
 whatsappMessagesTable.grantReadData(backend.userApi.resources.lambda)
 
+// ─── Email Templates Table ───────────────────────────────────────────────────
+// Stores editable email templates (subject + htmlBody).
+// PK: templateKey (e.g. "welcome")
+const emailTemplatesTable = new dynamodb.Table(apiStack, 'EmailTemplatesTable', {
+  tableName: `leavs-${env}-email-templates`,
+  partitionKey: {
+    name: 'templateKey',
+    type: dynamodb.AttributeType.STRING,
+  },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
+emailTemplatesTable.grantReadWriteData(backend.userApi.resources.lambda)
+
 // Grant Lambda permission to send emails via SES
 backend.userApi.resources.lambda.addToRolePolicy(
   new iam.PolicyStatement({
@@ -172,6 +187,10 @@ backend.userApi.resources.lambda.addEnvironment(
 backend.userApi.resources.lambda.addEnvironment(
   'CHAT_MESSAGES_TABLE_NAME',
   chatMessagesTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'EMAIL_TEMPLATES_TABLE_NAME',
+  emailTemplatesTable.tableName
 )
 
 // Grant Lambda permission to read the Gemini API key from Secrets Manager
@@ -356,6 +375,22 @@ const adminTestEmailResource = adminResource.addResource('test-email')
 
 // POST /admin/test-email
 adminTestEmailResource.addMethod('POST', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// ─── /admin/email-templates ──────────────────────────────────────────────────
+const adminEmailTemplatesResource = adminResource.addResource('email-templates')
+
+// GET /admin/email-templates
+adminEmailTemplatesResource.addMethod('GET', lambdaIntegration, {
+  authorizer: cognitoAuthorizer,
+  authorizationType: apigateway.AuthorizationType.COGNITO,
+})
+
+// PUT /admin/email-templates/{key}
+const adminEmailTemplateKeyResource = adminEmailTemplatesResource.addResource('{key}')
+adminEmailTemplateKeyResource.addMethod('PUT', lambdaIntegration, {
   authorizer: cognitoAuthorizer,
   authorizationType: apigateway.AuthorizationType.COGNITO,
 })

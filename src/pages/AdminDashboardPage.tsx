@@ -25,8 +25,12 @@ import {
   CreditCard,
   Plane,
   Mail,
+  Save,
+  RotateCcw,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -1087,10 +1091,236 @@ function BuddyTab() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TAB 5 — Email Templates
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const TEMPLATE_VARS: Record<string, { name: string; description: string }[]> = {
+  welcome: [
+    { name: '{{preferredName}}',  description: "User's preferred name" },
+    { name: '{{universityLine}}', description: 'Destination university (or "your destination")' },
+    { name: '{{locationSuffix}}', description: 'e.g. " in Milan, Italy" — empty if location unknown' },
+    { name: '{{year}}',           description: 'Current calendar year' },
+  ],
+}
+
+function EmailsTab() {
+  const [templates, setTemplates] = useState<EmailTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selected, setSelected] = useState<string | null>(null)
+  const [editSubject, setEditSubject] = useState('')
+  const [editHtml, setEditHtml] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState<string | null>(null)
+  const [preview, setPreview] = useState(false)
+
+  async function loadTemplates(autoSelect = true) {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchAdminEmailTemplates()
+      setTemplates(data)
+      if (autoSelect && data.length > 0 && !selected) {
+        selectTemplate(data[0])
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to load templates')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function selectTemplate(tpl: EmailTemplate) {
+    setSelected(tpl.templateKey)
+    setEditSubject(tpl.subject)
+    setEditHtml(tpl.htmlBody)
+    setSaveMsg(null)
+    setPreview(false)
+  }
+
+  function resetToDefault() {
+    const tpl = templates.find(t => t.templateKey === selected)
+    if (!tpl) return
+    setEditSubject(tpl.subject)
+    setEditHtml(tpl.htmlBody)
+    setSaveMsg(null)
+  }
+
+  async function save() {
+    if (!selected) return
+    setSaving(true)
+    setSaveMsg(null)
+    try {
+      const result = await updateAdminEmailTemplate(selected, { subject: editSubject, htmlBody: editHtml })
+      setSaveMsg(`Saved at ${new Date(result.updatedAt).toLocaleTimeString()}`)
+      await loadTemplates(false)
+    } catch (e: unknown) {
+      setSaveMsg(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  useEffect(() => { loadTemplates() }, [])
+
+  const activeTpl = templates.find(t => t.templateKey === selected)
+  const vars = selected ? (TEMPLATE_VARS[selected] ?? []) : []
+
+  if (loading) return <div className="flex items-center justify-center py-24"><RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" /></div>
+
+  if (error) return (
+    <div className="flex items-start gap-3 bg-red-950/40 border border-red-800 rounded-xl p-5">
+      <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+      <div>
+        <p className="text-red-300 font-medium">Failed to load email templates</p>
+        <p className="text-red-400/70 text-sm mt-0.5">{error}</p>
+        <button onClick={() => loadTemplates()} className="mt-3 text-xs text-red-400 hover:text-red-300 underline underline-offset-2">Try again</button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex gap-6 items-start">
+      {/* Left: template list */}
+      <div className="w-56 flex-shrink-0 space-y-2">
+        {templates.map((tpl) => (
+          <button
+            key={tpl.templateKey}
+            onClick={() => selectTemplate(tpl)}
+            className={`w-full text-left rounded-xl border p-4 transition-colors ${
+              selected === tpl.templateKey
+                ? 'border-indigo-600 bg-indigo-950/30'
+                : 'border-gray-800 bg-gray-900 hover:border-gray-600'
+            }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Mail className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+              <span className="text-sm font-semibold text-white capitalize">{tpl.templateKey}</span>
+            </div>
+            <p className="text-xs text-gray-500 leading-snug">{tpl.description}</p>
+            <p className="text-xs mt-2">
+              {tpl.isDefault
+                ? <span className="text-yellow-500">Built-in default</span>
+                : <span className="text-emerald-400">Saved {tpl.updatedAt ? new Date(tpl.updatedAt).toLocaleDateString() : ''}</span>
+              }
+            </p>
+          </button>
+        ))}
+      </div>
+
+      {/* Right: editor */}
+      {activeTpl ? (
+        <div className="flex-1 min-w-0 space-y-5">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-white capitalize">{activeTpl.templateKey} email</h2>
+              <p className="text-xs text-gray-500 mt-0.5">{activeTpl.description}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPreview(!preview)}
+                className="flex items-center gap-1.5 text-xs bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                {preview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {preview ? 'Edit' : 'Preview'}
+              </button>
+              <button
+                onClick={resetToDefault}
+                className="flex items-center gap-1.5 text-xs bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Reset
+              </button>
+              <button
+                onClick={save}
+                disabled={saving}
+                className="flex items-center gap-1.5 text-xs bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
+              >
+                <Save className="w-3.5 h-3.5" />
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+
+          {saveMsg && (
+            <p className={`text-xs ${saveMsg.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{saveMsg}</p>
+          )}
+
+          {!preview ? (
+            <>
+              {/* Subject */}
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5">Subject line</label>
+                <input
+                  type="text"
+                  value={editSubject}
+                  onChange={(e) => setEditSubject(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-600 transition-colors"
+                  placeholder="Email subject…"
+                />
+              </div>
+
+              {/* Variables reference */}
+              {vars.length > 0 && (
+                <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4">
+                  <p className="text-xs font-medium text-gray-400 mb-3">Available variables</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {vars.map((v) => (
+                      <div key={v.name} className="flex items-start gap-2">
+                        <code className="text-xs text-indigo-300 bg-indigo-950/50 border border-indigo-900 px-1.5 py-0.5 rounded font-mono whitespace-nowrap flex-shrink-0">{v.name}</code>
+                        <span className="text-xs text-gray-500">{v.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* HTML body */}
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5">HTML body</label>
+                <textarea
+                  value={editHtml}
+                  onChange={(e) => setEditHtml(e.target.value)}
+                  rows={28}
+                  spellCheck={false}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-xs text-gray-200 font-mono leading-relaxed focus:outline-none focus:border-indigo-600 transition-colors resize-y"
+                  placeholder="<!DOCTYPE html>…"
+                />
+              </div>
+            </>
+          ) : (
+            <div>
+              <p className="text-xs text-gray-500 mb-3">Preview uses placeholder values for variables (Alex, Bocconi University, Milan).</p>
+              <iframe
+                srcDoc={editHtml
+                  .replace(/\{\{preferredName\}\}/g, 'Alex')
+                  .replace(/\{\{universityLine\}\}/g, 'Bocconi University')
+                  .replace(/\{\{locationSuffix\}\}/g, ' in Milan, Italy')
+                  .replace(/\{\{year\}\}/g, String(new Date().getFullYear()))
+                }
+                sandbox=""
+                title="Email preview"
+                className="w-full rounded-xl border border-gray-700"
+                style={{ height: 600 }}
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex-1 text-center py-16 text-gray-600">
+          <Mail className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="font-medium">Select a template to edit</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Main Admin Dashboard Page
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy'
+type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails'
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
@@ -1119,11 +1349,12 @@ export default function AdminDashboardPage() {
   useEffect(() => { loadStats() }, [])
 
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'overview',  label: 'Overview',       icon: <LayoutDashboard className="w-3.5 h-3.5" /> },
-    { id: 'analytics', label: 'Data Analytics', icon: <LineChart className="w-3.5 h-3.5" /> },
-    { id: 'feedback',  label: 'Feedback',        icon: <MessageSquare className="w-3.5 h-3.5" /> },
-    { id: 'users',     label: 'Users',           icon: <UserCheck className="w-3.5 h-3.5" /> },
-    { id: 'buddy',     label: 'Buddy System',    icon: <Heart className="w-3.5 h-3.5" /> },
+    { id: 'overview',  label: 'Overview',        icon: <LayoutDashboard className="w-3.5 h-3.5" /> },
+    { id: 'analytics', label: 'Data Analytics',   icon: <LineChart className="w-3.5 h-3.5" /> },
+    { id: 'feedback',  label: 'Feedback',          icon: <MessageSquare className="w-3.5 h-3.5" /> },
+    { id: 'users',     label: 'Users',             icon: <UserCheck className="w-3.5 h-3.5" /> },
+    { id: 'buddy',     label: 'Buddy System',      icon: <Heart className="w-3.5 h-3.5" /> },
+    { id: 'emails',    label: 'Email Templates',   icon: <Mail className="w-3.5 h-3.5" /> },
   ]
 
   return (
@@ -1181,6 +1412,7 @@ export default function AdminDashboardPage() {
         {activeTab === 'feedback' && <FeedbackTab />}
         {activeTab === 'users' && <UsersTab />}
         {activeTab === 'buddy' && <BuddyTab />}
+        {activeTab === 'emails' && <EmailsTab />}
       </main>
     </div>
   )

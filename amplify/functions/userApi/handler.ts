@@ -143,10 +143,126 @@ const TABLE = {
   // Reddit posts fetched by the redditPoller Lambda (leavs-{env}-reddit-posts)
   whatsappMessages: process.env.WHATSAPP_MESSAGES_TABLE_NAME!,
   chatMessages: process.env.CHAT_MESSAGES_TABLE_NAME!,
+  emailTemplates: process.env.EMAIL_TEMPLATES_TABLE_NAME || '',
 } as const
 
 const SENDER_EMAIL = 'hallo@weleav.com'
 const FEEDBACK_RECIPIENT = process.env.FEEDBACK_EMAIL || 'hallo@weleav.com'
+
+// ─── Email Template Defaults ─────────────────────────────────────────────────────
+// These are the out-of-the-box templates. Admins can override any key via the
+// email template editor in /internal/mgmt. The saved version is stored in
+// DynamoDB and loaded at send time; if never saved the default below is used.
+
+const DEFAULT_EMAIL_TEMPLATES: Record<string, { subject: string; htmlBody: string; description: string }> = {
+  welcome: {
+    description: 'Sent when a user completes onboarding',
+    subject: 'Welcome to Leavs, {{preferredName}}! 🎉',
+    htmlBody: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Leavs</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#1a1a1a;padding:32px 40px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">Leavs</h1>
+              <p style="margin:8px 0 0;color:#aaaaaa;font-size:14px;">Your study abroad companion</p>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px 40px 32px;">
+              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:22px;font-weight:600;">Welcome, {{preferredName}}! 🎉</h2>
+              <p style="margin:0 0 24px;color:#444444;font-size:16px;line-height:1.6;">
+                You've completed your onboarding \u2014 you're all set to make the most of your move to
+                <strong>{{universityLine}}</strong>{{locationSuffix}}.
+              </p>
+              <p style="margin:0 0 24px;color:#444444;font-size:16px;line-height:1.6;">
+                Your personalised dashboard is ready. Track your deadlines, explore your checklist, and find everything you need for a smooth relocation \u2014 all in one place.
+              </p>
+              <!-- CTA Button -->
+              <table cellpadding="0" cellspacing="0" style="margin:32px 0;">
+                <tr>
+                  <td style="background-color:#1a1a1a;border-radius:8px;padding:14px 28px;">
+                    <a href="https://www.weleav.com/dashboard"
+                       style="color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;display:inline-block;">
+                      Go to your dashboard \u2192
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0;color:#888888;font-size:14px;line-height:1.6;">
+                If you have any questions or feedback, simply reply to this email \u2014 we'd love to hear from you.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f9f9f9;border-top:1px solid #eeeeee;padding:24px 40px;text-align:center;">
+              <p style="margin:0;color:#aaaaaa;font-size:12px;">
+                \u00A9 {{year}} Leavs \u00B7 <a href="https://www.weleav.com" style="color:#aaaaaa;text-decoration:underline;">weleav.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+}
+
+/** Substitute {{variable}} placeholders in an email template string. */
+function substituteVars(template: string, vars: Record<string, string>): string {
+  return Object.entries(vars).reduce(
+    (t, [k, v]) => t.split(`{{${k}}}`).join(v),
+    template
+  )
+}
+
+/**
+ * Load an email template from DynamoDB.
+ * Falls back gracefully to the built-in default when the table is not yet
+ * provisioned or the key has never been saved via the admin editor.
+ */
+async function getEmailTemplate(key: string): Promise<{
+  subject: string
+  htmlBody: string
+  description: string
+  isDefault: boolean
+  updatedAt?: string
+}> {
+  const defaults = DEFAULT_EMAIL_TEMPLATES[key]
+  const fallback = { ...(defaults ?? { subject: '', htmlBody: '', description: '' }), isDefault: true }
+  const tableName = TABLE.emailTemplates
+  if (!tableName) return fallback
+
+  try {
+    const { Item } = await dynamo.send(
+      new GetItemCommand({ TableName: tableName, Key: marshall({ templateKey: key }) })
+    )
+    if (!Item) return fallback
+    const item = unmarshall(Item)
+    return {
+      subject: item.subject || fallback.subject,
+      htmlBody: item.htmlBody || fallback.htmlBody,
+      description: item.description || fallback.description,
+      isDefault: false,
+      updatedAt: item.updatedAt,
+    }
+  } catch {
+    return fallback
+  }
+}
 
 // ─── Response Helpers ────────────────────────────────────────────────────────
 
@@ -869,68 +985,16 @@ async function handlePostWelcomeEmail(userId: string, event: any): Promise<ApiRe
   const locationLine = [destinationCity, destinationCountry].filter(Boolean).join(', ')
   const universityLine = destinationUniversity || 'your destination'
 
-  const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to Leavs</title>
-</head>
-<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:40px 16px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          <!-- Header -->
-          <tr>
-            <td style="background-color:#1a1a1a;padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">Leavs</h1>
-              <p style="margin:8px 0 0;color:#aaaaaa;font-size:14px;">Your study abroad companion</p>
-            </td>
-          </tr>
-          <!-- Body -->
-          <tr>
-            <td style="padding:40px 40px 32px;">
-              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:22px;font-weight:600;">Welcome, ${preferredName}! 🎉</h2>
-              <p style="margin:0 0 24px;color:#444444;font-size:16px;line-height:1.6;">
-                You've completed your onboarding — you're all set to make the most of your move to
-                <strong>${universityLine}</strong>${locationLine ? ` in ${locationLine}` : ''}.
-              </p>
-              <p style="margin:0 0 24px;color:#444444;font-size:16px;line-height:1.6;">
-                Your personalised dashboard is ready. Track your deadlines, explore your checklist, and find everything you need for a smooth relocation — all in one place.
-              </p>
-              <!-- CTA Button -->
-              <table cellpadding="0" cellspacing="0" style="margin:32px 0;">
-                <tr>
-                  <td style="background-color:#1a1a1a;border-radius:8px;padding:14px 28px;">
-                    <a href="https://www.weleav.com/dashboard"
-                       style="color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;display:inline-block;">
-                      Go to your dashboard →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:0;color:#888888;font-size:14px;line-height:1.6;">
-                If you have any questions or feedback, simply reply to this email — we'd love to hear from you.
-              </p>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="background-color:#f9f9f9;border-top:1px solid #eeeeee;padding:24px 40px;text-align:center;">
-              <p style="margin:0;color:#aaaaaa;font-size:12px;">
-                © ${new Date().getFullYear()} Leavs · <a href="https://www.weleav.com" style="color:#aaaaaa;text-decoration:underline;">weleav.com</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `.trim()
+  // Load template from DynamoDB (falls back to built-in default if never customised)
+  const templateData = await getEmailTemplate('welcome')
+  const vars: Record<string, string> = {
+    preferredName,
+    universityLine,
+    locationSuffix: locationLine ? ` in ${locationLine}` : '',
+    year: String(new Date().getFullYear()),
+  }
+  const html = substituteVars(templateData.htmlBody, vars)
+  const subject = substituteVars(templateData.subject, vars)
 
   try {
     await ses.send(
@@ -938,7 +1002,7 @@ async function handlePostWelcomeEmail(userId: string, event: any): Promise<ApiRe
         Source: SENDER_EMAIL,
         Destination: { ToAddresses: [userEmail] },
         Message: {
-          Subject: { Data: `Welcome to Leavs, ${preferredName}! 🎉` },
+          Subject: { Data: subject },
           Body: { Html: { Data: html } },
         },
       })
@@ -949,6 +1013,67 @@ async function handlePostWelcomeEmail(userId: string, event: any): Promise<ApiRe
     console.error('[welcome-email] SES error:', err)
     return fail(502, `SES error: ${err?.message ?? String(err)}`)
   }
+}
+
+/** GET /admin/email-templates — list all email templates with current values. */
+async function handleGetAdminEmailTemplates(event: any): Promise<ApiResponse> {
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  const auth = event.requestContext?.authorizer || event.authorizer || {}
+  const groups: string[] = (auth?.claims?.['cognito:groups'] || '').split(',').filter(Boolean)
+  const isAdmin = groups.includes('admin') || (adminSecret && providedSecret === adminSecret)
+  if (!isAdmin) return fail(403, 'Forbidden')
+
+  const templateKeys = Object.keys(DEFAULT_EMAIL_TEMPLATES)
+  const templates = await Promise.all(
+    templateKeys.map(async (key) => {
+      const tpl = await getEmailTemplate(key)
+      return { templateKey: key, ...tpl }
+    })
+  )
+  return ok({ templates })
+}
+
+/** PUT /admin/email-templates/{key} — save / update a single email template. */
+async function handlePutAdminEmailTemplate(event: any, key: string): Promise<ApiResponse> {
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  const auth = event.requestContext?.authorizer || event.authorizer || {}
+  const groups: string[] = (auth?.claims?.['cognito:groups'] || '').split(',').filter(Boolean)
+  const isAdmin = groups.includes('admin') || (adminSecret && providedSecret === adminSecret)
+  if (!isAdmin) return fail(403, 'Forbidden')
+
+  if (!DEFAULT_EMAIL_TEMPLATES[key]) return fail(404, `Unknown template key: ${key}`)
+
+  const tableName = TABLE.emailTemplates
+  if (!tableName) return fail(503, 'Email templates table not yet provisioned — Amplify deploy may still be in progress')
+
+  const body = parseBody(event)
+  const subject = (body.subject || '').trim()
+  const htmlBody = (body.htmlBody || '').trim()
+  if (!subject || !htmlBody) return fail(400, 'subject and htmlBody are required')
+
+  const updatedAt = new Date().toISOString()
+  await dynamo.send(
+    new PutItemCommand({
+      TableName: tableName,
+      Item: marshall({
+        templateKey: key,
+        subject,
+        htmlBody,
+        description: DEFAULT_EMAIL_TEMPLATES[key].description,
+        updatedAt,
+      }),
+    })
+  )
+  console.log(`[email-templates] Saved template "${key}" at ${updatedAt}`)
+  return ok({ success: true, templateKey: key, updatedAt })
 }
 
 /** GET /admin/buddy-pool — list all users who opted into the buddy system. */
@@ -1268,6 +1393,9 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'POST' && path === '/admin/buddy-match') return await handlePostAdminBuddyMatch(event)
     if (method === 'POST' && path === '/user/me/welcome-email') return await handlePostWelcomeEmail(userId, event)
     if (method === 'POST' && path === '/admin/test-email')  return await handlePostAdminTestEmail(event)
+    if (method === 'GET'  && path === '/admin/email-templates') return await handleGetAdminEmailTemplates(event)
+    const emailTemplateMatch = path.match(/^\/admin\/email-templates\/([^/]+)$/)
+    if (method === 'PUT'  && emailTemplateMatch) return await handlePutAdminEmailTemplate(event, emailTemplateMatch[1])
     if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
 

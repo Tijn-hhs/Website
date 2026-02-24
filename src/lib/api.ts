@@ -853,7 +853,77 @@ export async function adminBuddyMatch(userAId: string, userBId: string): Promise
   }
 }
 
-// ─── AI Chat ──────────────────────────────────────────────────────────────────
+// ─── Email Templates ──────────────────────────────────────────────────────────
+
+export interface EmailTemplate {
+  templateKey: string
+  description: string
+  subject: string
+  htmlBody: string
+  isDefault: boolean
+  updatedAt?: string
+}
+
+/** Admin: fetch all email templates (with current values from DynamoDB or built-in defaults). */
+export async function fetchAdminEmailTemplates(): Promise<EmailTemplate[]> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/email-templates'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/email-templates`
+  }
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', ...headers },
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  const json = await res.json() as { templates: EmailTemplate[] }
+  return json.templates ?? []
+}
+
+/** Admin: save / update an email template. */
+export async function updateAdminEmailTemplate(
+  key: string,
+  data: { subject: string; htmlBody: string }
+): Promise<{ updatedAt: string }> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = `/api-proxy/admin/email-templates/${key}`
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/email-templates/${key}`
+  }
+
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify(data),
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  return res.json()
+}
+
+
 
 export interface ChatMessage {
   role: 'user' | 'assistant'
