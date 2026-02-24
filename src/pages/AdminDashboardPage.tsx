@@ -29,8 +29,9 @@ import {
   RotateCcw,
   Eye,
   EyeOff,
+  Send,
 } from 'lucide-react'
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -1113,6 +1114,9 @@ function EmailsTab() {
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
   const [preview, setPreview] = useState(false)
+  const [testTo, setTestTo] = useState('')
+  const [testSending, setTestSending] = useState(false)
+  const [testMsg, setTestMsg] = useState<string | null>(null)
 
   async function loadTemplates(autoSelect = true) {
     setLoading(true)
@@ -1144,6 +1148,26 @@ function EmailsTab() {
     setEditSubject(tpl.subject)
     setEditHtml(tpl.htmlBody)
     setSaveMsg(null)
+  }
+
+  async function sendTest() {
+    if (!testTo) return
+    setTestSending(true)
+    setTestMsg(null)
+    try {
+      const year = String(new Date().getFullYear())
+      const subst = (s: string) => s
+        .replace(/\{\{preferredName\}\}/g, 'Alex')
+        .replace(/\{\{universityLine\}\}/g, 'Bocconi University')
+        .replace(/\{\{locationSuffix\}\}/g, ' in Milan, Italy')
+        .replace(/\{\{year\}\}/g, year)
+      await sendTestEmail(testTo, { subject: subst(editSubject), html: subst(editHtml) })
+      setTestMsg(`Test sent to ${testTo}`)
+    } catch (e: unknown) {
+      setTestMsg(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`)
+    } finally {
+      setTestSending(false)
+    }
   }
 
   async function save() {
@@ -1245,6 +1269,30 @@ function EmailsTab() {
           {saveMsg && (
             <p className={`text-xs ${saveMsg.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{saveMsg}</p>
           )}
+
+          {/* Send test email */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <input
+                type="email"
+                value={testTo}
+                onChange={(e) => { setTestTo(e.target.value); setTestMsg(null) }}
+                placeholder="Send test to email address…"
+                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600 transition-colors"
+              />
+              <button
+                onClick={sendTest}
+                disabled={!testTo || testSending}
+                className="flex items-center gap-1.5 text-xs bg-gray-800 hover:bg-gray-700 border border-gray-700 disabled:opacity-40 text-gray-300 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+              >
+                <Send className="w-3.5 h-3.5" />
+                {testSending ? 'Sending…' : 'Send test'}
+              </button>
+            </div>
+            {testMsg && (
+              <p className={`text-xs ${testMsg.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{testMsg}</p>
+            )}
+          </div>
 
           {!preview ? (
             <>

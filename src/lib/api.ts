@@ -486,7 +486,10 @@ export async function deleteDeadline(deadlineId: string): Promise<void> {
 
 // ─── Admin: Test Email ──────────────────────────────────────────────────────
 
-export async function sendTestEmail(to: string): Promise<{ success: boolean; sentTo: string }> {
+export async function sendTestEmail(
+  to: string,
+  options?: { subject?: string; html?: string },
+): Promise<{ success: boolean; sentTo: string }> {
   const headers = await getAuthHeaders()
 
   let url: string
@@ -501,7 +504,7 @@ export async function sendTestEmail(to: string): Promise<{ success: boolean; sen
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
-    body: JSON.stringify({ to }),
+    body: JSON.stringify({ to, ...options }),
   })
 
   if (!res.ok) {

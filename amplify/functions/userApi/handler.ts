@@ -941,7 +941,7 @@ async function handlePostAdminTestEmail(event: any): Promise<ApiResponse> {
   }
 
   const body = parseBody(event)
-  const to: string = body.to || 'hallo@weleav.com'
+  const to: string = (body.to || 'hallo@weleav.com').toLowerCase()
   const subject = body.subject || 'Leavs SES Test Email'
   const html = body.html || `
     <h2>SES test from Leavs ✅</h2>
