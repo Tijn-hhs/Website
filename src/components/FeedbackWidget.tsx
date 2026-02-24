@@ -1,16 +1,62 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { MessageCircle, Send, X } from 'lucide-react'
 import { submitFeedback } from '../lib/api'
 import './FeedbackWidget.css'
 
+const VISIT_COUNT_KEY = 'leavs_visit_count'
+const LAST_AUTO_PROMPT_KEY = 'leavs_last_auto_prompt'
+const AUTO_PROMPT_VISITS = 15          // open after this many page loads
+const AUTO_PROMPT_TIME_MS = 5 * 60 * 1000   // 5 minutes on one page
+const AUTO_PROMPT_COOLDOWN_MS = 24 * 60 * 60 * 1000 // 24 h between auto-prompts
+
 export default function FeedbackWidget() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isAutoPrompt, setIsAutoPrompt] = useState(false)
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const location = useLocation()
+  const isOpenRef = useRef(false)
+
+  // Keep ref in sync so timer callbacks read the latest value
+  useEffect(() => { isOpenRef.current = isOpen }, [isOpen])
+
+  const canAutoPrompt = () => {
+    const last = localStorage.getItem(LAST_AUTO_PROMPT_KEY)
+    if (!last) return true
+    return Date.now() - parseInt(last, 10) > AUTO_PROMPT_COOLDOWN_MS
+  }
+
+  const triggerAutoPrompt = () => {
+    if (isOpenRef.current || !canAutoPrompt()) return
+    localStorage.setItem(LAST_AUTO_PROMPT_KEY, String(Date.now()))
+    setIsAutoPrompt(true)
+    setIsOpen(true)
+  }
+
+  // ── trigger 1: visit count ──────────────────────────────────────────────────
+  useEffect(() => {
+    const count = parseInt(localStorage.getItem(VISIT_COUNT_KEY) || '0', 10) + 1
+    localStorage.setItem(VISIT_COUNT_KEY, String(count))
+    if (count >= AUTO_PROMPT_VISITS) {
+      localStorage.setItem(VISIT_COUNT_KEY, '0')
+      // Small delay so the page finishes rendering first
+      const t = setTimeout(triggerAutoPrompt, 800)
+      return () => clearTimeout(t)
+    }
+  }, []) // once on mount
+
+  // ── trigger 2: 5 minutes on the same page ──────────────────────────────────
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(triggerAutoPrompt, AUTO_PROMPT_TIME_MS)
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [location.pathname])
 
   const handleSubmit = async () => {
     if (!message.trim()) return
@@ -27,6 +73,7 @@ export default function FeedbackWidget() {
         setTimeout(() => {
           setIsSubmitted(false)
           setIsOpen(false)
+          setIsAutoPrompt(false)
         }, 2000)
       }
     } catch (error) {
@@ -44,6 +91,7 @@ export default function FeedbackWidget() {
       <button
         onClick={() => {
           setIsOpen(!isOpen)
+          setIsAutoPrompt(false)
           setError(null)
         }}
         className={`fixed bottom-8 right-8 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-40 ${isOpen ? 'feedback-circle-expand' : ''}`}
@@ -61,11 +109,14 @@ export default function FeedbackWidget() {
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageCircle size={20} className="text-white" />
-                <h3 className="text-white font-semibold">Ask Us Anything</h3>
+                <h3 className="text-white font-semibold">
+                  {isAutoPrompt ? 'Is there anything you want to know?' : 'Ask Us Anything'}
+                </h3>
               </div>
               <button
                 onClick={() => {
                   setIsOpen(false)
+                  setIsAutoPrompt(false)
                   setError(null)
                 }}
                 className="text-white hover:bg-purple-700 p-1 rounded-lg transition-colors"
@@ -89,7 +140,9 @@ export default function FeedbackWidget() {
               ) : (
                 <div className="space-y-4">
                   <p className="text-sm text-slate-700 leading-relaxed">
-                    Is there any information you want to know right now? Ask it to us. We can help you and make our platform better at the same time.
+                    {isAutoPrompt
+                      ? 'Is there anything you want to know right now? We\'re here to help — just ask!'
+                      : 'Is there any information you want to know right now? Ask it to us. We can help you and make our platform better at the same time.'}
                   </p>
                   
                   <textarea
