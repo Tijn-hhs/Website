@@ -165,53 +165,171 @@ const DEFAULT_EMAIL_TEMPLATES: Record<string, { subject: string; htmlBody: strin
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome to Leavs</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:40px 16px;">
+<body style="margin:0;padding:0;background-color:#eff6ff;font-family:system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#eff6ff;padding:40px 16px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          <!-- Header -->
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(30,27,75,0.10);border:1px solid #e2e8f0;">
+
+          <!-- Header: deep indigo → navy gradient matching dashboard -->
           <tr>
-            <td style="background-color:#1a1a1a;padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">Leavs</h1>
-              <p style="margin:8px 0 0;color:#aaaaaa;font-size:14px;">Your study abroad companion</p>
+            <td style="background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);padding:36px 40px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.3px;">Leavs</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.60);font-size:13px;letter-spacing:0.2px;">Your study abroad companion</p>
             </td>
           </tr>
+
           <!-- Body -->
           <tr>
             <td style="padding:40px 40px 32px;">
-              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:22px;font-weight:600;">Welcome, {{preferredName}}! 🎉</h2>
-              <p style="margin:0 0 24px;color:#444444;font-size:16px;line-height:1.6;">
+              <h2 style="margin:0 0 16px;color:#0f172a;font-size:22px;font-weight:600;">
+                Welcome, {{preferredName}}! \uD83C\uDF89
+              </h2>
+
+              <p style="margin:0 0 20px;color:#475569;font-size:16px;line-height:1.65;">
                 You've completed your onboarding \u2014 you're all set to make the most of your move to
-                <strong>{{universityLine}}</strong>{{locationSuffix}}.
+                <strong style="color:#1e1b4b;">{{universityLine}}</strong>{{locationSuffix}}.
               </p>
-              <p style="margin:0 0 24px;color:#444444;font-size:16px;line-height:1.6;">
+
+              <p style="margin:0 0 32px;color:#475569;font-size:16px;line-height:1.65;">
                 Your personalised dashboard is ready. Track your deadlines, explore your checklist, and find everything you need for a smooth relocation \u2014 all in one place.
               </p>
+
               <!-- CTA Button -->
-              <table cellpadding="0" cellspacing="0" style="margin:32px 0;">
+              <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background-color:#1a1a1a;border-radius:8px;padding:14px 28px;">
+                  <td style="background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);border-radius:10px;padding:14px 32px;">
                     <a href="https://www.weleav.com/dashboard"
-                       style="color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;display:inline-block;">
+                       style="color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;display:inline-block;letter-spacing:0.1px;">
                       Go to your dashboard \u2192
                     </a>
                   </td>
                 </tr>
               </table>
-              <p style="margin:0;color:#888888;font-size:14px;line-height:1.6;">
+
+              <!-- Divider -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 28px;">
+                <tr>
+                  <td style="height:1px;background-color:#e2e8f0;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+
+              <p style="margin:0;color:#94a3b8;font-size:14px;line-height:1.6;">
                 If you have any questions or feedback, simply reply to this email \u2014 we'd love to hear from you.
               </p>
             </td>
           </tr>
+
           <!-- Footer -->
           <tr>
-            <td style="background-color:#f9f9f9;border-top:1px solid #eeeeee;padding:24px 40px;text-align:center;">
-              <p style="margin:0;color:#aaaaaa;font-size:12px;">
-                \u00A9 {{year}} Leavs \u00B7 <a href="https://www.weleav.com" style="color:#aaaaaa;text-decoration:underline;">weleav.com</a>
+            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:20px 40px;text-align:center;">
+              <p style="margin:0;color:#94a3b8;font-size:12px;">
+                \u00A9 {{year}} Leavs \u00B7
+                <a href="https://www.weleav.com" style="color:#3b82f6;text-decoration:none;">weleav.com</a>
               </p>
             </td>
           </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+  deadline_reminder: {
+    description: 'Sent 5 days before a deadline when sendReminder is enabled',
+    subject: '⏰ Reminder: {{deadlineTitle}} is due in {{daysUntil}} days',
+    htmlBody: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deadline Reminder</title>
+</head>
+<body style="margin:0;padding:0;background-color:#eff6ff;font-family:system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#eff6ff;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(30,27,75,0.10);border:1px solid #e2e8f0;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);padding:36px 40px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.3px;">Leavs</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.60);font-size:13px;letter-spacing:0.2px;">Your study abroad companion</p>
+            </td>
+          </tr>
+
+          <!-- Deadline badge -->
+          <tr>
+            <td style="padding:32px 40px 0;text-align:center;">
+              <div style="display:inline-block;background-color:#fef3c7;border:1px solid #fde68a;border-radius:999px;padding:6px 18px;">
+                <span style="color:#92400e;font-size:13px;font-weight:600;">⏰ Due in {{daysUntil}} days</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:24px 40px 32px;">
+              <h2 style="margin:0 0 8px;color:#0f172a;font-size:22px;font-weight:600;">
+                Hi {{preferredName}},
+              </h2>
+              <p style="margin:0 0 24px;color:#475569;font-size:16px;line-height:1.65;">
+                Just a heads-up \u2014 you have a deadline coming up soon:
+              </p>
+
+              <!-- Deadline card -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+                <tr>
+                  <td style="background-color:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #1e1b4b;border-radius:10px;padding:20px 24px;">
+                    <p style="margin:0 0 6px;color:#0f172a;font-size:17px;font-weight:600;">{{deadlineTitle}}</p>
+                    <p style="margin:0;color:#64748b;font-size:14px;">Due: <strong style="color:#1e1b4b;">{{dueDate}}</strong></p>
+                    {{noteSection}}
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 32px;color:#475569;font-size:15px;line-height:1.65;">
+                Stay on top of your journey \u2014 check your dashboard for all upcoming tasks and deadlines.
+              </p>
+
+              <!-- CTA Button -->
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);border-radius:10px;padding:14px 32px;">
+                    <a href="https://www.weleav.com/dashboard"
+                       style="color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;display:inline-block;letter-spacing:0.1px;">
+                      View your dashboard \u2192
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 28px;">
+                <tr>
+                  <td style="height:1px;background-color:#e2e8f0;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+
+              <p style="margin:0;color:#94a3b8;font-size:14px;line-height:1.6;">
+                If you have any questions, simply reply to this email \u2014 we'd love to help.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:20px 40px;text-align:center;">
+              <p style="margin:0;color:#94a3b8;font-size:12px;">
+                \u00A9 {{year}} Leavs \u00B7
+                <a href="https://www.weleav.com" style="color:#3b82f6;text-decoration:none;">weleav.com</a>
+              </p>
+            </td>
+          </tr>
+
         </table>
       </td>
     </tr>
@@ -1076,6 +1194,104 @@ async function handlePutAdminEmailTemplate(event: any, key: string): Promise<Api
   return ok({ success: true, templateKey: key, updatedAt })
 }
 
+/**
+ * POST /admin/send-deadline-reminders
+ * Scans the deadlines table and emails every user whose deadline falls in
+ * `daysAhead` days (default 5) and has `sendReminder: true`.
+ * Intended to be called daily by an EventBridge rule or manually from the admin panel.
+ */
+async function handlePostAdminSendDeadlineReminders(event: any): Promise<ApiResponse> {
+  const adminSecret = process.env.ADMIN_SECRET
+  const providedSecret =
+    event.queryStringParameters?.secret ||
+    event.headers?.['x-admin-secret'] ||
+    event.headers?.['X-Admin-Secret']
+  const auth = event.requestContext?.authorizer || event.authorizer || {}
+  const groups: string[] = (auth?.claims?.['cognito:groups'] || '').split(',').filter(Boolean)
+  const isAdmin = groups.includes('admin') || (adminSecret && providedSecret === adminSecret)
+  if (!isAdmin) return fail(403, 'Forbidden')
+
+  const body = parseBody(event)
+  const daysAhead: number = parseInt(body.daysAhead ?? '5', 10) || 5
+
+  // Compute target date in UTC (today + daysAhead)
+  const now = new Date()
+  const targetDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysAhead))
+  const targetDateStr = targetDate.toISOString().slice(0, 10) // "YYYY-MM-DD"
+
+  // Scan all deadlines and keep only those due on targetDate with reminders on
+  const allDeadlines = (await scanAll(TABLE.deadlines)) as unknown as Deadline[]
+  const due = allDeadlines.filter((d) => d.sendReminder && (d.dueDate || '').slice(0, 10) === targetDateStr)
+
+  if (due.length === 0) {
+    return ok({ sent: 0, skipped: 0, failed: 0, message: `No reminders due on ${targetDateStr}` })
+  }
+
+  // Build userId → email map from Cognito
+  const emailMap = await buildCognitoEmailMap()
+
+  // Load template once (falls back to default if never customised)
+  const templateData = await getEmailTemplate('deadline_reminder')
+
+  const formattedDate = targetDate.toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+  })
+
+  const results = { sent: 0, skipped: 0, failed: 0, details: [] as string[] }
+
+  await Promise.all(
+    due.map(async (deadline) => {
+      const userEmail = emailMap.get(deadline.userId)?.toLowerCase()
+      if (!userEmail) {
+        results.skipped++
+        results.details.push(`${deadline.deadlineId}: no email for userId ${deadline.userId}`)
+        return
+      }
+
+      const profile = await getUserProfile(deadline.userId)
+      const preferredName = profile?.preferredName || 'there'
+
+      // Build optional note block — empty string if no note so {{noteSection}} renders cleanly
+      const noteSection = deadline.note
+        ? `<p style="margin:10px 0 0;color:#64748b;font-size:13px;line-height:1.5;"><strong>Note:</strong> ${deadline.note}</p>`
+        : ''
+
+      const vars: Record<string, string> = {
+        preferredName,
+        deadlineTitle: deadline.title,
+        dueDate: formattedDate,
+        daysUntil: String(daysAhead),
+        noteSection,
+        year: String(new Date().getFullYear()),
+      }
+
+      const html = substituteVars(templateData.htmlBody, vars)
+      const subject = substituteVars(templateData.subject, vars)
+
+      try {
+        await ses.send(
+          new SendEmailCommand({
+            Source: SENDER_EMAIL,
+            Destination: { ToAddresses: [userEmail] },
+            Message: {
+              Subject: { Data: subject },
+              Body: { Html: { Data: html } },
+            },
+          })
+        )
+        results.sent++
+        console.log(`[deadline-reminder] Sent to ${userEmail} for "${deadline.title}" due ${targetDateStr}`)
+      } catch (err: any) {
+        results.failed++
+        results.details.push(`${deadline.deadlineId}: SES error — ${err?.message ?? String(err)}`)
+        console.error(`[deadline-reminder] Failed for ${userEmail}:`, err)
+      }
+    })
+  )
+
+  return ok({ ...results, targetDate: targetDateStr })
+}
+
 /** GET /admin/buddy-pool — list all users who opted into the buddy system. */
 async function handleGetAdminBuddyPool(event: any): Promise<ApiResponse> {
   const adminSecret = process.env.ADMIN_SECRET
@@ -1396,6 +1612,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET'  && path === '/admin/email-templates') return await handleGetAdminEmailTemplates(event)
     const emailTemplateMatch = path.match(/^\/admin\/email-templates\/([^/]+)$/)
     if (method === 'PUT'  && emailTemplateMatch) return await handlePutAdminEmailTemplate(event, emailTemplateMatch[1])
+    if (method === 'POST' && path === '/admin/send-deadline-reminders') return await handlePostAdminSendDeadlineReminders(event)
     if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
 
