@@ -100,6 +100,8 @@ export interface UserProfile {
   buddyBio?: string
   buddyStatus?: string          // 'pending' | 'matched'
   buddyMatchedWithId?: string
+  // Personalised dashboard
+  dashboardPlan?: string          // JSON string of DashboardPlanItem[]
 }
 
 export interface StepProgress {

@@ -1087,12 +1087,41 @@ export interface ContentUniversity {
   createdAt?: string
 }
 
-export interface ContentModule {
+export type StepType = 'journey' | 'info' | 'tool'
+
+export interface ContentVariant {
+  variantId: string
+  label: string
+  condition: {
+    originEu?: boolean
+    originCountry?: string
+    degreeType?: string
+    destinationCountry?: string
+    destinationCity?: string
+    universityId?: string
+  }
+  contentNote: string
+}
+
+export interface DashboardPlanItem {
   moduleId: string
   label: string
   icon?: string
   description?: string
   stepNumber?: number
+  route?: string
+  stepType?: string
+}
+
+export interface ContentModule {
+  moduleId: string
+  label: string
+  icon?: string
+  description?: string
+  route?: string         // dashboard path, e.g. /dashboard/banking-italy
+  stepType?: StepType
+  stepNumber?: number
+  route?: string
   visibilityRules: {
     destinationCountry?: string
     destinationCity?: string
@@ -1101,6 +1130,7 @@ export interface ContentModule {
     originCountry?: string
     degreeType?: string
   }
+  variants?: ContentVariant[]
   active?: boolean
   createdAt?: string
 }
@@ -1162,7 +1192,25 @@ export async function deleteContentUniversity(universityId: string): Promise<voi
   await adminFetch<unknown>(`/admin/content/universities/${universityId}`, { method: 'DELETE' })
 }
 
-// Modules
+// Modules — user-facing (situation-filtered)
+export async function fetchContentModules(profile: UserProfile): Promise<ContentModule[]> {
+  const headers = await getAuthHeaders()
+  const queryParams: Record<string, string> = {}
+  if (profile.destinationCountry)    queryParams.destinationCountry = profile.destinationCountry
+  if (profile.destinationCity)       queryParams.destinationCity    = profile.destinationCity
+  if (profile.destinationUniversity) queryParams.universityId       = profile.destinationUniversity
+  if (profile.isEuCitizen === 'yes') queryParams.originEu = 'true'
+  else if (profile.isEuCitizen === 'no') queryParams.originEu = 'false'
+  if (profile.nationality)           queryParams.originCountry = profile.nationality
+  if (profile.degreeType)            queryParams.degreeType    = profile.degreeType
+
+  const op = get({ apiName: API_NAME, path: '/content/modules', options: { headers, queryParams } })
+  const response = await op.response
+  const json = await response.body.json() as Record<string, unknown>
+  return (json.modules as ContentModule[]) ?? []
+}
+
+// Modules — admin
 export async function fetchAdminContentModules(): Promise<ContentModule[]> {
   const res = await adminFetch<{ modules: ContentModule[] }>('/admin/content/modules')
   return res.modules ?? []

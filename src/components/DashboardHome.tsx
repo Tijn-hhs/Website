@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import StepCard from './StepCard'
 import DeadlineModal from './DeadlineModal'
-import { fetchMe, saveStepProgress, fetchDeadlines, createDeadline, updateDeadline, deleteDeadline } from '../lib/api'
-import type { Deadline } from '../lib/api'
+import { fetchMe, saveStepProgress, fetchDeadlines, createDeadline, updateDeadline, deleteDeadline, fetchContentModules } from '../lib/api'
+import type { Deadline, DashboardPlanItem } from '../lib/api'
 import { StepProgress, UserProfile } from '../types/user'
 import {
   GraduationCap,
@@ -26,7 +26,21 @@ import {
   CalendarDays,
   AlertCircle,
   ChevronRight,
+  Banknote,
+  Luggage,
+  Info,
+  BarChart2,
+  Bot,
+  UserPlus,
+  type LucideProps,
 } from 'lucide-react'
+
+// Maps icon name strings (stored in content modules) to Lucide components
+const ICON_MAP: Record<string, React.FC<LucideProps>> = {
+  GraduationCap, Banknote, Plane, CreditCard, Luggage, FileText,
+  Home, Shield, Heart, Info, BarChart2, Users, Bot, UserPlus,
+  Hash, ClipboardList, DollarSign, Sparkles, Award, Bell, HelpCircle,
+}
 
 const numberedSteps = [
   'University Application',
@@ -463,10 +477,20 @@ export default function DashboardHome() {
   const [dismissedNotifs, setDismissedNotifs] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('dismissed-notifs') || '[]') } catch { return [] }
   })
+  const [timelineReady, setTimelineReady] = useState(false)
+  const [dashboardPlan, setDashboardPlan] = useState<DashboardPlanItem[]>([])
+
+  // Derive the stable progress tracking key from a plan item's route
+  // e.g. /dashboard/immigration-registration → 'immigration-registration'
+  function progressKey(m: DashboardPlanItem): string {
+    return m.route?.split('/').pop() ?? m.moduleId
+  }
 
   useEffect(() => {
     loadProgress()
     loadDeadlines()
+    const t = setTimeout(() => setTimelineReady(true), 750)
+    return () => clearTimeout(t)
   }, [])
 
   function handleDismissNotif(deadlineId: string) {
@@ -551,6 +575,29 @@ export default function DashboardHome() {
       
       setProgress(progressMap)
       setProfile(data.profile)
+
+      // Build personalised dashboard plan from saved snapshot or live fetch
+      let plan: DashboardPlanItem[] = []
+      const rawPlan = (data.profile as Record<string, unknown>)?.dashboardPlan
+      if (rawPlan && typeof rawPlan === 'string') {
+        try { plan = JSON.parse(rawPlan) } catch {}
+      }
+      if (!plan.length && data.profile) {
+        // Pre-onboarding users: fetch live filtered modules as fallback
+        try {
+          const liveModules = await fetchContentModules(data.profile)
+          plan = liveModules.map(m => ({
+            moduleId:    m.moduleId,
+            label:       m.label,
+            icon:        m.icon,
+            description: m.description,
+            stepNumber:  m.stepNumber,
+            route:       m.route,
+            stepType:    m.stepType,
+          }))
+        } catch { /* leave empty — renders hardcoded fallback below */ }
+      }
+      setDashboardPlan(plan)
     } catch (error) {
       console.error('Error loading progress:', error)
     } finally {
@@ -558,33 +605,29 @@ export default function DashboardHome() {
     }
   }
 
-  async function handleStepComplete(stepTitle: string, completed: boolean) {
+  async function handleStepComplete(m: DashboardPlanItem, completed: boolean) {
+    const pKey = progressKey(m)
     // Prevent unmarking student visa as done for EU citizens
-    if (stepTitle === 'Student Visa' && visaStepDisabled && !completed) {
-      return
-    }
-
-    const stepKey = stepKeys[stepTitle]
-    if (!stepKey) return
-    setProgress((prev) => ({ ...prev, [stepKey]: completed }))
-
-    const success = await saveStepProgress(stepKey, completed)
+    if (pKey === 'student-visa' && visaStepDisabled && !completed) return
+    if (!pKey) return
+    setProgress((prev) => ({ ...prev, [pKey]: completed }))
+    const success = await saveStepProgress(pKey, completed)
     if (!success) {
-      // Revert on failure
-      setProgress((prev) => ({ ...prev, [stepKey]: !completed }))
+      setProgress((prev) => ({ ...prev, [pKey]: !completed }))
     }
   }
 
+  const numberedPlan = dashboardPlan.filter(m => m.stepNumber != null).sort((a, b) => (a.stepNumber ?? 999) - (b.stepNumber ?? 999))
+  const toolsPlan    = dashboardPlan.filter(m => m.stepNumber == null)
+
   const completedCount = Object.values(progress).filter(Boolean).length
-  const totalSteps = steps.length
+  const totalSteps = dashboardPlan.length || steps.length
   const percentComplete = Math.round((completedCount / totalSteps) * 100)
-  const firstIncompleteIndex = numberedSteps.findIndex(
-    (step) => !progress[stepKeys[step]]
-  )
+  const firstIncompleteIndex = numberedPlan.findIndex(m => !progress[progressKey(m)])
 
   return (
     <section className="space-y-5">
-      <div>
+      <div className="animate-fade-in-up">
         <p className="text-sm font-semibold text-blue-600">Leavs</p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">Dashboard</h1>
         <p className="mt-2 text-base text-slate-600">
@@ -601,18 +644,23 @@ export default function DashboardHome() {
       </div>
 
       {/* Cohesive block group */}
-      <div className="space-y-2">
+      <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
 
       <div className="hidden sm:block">
-      {!isLoading && profile?.programStartMonth && (
-        <ProgramTimeline
-          programStartMonth={profile.programStartMonth}
-          deadlines={deadlines}
-          onAddDeadline={() => { setEditingDeadline(null); setClaimingMilestone(null); setIsDeadlineModalOpen(true) }}
-          onEditDeadline={(d) => { setEditingDeadline(d); setClaimingMilestone(null); setIsDeadlineModalOpen(true) }}
-          onClaimMilestone={(m) => { setEditingDeadline(null); setClaimingMilestone(m); setIsDeadlineModalOpen(true) }}
-        />
-      )}
+      {/* Show skeleton until BOTH data is loaded AND the 750ms timer has elapsed */}
+      {(isLoading || !timelineReady) ? (
+        <div className="rounded-2xl border border-slate-200 bg-white/60 animate-pulse" style={{ height: 400 }} />
+      ) : profile?.programStartMonth ? (
+        <div className="animate-fade-in">
+          <ProgramTimeline
+            programStartMonth={profile.programStartMonth}
+            deadlines={deadlines}
+            onAddDeadline={() => { setEditingDeadline(null); setClaimingMilestone(null); setIsDeadlineModalOpen(true) }}
+            onEditDeadline={(d) => { setEditingDeadline(d); setClaimingMilestone(null); setIsDeadlineModalOpen(true) }}
+            onClaimMilestone={(m) => { setEditingDeadline(null); setClaimingMilestone(m); setIsDeadlineModalOpen(true) }}
+          />
+        </div>
+      ) : null}
       </div>
 
       <DeadlineModal
@@ -735,18 +783,19 @@ export default function DashboardHome() {
             </p>
           ) : (
             <div className="flex flex-col">
-              {numberedSteps
-                .map((name, i) => ({ name, i }))
-                .filter(({ name }) => !progress[stepKeys[name]])
+              {numberedPlan
+                .map((m, i) => ({ m, i }))
+                .filter(({ m }) => !progress[progressKey(m)])
                 .slice(0, 3)
-                .map(({ name: stepName, i: idx }, position, arr) => {
+                .map(({ m, i: idx }, position, arr) => {
                 const isCurrent = position === 0
                 const isLast = position === arr.length - 1
-                const stepRoute = stepRoutes[stepName] || '/dashboard'
-                const icon = stepIcons[stepName]
+                const stepRoute = m.route || '/dashboard'
+                const IconComp = m.icon ? ICON_MAP[m.icon] : null
+                const icon = IconComp ? <IconComp size={20} className="flex-shrink-0" /> : null
 
                 return (
-                  <div key={stepName} className="flex items-stretch gap-3">
+                  <div key={m.moduleId} className="flex items-stretch gap-3">
                     {/* Timeline spine */}
                     <div className="flex flex-col items-center pt-[18px] flex-shrink-0">
                       <div
@@ -791,7 +840,7 @@ export default function DashboardHome() {
                                 isCurrent ? 'text-white' : 'text-slate-700'
                               }`}
                             >
-                              {stepName}
+                              {m.label}
                             </p>
                           </div>
                         </div>
@@ -817,46 +866,61 @@ export default function DashboardHome() {
 
       </div>{/* end cohesive block group */}
 
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '160ms' }}>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-slate-900">Steps overview</h2>
-          <span className="text-sm text-slate-500">{numberedSteps.length} steps total</span>
+          <span className="text-sm text-slate-500">{numberedPlan.length || numberedSteps.length} steps total</span>
         </div>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {numberedSteps.map((title, index) => (
-            <StepCard
-              key={title}
-              stepNumber={index + 1}
-              title={title}
-              description={stepDescriptions[title]}
-              highlighted={index === firstIncompleteIndex}
-              to={stepRoutes[title]}
-              completed={progress[stepKeys[title]] || false}
-              onComplete={(completed) => handleStepComplete(title, completed)}
-              icon={stepIcons[title]}
-              disabled={title === 'Student Visa' && visaStepDisabled}
-              disabledReason={title === 'Student Visa' && visaStepDisabled ? 'Not needed for EU citizens' : undefined}
-            />
-          ))}
+          {(numberedPlan.length ? numberedPlan : numberedSteps.map(title => ({
+            moduleId: stepKeys[title], label: title, icon: undefined,
+            description: stepDescriptions[title], stepNumber: numberedSteps.indexOf(title) + 1, route: stepRoutes[title]
+          } as DashboardPlanItem))).map((m, index) => {
+            const pKey = progressKey(m)
+            const IconComp = m.icon ? ICON_MAP[m.icon] : null
+            return (
+              <div key={m.moduleId} className="animate-fade-in-up" style={{ animationDelay: `${200 + index * 55}ms` }}>
+                <StepCard
+                  stepNumber={m.stepNumber ?? (index + 1)}
+                  title={m.label}
+                  description={m.description ?? ''}
+                  highlighted={index === firstIncompleteIndex}
+                  to={m.route}
+                  completed={progress[pKey] || false}
+                  onComplete={(completed) => handleStepComplete(m, completed)}
+                  icon={IconComp ? <IconComp size={20} className="flex-shrink-0" /> : stepIcons[m.label]}
+                  disabled={pKey === 'student-visa' && visaStepDisabled}
+                  disabledReason={pKey === 'student-visa' && visaStepDisabled ? 'Not needed for EU citizens' : undefined}
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
         <h2 className="text-xl font-semibold text-slate-900">Tools</h2>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {extraInformationSteps.map((title) => (
-            <StepCard
-              key={title}
-              stepNumber={0}
-              title={title}
-              description={stepDescriptions[title]}
-              showStepNumber={false}
-              isTool={true}
-              to={stepRoutes[title]}
-              completed={progress[stepKeys[title]] || false}
-              icon={stepIcons[title]}
-            />
-          ))}
+          {(toolsPlan.length ? toolsPlan : extraInformationSteps.map(title => ({
+            moduleId: stepKeys[title], label: title, icon: undefined,
+            description: stepDescriptions[title], stepNumber: undefined, route: stepRoutes[title]
+          } as DashboardPlanItem))).map((m, index) => {
+            const IconComp = m.icon ? ICON_MAP[m.icon] : null
+            return (
+              <div key={m.moduleId} className="animate-fade-in-up" style={{ animationDelay: `${300 + index * 55}ms` }}>
+                <StepCard
+                  stepNumber={0}
+                  title={m.label}
+                  description={m.description ?? ''}
+                  showStepNumber={false}
+                  isTool={true}
+                  to={m.route}
+                  completed={progress[progressKey(m)] || false}
+                  icon={IconComp ? <IconComp size={20} className="flex-shrink-0" /> : stepIcons[m.label]}
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

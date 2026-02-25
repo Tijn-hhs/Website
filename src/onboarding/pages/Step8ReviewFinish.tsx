@@ -5,7 +5,8 @@ import OnboardingLayout from '../OnboardingLayout'
 import { cardBase } from '../ui'
 import { getPrevEnabledStepId, getStepConfig, stepIdToRoute } from '../steps'
 import { useOnboardingDraft } from '../useOnboardingDraft'
-import { fetchMe, saveProfile, sendWelcomeEmail } from '../../lib/api'
+import { fetchMe, saveProfile, sendWelcomeEmail, fetchContentModules } from '../../lib/api'
+import type { DashboardPlanItem } from '../../lib/api'
 import { UserProfile } from '../../types/user'
 import { isSignedIn } from '../../lib/auth'
 import { clearOnboardingDraft, syncOnboardingDraftToProfileIfPresent } from '../sync'
@@ -232,6 +233,22 @@ export default function Step8ReviewFinish() {
 
       clearLocalDraft()
       clearOnboardingDraft()
+
+      // Generate + save personalised dashboard plan (fire and forget)
+      fetchContentModules(cleanedProfile as UserProfile)
+        .then(modules => {
+          const plan: DashboardPlanItem[] = modules.map(m => ({
+            moduleId:    m.moduleId,
+            label:       m.label,
+            icon:        m.icon,
+            description: m.description,
+            stepNumber:  m.stepNumber,
+            route:       m.route,
+            stepType:    m.stepType,
+          }))
+          return saveProfile({ dashboardPlan: JSON.stringify(plan) } as UserProfile)
+        })
+        .catch(err => console.warn('[Onboarding] Dashboard plan save failed (non-blocking):', err))
 
       // Send welcome email — fire and forget, do not block navigation
       sendWelcomeEmail({
