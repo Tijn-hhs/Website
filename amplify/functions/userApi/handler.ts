@@ -98,6 +98,8 @@ interface UserProfile {
   buddyBio?: string
   buddyStatus?: string
   buddyMatchedWithId?: string
+  // Personalised dashboard
+  dashboardPlan?: string   // JSON string of DashboardPlanItem[]
 }
 
 interface StepProgress {
@@ -139,7 +141,6 @@ interface UserSituation {
   originEu?: boolean            // true = EU citizen
   originCountry?: string        // e.g. "United States"
   degreeType?: string           // "bachelor" | "master" | "phd" | "exchange"
-  programLanguage?: string      // "english" | "italian"
 }
 
 /**
@@ -154,7 +155,6 @@ interface VisibilityRules {
   originEu?: boolean
   originCountry?: string | string[]
   degreeType?: string | string[]
-  programLanguage?: string
 }
 
 interface ContentModuleStep {
@@ -191,6 +191,34 @@ interface ContentModuleContent {
 }
 
 /**
+ * Types of dashboard module:
+ *  journey — A numbered step in the student journey (shown in sequence 1-10)
+ *  info    — A resource/reference page, always accessible, no required action
+ *  tool    — An interactive tool (calculator, map, matcher)
+ */
+type StepType = 'journey' | 'info' | 'tool'
+
+/**
+ * A content variant inside a module.
+ * When the user's situation matches `condition`, the page renders
+ * `contentNote` content instead of the default content.
+ * First matching variant wins.
+ */
+interface ContentVariant {
+  variantId: string
+  label: string          // e.g. "Non-EU students"
+  condition: {
+    originEu?: boolean
+    originCountry?: string
+    degreeType?: string
+    destinationCountry?: string
+    destinationCity?: string
+    universityId?: string
+  }
+  contentNote: string    // describes what differs for this variant
+}
+
+/**
  * A content variant: if the user's situation matches `condition`,
  * merge `contentOverrides` into the module's base content.
  */
@@ -202,15 +230,19 @@ interface ContentModuleVariant {
 /**
  * A single dashboard module entry stored in `content-modules` DynamoDB table.
  * The rule engine evaluates `visibilityRules` against the user's situation
- * and returns matching modules sorted by `globalOrder`.
+ * and returns matching modules sorted by stepNumber.
  */
 interface ContentModule {
   moduleId: string
   label: string
   icon?: string
   description?: string
+  route?: string         // dashboard path, e.g. /dashboard/banking-italy
+  stepType?: StepType     // 'journey' | 'info' | 'tool'
   stepNumber?: number
+  route?: string
   visibilityRules: VisibilityRules
+  variants?: ContentVariant[]   // per-situation content variants
   active?: boolean
   createdAt?: string
   updatedAt?: string
@@ -1803,8 +1835,7 @@ function evaluateModules(modules: ContentModule[], situation: UserSituation): Co
       matchField(r.universityId,       situation.universityId) &&
       matchField(r.originEu,           situation.originEu) &&
       matchField(r.originCountry,      situation.originCountry) &&
-      matchField(r.degreeType,         situation.degreeType) &&
-      matchField(r.programLanguage,    situation.programLanguage)
+      matchField(r.degreeType,         situation.degreeType)
     )
   })
 
@@ -1826,7 +1857,6 @@ async function handleGetContentModules(event: any): Promise<ApiResponse> {
     originEu:           qp.originEu === 'true' ? true : qp.originEu === 'false' ? false : undefined,
     originCountry:      qp.originCountry,
     degreeType:         qp.degreeType,
-    programLanguage:    qp.programLanguage,
   }
   const modules = evaluateModules(allModules, situation)
   return ok({ modules, situation })
