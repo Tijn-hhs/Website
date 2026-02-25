@@ -23,7 +23,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useSearch } from '../lib/SearchContext'
-import { fetchMe } from '../lib/api'
+import { fetchMe, type DashboardPlanItem } from '../lib/api'
 import { usePageSections } from '../lib/PageSectionsContext'
 
 export default function Sidebar() {
@@ -34,8 +34,10 @@ export default function Sidebar() {
     return saved ? JSON.parse(saved) : false
   })
 
-  // State for checking if student visa step is disabled
+  // State for checking if student visa step is disabled (fallback while plan loads)
   const [visaStepDisabled, setVisaStepDisabled] = useState(false)
+  // null = not yet loaded (show all); Set = loaded (show only routes in the set)
+  const [planRoutes, setPlanRoutes] = useState<Set<string> | null>(null)
 
   // Persist collapsed state to localStorage whenever it changes
   useEffect(() => {
@@ -50,6 +52,14 @@ export default function Sidebar() {
         // Read from individual profile fields
         if (data?.profile?.isEuCitizen !== undefined) {
           setVisaStepDisabled(data.profile.isEuCitizen === 'yes')
+        }
+        if (data?.profile?.dashboardPlan) {
+          try {
+            const plan: DashboardPlanItem[] = JSON.parse(data.profile.dashboardPlan)
+            setPlanRoutes(new Set(plan.map((m) => m.route).filter(Boolean) as string[]))
+          } catch {
+            setPlanRoutes(null)
+          }
         }
       } catch (error) {
         console.error('Error fetching user data:', error)
@@ -169,7 +179,7 @@ export default function Sidebar() {
   return (
     // Enhanced sidebar container with floating effect (margin, border-radius, shadow)
     <aside
-      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${
+      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out animate-slide-in-left ${
         isCollapsed ? 'w-16' : 'w-60'
       }`}
       aria-label="Navigation sidebar"
@@ -237,9 +247,9 @@ export default function Sidebar() {
           )}
 
           {/* Steps Items */}
-          {stepsItems.map((item) => {
+          {stepsItems.filter(item => planRoutes === null || planRoutes.has(item.path)).map((item) => {
             const isActive = location.pathname === item.path
-            const isStudentVisaDisabled = item.label === 'Student Visa' && visaStepDisabled
+            const isStudentVisaDisabled = item.label === 'Student Visa' && visaStepDisabled && planRoutes === null
 
             const itemClasses = `flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 border-l-2 border-transparent ${
               isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
@@ -313,7 +323,7 @@ export default function Sidebar() {
           )}
 
           {/* Tools Items */}
-          {toolsItems.map((item) => {
+          {toolsItems.filter(item => planRoutes === null || planRoutes.has(item.path)).map((item) => {
             const isActive = location.pathname === item.path
 
             const itemClasses = `flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 border-l-2 border-transparent ${
