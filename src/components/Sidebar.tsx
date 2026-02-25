@@ -26,7 +26,20 @@ import { useSearch } from '../lib/SearchContext'
 import { fetchMe, type DashboardPlanItem } from '../lib/api'
 import { usePageSections } from '../lib/PageSectionsContext'
 
+// Module-level flag: true after the sidebar has entered once in this JS execution.
+// Resets only on hard reload / first visit / external navigation (new JS context),
+// NOT on internal SPA navigation between pages.
+let _sidebarHasEntered = false
+
 export default function Sidebar() {
+  // Only animate on first mount within this JS execution context (fresh load / reload / external nav).
+  // Internal SPA navigation remounts this component but _sidebarHasEntered stays true → no animation.
+  const [shouldAnimate] = useState(() => {
+    if (_sidebarHasEntered) return false
+    _sidebarHasEntered = true
+    return true
+  })
+
   // State for managing collapsed/expanded sidebar
   const [isCollapsed, setIsCollapsed] = useState(() => {
     // Initialize from localStorage if available, default to false (expanded)
@@ -179,7 +192,7 @@ export default function Sidebar() {
   return (
     // Enhanced sidebar container with floating effect (margin, border-radius, shadow)
     <aside
-      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out animate-slide-in-left ${
+      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${shouldAnimate ? 'animate-slide-in-left' : ''} ${
         isCollapsed ? 'w-16' : 'w-60'
       }`}
       aria-label="Navigation sidebar"
