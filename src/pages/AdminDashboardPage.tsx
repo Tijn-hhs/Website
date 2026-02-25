@@ -83,7 +83,7 @@ function StepTypeBadge({ type }: { type?: StepType }) {
   const m = STEP_TYPE_META[type]
   return <span className={`text-xs px-1.5 py-0.5 rounded border ${m.color}`}>{m.label}</span>
 }
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, recalculateDashboardPlans, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -1531,6 +1531,7 @@ function ContentTab() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [recalculatingPlans, setRecalculatingPlans] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
   const [expandedCountry, setExpandedCountry] = useState<string | null>(null)
@@ -1701,6 +1702,19 @@ function ContentTab() {
     try { await deleteContentModule(moduleId); await loadAll(); setMsg({ ok: true, text: 'Module deleted.' }) }
     catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
     finally { setSaving(false) }
+  }
+
+  async function pushModulesToExistingUsers() {
+    if (!confirm('Recalculate dashboard plans for all existing users now?')) return
+    setRecalculatingPlans(true)
+    try {
+      const result = await recalculateDashboardPlans()
+      setMsg({ ok: true, text: `Plans refreshed: ${result.updatedUsers} users updated (${result.modulesEvaluated} modules evaluated).` })
+    } catch (e: unknown) {
+      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed to recalculate user plans.' })
+    } finally {
+      setRecalculatingPlans(false)
+    }
   }
 
   const filteredModules = useMemo(() => {
@@ -2069,10 +2083,20 @@ function ContentTab() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-white">Dashboard Modules ({modules.length})</h2>
-            <button onClick={openAddModule}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">
-              <Plus className="w-3.5 h-3.5" /> Add Module
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={pushModulesToExistingUsers}
+                disabled={recalculatingPlans}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
+                title="Recalculate and store dashboard plans for all existing users"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${recalculatingPlans ? 'animate-spin' : ''}`} /> Push to Existing Users
+              </button>
+              <button onClick={openAddModule}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">
+                <Plus className="w-3.5 h-3.5" /> Add Module
+              </button>
+            </div>
           </div>
 
           <div className="relative">
