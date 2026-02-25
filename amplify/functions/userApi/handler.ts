@@ -206,27 +206,23 @@ interface ContentModuleVariant {
  */
 interface ContentModule {
   moduleId: string
-  title: string
-  route: string               // the dashboard route, e.g. "/student-visa"
-  category: string            // "legal" | "admin" | "financial" | "university" | "housing" | "general"
-  sidebarIcon?: string        // Lucide icon name
-  globalOrder: number         // lower = higher in sidebar
+  label: string
+  icon?: string
+  description?: string
+  stepNumber?: number
   visibilityRules: VisibilityRules
-  pageVariant: string         // maps to a React component, e.g. "generic-steps" | "full-visa-process"
-  content: ContentModuleContent
-  variants?: ContentModuleVariant[]
-  lastVerified?: string       // ISO date — surfaced as warning in admin UI when stale
-  status: 'published' | 'draft'
+  active?: boolean
+  createdAt?: string
   updatedAt?: string
 }
 
 interface ContentCountry {
   countryId: string
   name: string
-  currency?: string
-  language?: string
-  euMember?: boolean
-  visaRequired?: { eu: boolean; nonEu: boolean }
+  code: string
+  flagEmoji?: string
+  active: boolean
+  createdAt?: string
   updatedAt?: string
 }
 
@@ -234,8 +230,8 @@ interface ContentCity {
   cityId: string
   countryId: string
   name: string
-  costConfig?: Record<string, unknown>
-  bigMacPrice?: number
+  active: boolean
+  createdAt?: string
   updatedAt?: string
 }
 
@@ -1727,8 +1723,8 @@ function isAdminCaller(event: any): boolean {
 }
 
 /**
- * Rule engine: given all published modules and a user situation,
- * returns the matching modules sorted by globalOrder.
+ * Rule engine: given all active modules and a user situation,
+ * returns the matching modules sorted by stepNumber.
  *
  * - A rule field that is undefined on the module = wildcard (matches any value)
  * - Arrays in rule fields mean "any of these values"
@@ -1745,7 +1741,7 @@ function evaluateModules(modules: ContentModule[], situation: UserSituation): Co
   }
 
   const matched = modules.filter((m) => {
-    if (m.status !== 'published') return false
+    if (m.active === false) return false
     const r = m.visibilityRules
     if (!r) return true
     return (
@@ -1759,18 +1755,7 @@ function evaluateModules(modules: ContentModule[], situation: UserSituation): Co
     )
   })
 
-  // Apply variants: when a variant's condition fully matches the situation,
-  // deep-merge its contentOverrides into the base content
-  const resolved = matched.map((m) => {
-    if (!m.variants || m.variants.length === 0) return m
-    const hit = m.variants.find((v) =>
-      Object.entries(v.condition).every(([k, val]) => (situation as Record<string, unknown>)[k] === val)
-    )
-    if (!hit) return m
-    return { ...m, content: { ...m.content, ...hit.contentOverrides } }
-  })
-
-  return resolved.sort((a, b) => a.globalOrder - b.globalOrder)
+  return matched.sort((a, b) => (a.stepNumber ?? 999) - (b.stepNumber ?? 999))
 }
 
 // ─ Content read handlers (any authenticated user) ─────────────────────────────
@@ -1874,9 +1859,9 @@ async function handleAdminPostCountry(event: any): Promise<ApiResponse> {
   if (!isAdminCaller(event)) return fail(403, 'Forbidden')
   if (!TABLE.contentCountries) return fail(503, 'Content countries table not yet provisioned')
   const body = parseBody(event)
-  if (!body.countryId || typeof body.countryId !== 'string') return fail(400, 'countryId is required')
-  if (!body.name      || typeof body.name      !== 'string') return fail(400, 'name is required')
-  const item = { ...body, updatedAt: new Date().toISOString() }
+  if (!body.name || typeof body.name !== 'string') return fail(400, 'name is required')
+  const countryId = (body.countryId as string | undefined) || crypto.randomUUID()
+  const item = { ...body, countryId, updatedAt: new Date().toISOString() }
   await dynamo.send(new PutItemCommand({ TableName: TABLE.contentCountries, Item: marshall(item, { removeUndefinedValues: true }) }))
   return ok({ country: item }, 201)
 }
@@ -1904,10 +1889,10 @@ async function handleAdminPostCity(event: any): Promise<ApiResponse> {
   if (!isAdminCaller(event)) return fail(403, 'Forbidden')
   if (!TABLE.contentCities) return fail(503, 'Content cities table not yet provisioned')
   const body = parseBody(event)
-  if (!body.cityId    || typeof body.cityId    !== 'string') return fail(400, 'cityId is required')
   if (!body.countryId || typeof body.countryId !== 'string') return fail(400, 'countryId is required')
   if (!body.name      || typeof body.name      !== 'string') return fail(400, 'name is required')
-  const item = { ...body, updatedAt: new Date().toISOString() }
+  const cityId = (body.cityId as string | undefined) || crypto.randomUUID()
+  const item = { ...body, cityId, updatedAt: new Date().toISOString() }
   await dynamo.send(new PutItemCommand({ TableName: TABLE.contentCities, Item: marshall(item, { removeUndefinedValues: true }) }))
   return ok({ city: item }, 201)
 }
@@ -1935,10 +1920,10 @@ async function handleAdminPostUniversity(event: any): Promise<ApiResponse> {
   if (!isAdminCaller(event)) return fail(403, 'Forbidden')
   if (!TABLE.contentUniversities) return fail(503, 'Content universities table not yet provisioned')
   const body = parseBody(event)
-  if (!body.universityId || typeof body.universityId !== 'string') return fail(400, 'universityId is required')
-  if (!body.name         || typeof body.name         !== 'string') return fail(400, 'name is required')
-  if (!body.cityId       || typeof body.cityId       !== 'string') return fail(400, 'cityId is required')
-  const item = { ...body, updatedAt: new Date().toISOString() }
+  if (!body.name   || typeof body.name   !== 'string') return fail(400, 'name is required')
+  if (!body.cityId || typeof body.cityId !== 'string') return fail(400, 'cityId is required')
+  const universityId = (body.universityId as string | undefined) || crypto.randomUUID()
+  const item = { ...body, universityId, updatedAt: new Date().toISOString() }
   await dynamo.send(new PutItemCommand({ TableName: TABLE.contentUniversities, Item: marshall(item, { removeUndefinedValues: true }) }))
   return ok({ university: item }, 201)
 }
@@ -1994,7 +1979,7 @@ async function handleAdminGetModules(event: any): Promise<ApiResponse> {
   if (!isAdminCaller(event)) return fail(403, 'Forbidden')
   if (!TABLE.contentModules) return fail(503, 'Content modules table not yet provisioned')
   const items = await scanAll(TABLE.contentModules)
-  items.sort((a, b) => (Number(a.globalOrder) || 0) - (Number(b.globalOrder) || 0))
+  items.sort((a, b) => (Number(a.stepNumber) || 999) - (Number(b.stepNumber) || 999))
   return ok({ modules: items })
 }
 async function handleAdminPostModule(event: any): Promise<ApiResponse> {
@@ -2002,21 +1987,17 @@ async function handleAdminPostModule(event: any): Promise<ApiResponse> {
   if (!TABLE.contentModules) return fail(503, 'Content modules table not yet provisioned')
   const body = parseBody(event)
   if (!body.moduleId || typeof body.moduleId !== 'string') return fail(400, 'moduleId is required')
-  if (!body.title    || typeof body.title    !== 'string') return fail(400, 'title is required')
-  if (!body.route    || typeof body.route    !== 'string') return fail(400, 'route is required')
-  const item: ContentModule = {
-    moduleId:        body.moduleId,
-    title:           body.title,
-    route:           body.route,
-    category:        body.category      || 'general',
-    sidebarIcon:     body.sidebarIcon,
-    globalOrder:     typeof body.globalOrder === 'number' ? body.globalOrder : 99,
+  if (!body.label || typeof body.label !== 'string') return fail(400, 'label is required')
+  const moduleId = (body.moduleId as string | undefined) || crypto.randomUUID()
+  const item = {
+    moduleId,
+    label:           body.label,
+    icon:            body.icon,
+    description:     body.description,
+    stepNumber:      body.stepNumber,
     visibilityRules: body.visibilityRules || {},
-    pageVariant:     body.pageVariant    || 'generic-steps',
-    content:         body.content        || {},
-    variants:        body.variants,
-    lastVerified:    body.lastVerified,
-    status:          body.status         || 'draft',
+    active:          body.active !== false,
+    createdAt:       new Date().toISOString(),
     updatedAt:       new Date().toISOString(),
   }
   await dynamo.send(new PutItemCommand({ TableName: TABLE.contentModules, Item: marshall(item, { removeUndefinedValues: true }) }))

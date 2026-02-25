@@ -1093,7 +1093,8 @@ export interface ContentModule {
 
 // Countries
 export async function fetchAdminContentCountries(): Promise<ContentCountry[]> {
-  return adminFetch<ContentCountry[]>('/admin/content/countries')
+  const res = await adminFetch<{ countries: ContentCountry[] }>('/admin/content/countries')
+  return res.countries ?? []
 }
 export async function createContentCountry(body: Omit<ContentCountry, 'countryId' | 'createdAt'>): Promise<ContentCountry> {
   return adminFetch<ContentCountry>('/admin/content/countries', { method: 'POST', body: JSON.stringify(body) })
@@ -1107,7 +1108,8 @@ export async function deleteContentCountry(countryId: string): Promise<void> {
 
 // Cities
 export async function fetchAdminContentCities(): Promise<ContentCity[]> {
-  return adminFetch<ContentCity[]>('/admin/content/cities')
+  const res = await adminFetch<{ cities: ContentCity[] }>('/admin/content/cities')
+  return res.cities ?? []
 }
 export async function createContentCity(body: Omit<ContentCity, 'cityId' | 'createdAt'>): Promise<ContentCity> {
   return adminFetch<ContentCity>('/admin/content/cities', { method: 'POST', body: JSON.stringify(body) })
@@ -1121,7 +1123,8 @@ export async function deleteContentCity(cityId: string): Promise<void> {
 
 // Universities
 export async function fetchAdminContentUniversities(): Promise<ContentUniversity[]> {
-  return adminFetch<ContentUniversity[]>('/admin/content/universities')
+  const res = await adminFetch<{ universities: ContentUniversity[] }>('/admin/content/universities')
+  return res.universities ?? []
 }
 export async function createContentUniversity(body: Omit<ContentUniversity, 'universityId' | 'createdAt'>): Promise<ContentUniversity> {
   return adminFetch<ContentUniversity>('/admin/content/universities', { method: 'POST', body: JSON.stringify(body) })
@@ -1135,7 +1138,8 @@ export async function deleteContentUniversity(universityId: string): Promise<voi
 
 // Modules
 export async function fetchAdminContentModules(): Promise<ContentModule[]> {
-  return adminFetch<ContentModule[]>('/admin/content/modules')
+  const res = await adminFetch<{ modules: ContentModule[] }>('/admin/content/modules')
+  return res.modules ?? []
 }
 export async function createContentModule(body: Omit<ContentModule, 'moduleId' | 'createdAt'>): Promise<ContentModule> {
   return adminFetch<ContentModule>('/admin/content/modules', { method: 'POST', body: JSON.stringify(body) })
