@@ -100,6 +100,11 @@ export default function Sidebar() {
       icon: <GraduationCap size={20} className="flex-shrink-0" />,
     },
     {
+      label: 'Funding & Scholarships',
+      path: '/dashboard/funding-scholarships',
+      icon: <DollarSign size={20} className="flex-shrink-0" />,
+    },
+    {
       label: 'Student Visa',
       path: '/dashboard/student-visa',
       icon: <FileText size={20} className="flex-shrink-0" />,

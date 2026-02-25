@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AuthGate } from './components/AuthGate'
 import { AdminGate } from './components/AdminGate'
 import AppLayout from './components/AppLayout'
@@ -34,10 +35,18 @@ import Step3bApplication from './onboarding/pages/Step3bApplication'
 import Step5Visa from './onboarding/pages/Step5Visa'
 import Step6Budget from './onboarding/pages/Step6Budget'
 import Step8ReviewFinish from './onboarding/pages/Step8ReviewFinish'
+import ModuleGate from './components/ModuleGate'
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AppLayout>
         <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -75,7 +84,9 @@ export default function App() {
           path="/dashboard/student-visa"
           element={
             <AuthGate>
-              <StudentVisaPage />
+              <ModuleGate moduleRoute="/dashboard/student-visa">
+                <StudentVisaPage />
+              </ModuleGate>
             </AuthGate>
           }
         />
@@ -99,7 +110,9 @@ export default function App() {
           path="/dashboard/immigration-registration"
           element={
             <AuthGate>
-              <ImmigrationRegistrationPage />
+              <ModuleGate moduleRoute="/dashboard/immigration-registration">
+                <ImmigrationRegistrationPage />
+              </ModuleGate>
             </AuthGate>
           }
         />
