@@ -1123,7 +1123,6 @@ export interface ContentModule {
   route?: string         // dashboard path, e.g. /dashboard/banking-italy
   stepType?: StepType
   stepNumber?: number
-  route?: string
   visibilityRules: {
     destinationCountry?: string
     destinationCity?: string
@@ -1225,4 +1224,18 @@ export async function updateContentModule(moduleId: string, body: Partial<Conten
 }
 export async function deleteContentModule(moduleId: string): Promise<void> {
   await adminFetch<unknown>(`/admin/content/modules/${moduleId}`, { method: 'DELETE' })
+}
+
+export interface RecalculateDashboardPlansResult {
+  message: string
+  updatedUsers: number
+  skippedUsers: number
+  modulesEvaluated: number
+  recalculatedAt: string
+}
+
+export async function recalculateDashboardPlans(): Promise<RecalculateDashboardPlansResult> {
+  return adminFetch<RecalculateDashboardPlansResult>('/admin/content/recalculate-dashboard-plans', {
+    method: 'POST',
+  })
 }

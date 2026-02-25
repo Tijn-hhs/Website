@@ -1841,6 +1841,87 @@ function evaluateModules(modules: ContentModule[], situation: UserSituation): Co
   return matched.sort((a, b) => (a.stepNumber ?? 999) - (b.stepNumber ?? 999))
 }
 
+function buildSituationFromProfile(profile: Record<string, unknown>): UserSituation {
+  const isEuCitizen = typeof profile.isEuCitizen === 'string' ? profile.isEuCitizen : undefined
+  return {
+    destinationCountry: typeof profile.destinationCountry === 'string' ? profile.destinationCountry : undefined,
+    destinationCity: typeof profile.destinationCity === 'string' ? profile.destinationCity : undefined,
+    universityId: typeof profile.destinationUniversity === 'string' ? profile.destinationUniversity : undefined,
+    originEu: isEuCitizen === 'yes' ? true : isEuCitizen === 'no' ? false : undefined,
+    originCountry:
+      (typeof profile.nationality === 'string' ? profile.nationality : undefined) ||
+      (typeof profile.residenceCountry === 'string' ? profile.residenceCountry : undefined),
+    degreeType: typeof profile.degreeType === 'string' ? profile.degreeType : undefined,
+  }
+}
+
+function toDashboardPlan(modules: ContentModule[]): Array<{
+  moduleId: string
+  label: string
+  icon?: string
+  description?: string
+  stepNumber?: number
+  route?: string
+  stepType?: StepType
+}> {
+  return modules.map((m) => ({
+    moduleId: m.moduleId,
+    label: m.label,
+    icon: m.icon,
+    description: m.description,
+    stepNumber: m.stepNumber,
+    route: m.route,
+    stepType: m.stepType,
+  }))
+}
+
+async function recalculateDashboardPlansForAllUsers(): Promise<{
+  updatedUsers: number
+  skippedUsers: number
+  modulesEvaluated: number
+}> {
+  const [allProfiles, allModulesRaw] = await Promise.all([
+    scanAll(TABLE.profiles),
+    scanAll(TABLE.contentModules),
+  ])
+
+  const allModules = allModulesRaw as unknown as ContentModule[]
+  let updatedUsers = 0
+  let skippedUsers = 0
+
+  for (const profile of allProfiles) {
+    const userId = typeof profile.userId === 'string' ? profile.userId : ''
+    if (!userId) {
+      skippedUsers++
+      continue
+    }
+
+    const situation = buildSituationFromProfile(profile)
+    const matched = evaluateModules(allModules, situation)
+    const dashboardPlan = JSON.stringify(toDashboardPlan(matched))
+
+    await dynamo.send(
+      new UpdateItemCommand({
+        TableName: TABLE.profiles,
+        Key: marshall({ userId }),
+        UpdateExpression: 'SET dashboardPlan = :plan, updatedAt = :updatedAt',
+        ExpressionAttributeValues: marshall({
+          ':plan': dashboardPlan,
+          ':updatedAt': new Date().toISOString(),
+        }),
+      })
+    )
+
+    updatedUsers++
+  }
+
+  return {
+    updatedUsers,
+    skippedUsers,
+    modulesEvaluated: allModules.length,
+  }
+}
+
 // ─ Content read handlers (any authenticated user) ─────────────────────────────
 
 async function handleGetContentModules(event: any): Promise<ApiResponse> {
@@ -2124,6 +2205,19 @@ async function handleAdminDeleteModule(event: any, moduleId: string): Promise<Ap
   return ok({ message: 'Module deleted' })
 }
 
+async function handleAdminPostRecalculateDashboardPlans(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentModules) return fail(503, 'Content modules table not yet provisioned')
+  if (!TABLE.profiles) return fail(503, 'Profiles table not yet provisioned')
+
+  const result = await recalculateDashboardPlansForAllUsers()
+  return ok({
+    message: 'Dashboard plans recalculated for existing users',
+    ...result,
+    recalculatedAt: new Date().toISOString(),
+  })
+}
+
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 export async function handler(event: any): Promise<ApiResponse> {
@@ -2211,6 +2305,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'POST' && path === '/admin/content/neighborhoods') return await handleAdminPostNeighborhood(event)
     if (method === 'GET'  && path === '/admin/content/modules')      return await handleAdminGetModules(event)
     if (method === 'POST' && path === '/admin/content/modules')      return await handleAdminPostModule(event)
+    if (method === 'POST' && path === '/admin/content/recalculate-dashboard-plans') return await handleAdminPostRecalculateDashboardPlans(event)
     const adminCountryMatch      = path.match(/^\/admin\/content\/countries\/([^/]+)$/)
     const adminCityMatch         = path.match(/^\/admin\/content\/cities\/([^/]+)$/)
     const adminUniversityMatch   = path.match(/^\/admin\/content\/universities\/([^/]+)$/)
