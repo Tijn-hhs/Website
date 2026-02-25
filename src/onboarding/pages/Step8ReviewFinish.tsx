@@ -239,6 +239,11 @@ export default function Step8ReviewFinish() {
         destinationUniversity: draft.destinationUniversity,
         destinationCity: draft.destinationCity,
         destinationCountry: draft.destinationCountry,
+        nationality: draft.nationality,
+        isEuCitizen: draft.isEuCitizen,
+        degreeType: draft.degreeType,
+        fieldOfStudy: draft.fieldOfStudy,
+        programStartMonth: draft.programStartMonth,
       }).catch(err => console.warn('[Onboarding] Welcome email failed (non-blocking):', err))
 
       console.log('[Onboarding] Navigating to dashboard...')

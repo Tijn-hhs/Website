@@ -520,6 +520,11 @@ export async function sendWelcomeEmail(data: {
   destinationUniversity?: string
   destinationCity?: string
   destinationCountry?: string
+  nationality?: string
+  isEuCitizen?: string
+  degreeType?: string
+  fieldOfStudy?: string
+  programStartMonth?: string
 }): Promise<void> {
   const headers = await getAuthHeaders()
 

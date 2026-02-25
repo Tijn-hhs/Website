@@ -299,6 +299,7 @@ const TABLE = {
 
 const SENDER_EMAIL = 'hallo@weleav.com'
 const FEEDBACK_RECIPIENT = process.env.FEEDBACK_EMAIL || 'hallo@weleav.com'
+const ADMIN_NOTIFICATION_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'Tijn@eendenburg.eu'
 
 // ─── Email Template Defaults ─────────────────────────────────────────────────────
 // These are the out-of-the-box templates. Admins can override any key via the
@@ -1250,6 +1251,12 @@ async function handlePostWelcomeEmail(userId: string, event: any): Promise<ApiRe
   const destinationUniversity: string = body.destinationUniversity || ''
   const destinationCity: string = body.destinationCity || ''
   const destinationCountry: string = body.destinationCountry || ''
+  // Extra fields for admin notification
+  const nationality: string = body.nationality || ''
+  const isEuCitizen: string = body.isEuCitizen || ''
+  const degreeType: string = body.degreeType || ''
+  const fieldOfStudy: string = body.fieldOfStudy || ''
+  const programStartMonth: string = body.programStartMonth || ''
 
   const locationLine = [destinationCity, destinationCountry].filter(Boolean).join(', ')
   const universityLine = destinationUniversity || 'your destination'
@@ -1277,6 +1284,42 @@ async function handlePostWelcomeEmail(userId: string, event: any): Promise<ApiRe
       })
     )
     console.log(`[welcome-email] Sent welcome email to ${userEmail}`)
+
+    // ── Admin notification ────────────────────────────────────────────────────
+    // Fire-and-forget — do not let a failure here block the user response.
+    const signupTime = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC'
+    const adminHtml = `
+      <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;background:#f9f9f9;border-radius:8px">
+        <h2 style="color:#166534;margin-bottom:4px">🎉 New Leavs user signed up</h2>
+        <p style="color:#6b7280;font-size:13px;margin-top:0">${signupTime}</p>
+        <table style="width:100%;border-collapse:collapse;margin-top:16px">
+          <tr><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;font-weight:600;width:40%">Name</td><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb">${preferredName}</td></tr>
+          <tr><td style="padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb;font-weight:600">Email</td><td style="padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb">${userEmail}</td></tr>
+          <tr><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;font-weight:600">Nationality</td><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb">${nationality || '—'}</td></tr>
+          <tr><td style="padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb;font-weight:600">EU citizen</td><td style="padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb">${isEuCitizen === 'yes' ? '✅ Yes' : isEuCitizen === 'no' ? '❌ No' : '—'}</td></tr>
+          <tr><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;font-weight:600">University</td><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb">${destinationUniversity || '—'}</td></tr>
+          <tr><td style="padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb;font-weight:600">City / Country</td><td style="padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb">${locationLine || '—'}</td></tr>
+          <tr><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;font-weight:600">Degree type</td><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb">${degreeType || '—'}</td></tr>
+          <tr><td style="padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb;font-weight:600">Field of study</td><td style="padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb">${fieldOfStudy || '—'}</td></tr>
+          <tr><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;font-weight:600">Program start</td><td style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb">${programStartMonth || '—'}</td></tr>
+        </table>
+      </div>`
+
+    ses.send(
+      new SendEmailCommand({
+        Source: SENDER_EMAIL,
+        Destination: { ToAddresses: [ADMIN_NOTIFICATION_EMAIL] },
+        Message: {
+          Subject: { Data: `New Leavs user: ${preferredName} (${userEmail})` },
+          Body: { Html: { Data: adminHtml } },
+        },
+      })
+    ).then(() => {
+      console.log(`[welcome-email] Admin notification sent to ${ADMIN_NOTIFICATION_EMAIL}`)
+    }).catch((err: any) => {
+      console.error('[welcome-email] Admin notification failed (non-blocking):', err)
+    })
+
     return ok({ success: true, sentTo: userEmail })
   } catch (err: any) {
     console.error('[welcome-email] SES error:', err)
