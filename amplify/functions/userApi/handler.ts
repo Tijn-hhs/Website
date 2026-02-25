@@ -240,7 +240,6 @@ interface ContentModule {
   route?: string         // dashboard path, e.g. /dashboard/banking-italy
   stepType?: StepType     // 'journey' | 'info' | 'tool'
   stepNumber?: number
-  route?: string
   visibilityRules: VisibilityRules
   variants?: ContentVariant[]   // per-situation content variants
   active?: boolean
