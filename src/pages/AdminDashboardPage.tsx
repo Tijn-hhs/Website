@@ -35,8 +35,41 @@ import {
   Pencil,
   Trash2,
   Database,
+  Layers,
+  Banknote,
+  Luggage,
+  FileText,
+  Shield,
+  Info,
+  Bot,
+  UserPlus,
+  BookOpen,
+  Briefcase,
+  Building,
+  Calculator,
+  Calendar,
+  HelpCircle,
+  type LucideProps,
 } from 'lucide-react'
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule } from '../lib/api'
+
+// ─── Dynamic Lucide icon renderer ─────────────────────────────────────────────
+const ICON_MAP: Record<string, React.FC<LucideProps>> = {
+  GraduationCap, Banknote, Plane, CreditCard, Luggage, FileText,
+  Home, Shield, Heart, Info, BarChart2, Users, Bot, UserPlus,
+  Globe, Map, BookOpen, Briefcase, Building, Calculator,
+  Calendar, HelpCircle, LayoutDashboard, MessageSquare, Database,
+  Search, Bell, Mail, ShieldCheck, TrendingUp, LineChart, UserCheck,
+}
+
+const ICON_OPTIONS = Object.keys(ICON_MAP).sort()
+
+function ModuleIcon({ name, className }: { name?: string; className?: string }) {
+  if (!name) return null
+  const Icon = ICON_MAP[name]
+  if (!Icon) return null
+  return <Icon className={className ?? 'w-4 h-4'} />
+}
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -1430,7 +1463,7 @@ function EmailsTab() {
 // TAB 6 — Content Management
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type ContentSubTab = 'destinations' | 'modules'
+type ContentSubTab = 'destinations' | 'origins' | 'modules'
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -1443,6 +1476,7 @@ function ContentTab() {
   const [cities, setCities] = useState<ContentCity[]>([])
   const [universities, setUniversities] = useState<ContentUniversity[]>([])
   const [modules, setModules] = useState<ContentModule[]>([])
+  const [originCountries, setOriginCountries] = useState<ContentOriginCountry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -1454,8 +1488,11 @@ function ContentTab() {
   const [newCountry, setNewCountry] = useState({ name: '', code: '', flagEmoji: '' })
   const [showAddCity, setShowAddCity] = useState<string | null>(null)
   const [newCity, setNewCity] = useState({ name: '' })
-  const [showAddUni, setShowAddUni] = useState<string | null>(null)
-  const [newUni, setNewUni] = useState({ name: '', shortName: '' })
+  const [showAddUni, setShowAddUni] = useState(false)
+  const [newUni, setNewUni] = useState({ name: '', shortName: '', cityId: '' })
+  const [showManageLocations, setShowManageLocations] = useState(false)
+  const [showAddOrigin, setShowAddOrigin] = useState(false)
+  const [newOrigin, setNewOrigin] = useState({ name: '', code: '' })
 
   const [showModuleForm, setShowModuleForm] = useState(false)
   const [editingModule, setEditingModule] = useState<ContentModule | null>(null)
@@ -1468,13 +1505,14 @@ function ContentTab() {
   async function loadAll() {
     setLoading(true); setError(null)
     try {
-      const [c, ci, u, m] = await Promise.all([
+      const [c, ci, u, m, oc] = await Promise.all([
         fetchAdminContentCountries(),
         fetchAdminContentCities(),
         fetchAdminContentUniversities(),
         fetchAdminContentModules(),
+        fetchAdminContentOriginCountries(),
       ])
-      setCountries(c); setCities(ci); setUniversities(u); setModules(m)
+      setCountries(c); setCities(ci); setUniversities(u); setModules(m); setOriginCountries(oc)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load content')
     } finally { setLoading(false) }
@@ -1520,14 +1558,14 @@ function ContentTab() {
     finally { setSaving(false) }
   }
 
-  async function addUniversity(cityId: string) {
-    if (!newUni.name) return
-    const city = cities.find(c => c.cityId === cityId)
+  async function addUniversity() {
+    if (!newUni.name || !newUni.cityId) return
+    const city = cities.find(c => c.cityId === newUni.cityId)
     if (!city) return
     setSaving(true)
     try {
-      await createContentUniversity({ name: newUni.name, shortName: newUni.shortName || undefined, cityId, countryId: city.countryId, active: true })
-      setNewUni({ name: '', shortName: '' }); setShowAddUni(null)
+      await createContentUniversity({ name: newUni.name, shortName: newUni.shortName || undefined, cityId: newUni.cityId, countryId: city.countryId, active: true })
+      setNewUni({ name: '', shortName: '', cityId: '' }); setShowAddUni(false)
       await loadAll(); setMsg({ ok: true, text: `University "${newUni.name}" added.` })
     } catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
     finally { setSaving(false) }
@@ -1537,6 +1575,25 @@ function ContentTab() {
     if (!confirm('Delete this university?')) return
     setSaving(true)
     try { await deleteContentUniversity(universityId); await loadAll(); setMsg({ ok: true, text: 'University deleted.' }) }
+    catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  async function addOriginCountry() {
+    if (!newOrigin.name || !newOrigin.code) return
+    setSaving(true)
+    try {
+      await createContentOriginCountry({ name: newOrigin.name, code: newOrigin.code.toUpperCase(), active: true })
+      setNewOrigin({ name: '', code: '' }); setShowAddOrigin(false)
+      await loadAll(); setMsg({ ok: true, text: `Origin country "${newOrigin.name}" added.` })
+    } catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
+    finally { setSaving(false) }
+  }
+
+  async function removeOriginCountry(originCountryId: string) {
+    if (!confirm('Delete this origin country?')) return
+    setSaving(true)
+    try { await deleteContentOriginCountry(originCountryId); await loadAll(); setMsg({ ok: true, text: 'Origin country deleted.' }) }
     catch (e: unknown) { setMsg({ ok: false, text: e instanceof Error ? e.message : 'Failed' }) }
     finally { setSaving(false) }
   }
@@ -1606,12 +1663,17 @@ function ContentTab() {
     <div className="space-y-5">
       {/* Sub-nav */}
       <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1 w-fit">
-        {(['destinations', 'modules'] as ContentSubTab[]).map((s) => (
+        {(['destinations', 'origins', 'modules'] as ContentSubTab[]).map((s) => (
           <button key={s} onClick={() => setSub(s)}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               sub === s ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
             }`}>
-            {s === 'destinations' ? '🌍 Destinations' : '🧩 Modules'}
+            {s === 'destinations'
+              ? <><Globe className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Destinations</>
+              : s === 'origins'
+              ? <><UserPlus className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Origin Countries</>
+              : <><Layers className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Modules</>
+            }
           </button>
         ))}
       </div>
@@ -1630,149 +1692,252 @@ function ContentTab() {
       {/* ── DESTINATIONS ────────────────────────────────────────────────────── */}
       {sub === 'destinations' && (
         <div className="space-y-4">
+
+          {/* ── Universities (primary) ──────────────────────────────────────── */}
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-white">Countries ({countries.length})</h2>
-            <button onClick={() => setShowAddCountry(v => !v)}
+            <h2 className="text-sm font-semibold text-white">Universities ({universities.length})</h2>
+            <button onClick={() => setShowAddUni(v => !v)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Add University
+            </button>
+          </div>
+
+          {showAddUni && (
+            <div className="bg-gray-900 border border-indigo-700/50 rounded-xl p-4 space-y-3">
+              <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">New University</p>
+              <div className="grid grid-cols-2 gap-3">
+                <input placeholder="Full name (e.g. Università Bocconi)" value={newUni.name} onChange={e => setNewUni(v => ({ ...v, name: e.target.value }))}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                <input placeholder="Short name (e.g. Bocconi)" value={newUni.shortName} onChange={e => setNewUni(v => ({ ...v, shortName: e.target.value }))}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+              </div>
+              <select value={newUni.cityId} onChange={e => setNewUni(v => ({ ...v, cityId: e.target.value }))}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                <option value="">Select city…</option>
+                {cities.map(c => {
+                  const country = countries.find(co => co.countryId === c.countryId)
+                  return <option key={c.cityId} value={c.cityId}>{c.name}{country ? ` (${country.flagEmoji || country.code})` : ''}</option>
+                })}
+              </select>
+              <div className="flex gap-2">
+                <button onClick={addUniversity} disabled={saving || !newUni.name || !newUni.cityId}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">
+                  <Save className="w-3.5 h-3.5" /> Save
+                </button>
+                <button onClick={() => setShowAddUni(false)} className="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white transition-colors">Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {universities.length === 0 ? (
+            <div className="text-center py-12 text-gray-600">
+              <GraduationCap className="w-8 h-8 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">No universities yet</p>
+              <p className="text-xs mt-1">Add a city first, then add universities to it.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {universities.map(u => {
+                const city = cities.find(c => c.cityId === u.cityId)
+                const country = countries.find(c => c.countryId === u.countryId)
+                return (
+                  <div key={u.universityId} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-center gap-4 hover:border-gray-700 transition-colors group">
+                    <GraduationCap className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold text-sm">{u.name}</p>
+                      {u.shortName && <p className="text-gray-500 text-xs">{u.shortName}</p>}
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {city && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-900/30 border border-purple-700/50 text-purple-300 text-xs">
+                          <Map className="w-3 h-3" />{city.name}
+                        </span>
+                      )}
+                      {country && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-900/30 border border-blue-700/50 text-blue-300 text-xs">
+                          {country.flagEmoji} {country.code}
+                        </span>
+                      )}
+                      <span className={`text-xs px-1.5 py-0.5 rounded border ${
+                        u.active ? 'border-emerald-700 text-emerald-400 bg-emerald-900/20' : 'border-gray-700 text-gray-500'
+                      }`}>{u.active ? 'active' : 'inactive'}</span>
+                    </div>
+                    <button onClick={() => removeUniversity(u.universityId)}
+                      className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* ── Manage Cities & Countries (secondary, collapsible) ───────────── */}
+          <div className="border border-gray-800 rounded-xl overflow-hidden">
+            <button
+              onClick={() => setShowManageLocations(v => !v)}
+              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-900/50 transition-colors">
+              <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+                Manage Cities &amp; Countries
+                <span className="ml-2 font-normal normal-case text-gray-600">
+                  {countries.length} countr{countries.length === 1 ? 'y' : 'ies'} · {cities.length} cit{cities.length === 1 ? 'y' : 'ies'}
+                </span>
+              </span>
+              {showManageLocations ? <ChevronUp className="w-4 h-4 text-gray-600" /> : <ChevronDown className="w-4 h-4 text-gray-600" />}
+            </button>
+
+            {showManageLocations && (
+              <div className="border-t border-gray-800 p-4 space-y-4">
+
+                {/* ── Countries ─────────────────────────────────────────────── */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Countries</p>
+                    <button onClick={() => setShowAddCountry(v => !v)}
+                      className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                      <Plus className="w-3 h-3" /> Add Country
+                    </button>
+                  </div>
+
+                  {showAddCountry && (
+                    <div className="bg-gray-950 border border-indigo-700/40 rounded-lg p-3 space-y-2">
+                      <div className="grid grid-cols-3 gap-2">
+                        <input placeholder="Name (e.g. Italy)" value={newCountry.name} onChange={e => setNewCountry(v => ({ ...v, name: e.target.value }))}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                        <input placeholder="ISO (e.g. IT)" value={newCountry.code} onChange={e => setNewCountry(v => ({ ...v, code: e.target.value }))} maxLength={2}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                        <input placeholder="Flag emoji 🇮🇹" value={newCountry.flagEmoji} onChange={e => setNewCountry(v => ({ ...v, flagEmoji: e.target.value }))}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={addCountry} disabled={saving || !newCountry.name || !newCountry.code}
+                          className="flex items-center gap-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">
+                          <Save className="w-3 h-3" /> Save
+                        </button>
+                        <button onClick={() => setShowAddCountry(false)} className="px-2 py-1 text-xs text-gray-500 hover:text-white transition-colors">Cancel</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {countries.map(country => {
+                    const isExp = expandedCountry === country.countryId
+                    return (
+                      <div key={country.countryId} className="rounded-lg border border-gray-800 bg-gray-950 overflow-hidden">
+                        <div className="flex items-center gap-2 px-3 py-2">
+                          <button onClick={() => setExpandedCountry(isExp ? null : country.countryId)}
+                            className="flex-1 flex items-center gap-2 text-left">
+                            <span>{country.flagEmoji || '🏳️'}</span>
+                            <span className="text-sm text-white font-medium">{country.name}</span>
+                            <span className="text-xs text-gray-600">{country.code}</span>
+                            <span className="ml-auto text-gray-600">{isExp ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}</span>
+                          </button>
+                          <button onClick={() => removeCountry(country.countryId)}
+                            className="p-1 rounded text-gray-600 hover:text-red-400 transition-colors">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {isExp && (
+                          <div className="border-t border-gray-800 pl-6 pr-3 py-2 space-y-1.5">
+                            <p className="text-xs text-gray-600 uppercase tracking-widest mb-1">Cities</p>
+                            {cities.filter(c => c.countryId === country.countryId).map(city => (
+                              <div key={city.cityId} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-gray-800/50 group">
+                                <div className="flex items-center gap-2">
+                                  <Map className="w-3 h-3 text-gray-600" />
+                                  <span className="text-xs text-white">{city.name}</span>
+                                  <span className="text-xs text-gray-600">{universities.filter(u => u.cityId === city.cityId).length} unis</span>
+                                </div>
+                                <button onClick={() => removeCity(city.cityId)}
+                                  className="p-1 rounded text-gray-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-colors">
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
+                            <div className="pt-1">
+                              {showAddCity !== country.countryId ? (
+                                <button onClick={() => setShowAddCity(country.countryId)}
+                                  className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                                  <Plus className="w-3 h-3" /> Add City
+                                </button>
+                              ) : (
+                                <div className="flex gap-2">
+                                  <input placeholder="City name" value={newCity.name} onChange={e => setNewCity({ name: e.target.value })}
+                                    className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                                  <button onClick={() => addCity(country.countryId)} disabled={saving || !newCity.name}
+                                    className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold">Save</button>
+                                  <button onClick={() => setShowAddCity(null)} className="text-xs text-gray-500 hover:text-white">✕</button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── ORIGIN COUNTRIES ─────────────────────────────────────────────────── */}
+      {sub === 'origins' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-white">Origin Countries ({originCountries.length})</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Countries students are coming FROM. Used as a module visibility filter.</p>
+            </div>
+            <button onClick={() => setShowAddOrigin(v => !v)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add Country
             </button>
           </div>
 
-          {showAddCountry && (
-            <div className="bg-gray-900 border border-indigo-700/50 rounded-xl p-4 space-y-3">
-              <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">New Country</p>
-              <div className="grid grid-cols-3 gap-3">
-                <input placeholder="Name (e.g. Italy)" value={newCountry.name} onChange={e => setNewCountry(v => ({ ...v, name: e.target.value }))}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
-                <input placeholder="ISO code (e.g. IT)" value={newCountry.code} onChange={e => setNewCountry(v => ({ ...v, code: e.target.value }))} maxLength={2}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
-                <input placeholder="Flag emoji (e.g. 🇮🇹)" value={newCountry.flagEmoji} onChange={e => setNewCountry(v => ({ ...v, flagEmoji: e.target.value }))}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+          {showAddOrigin && (
+            <div className="bg-gray-900 border border-indigo-700/50 rounded-xl p-4 flex flex-wrap gap-3 items-end">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Country name *</label>
+                <input placeholder="e.g. China" value={newOrigin.name} onChange={e => setNewOrigin(v => ({ ...v, name: e.target.value }))}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600 w-44" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">ISO code *</label>
+                <input placeholder="e.g. CN" value={newOrigin.code} onChange={e => setNewOrigin(v => ({ ...v, code: e.target.value }))}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600 w-24 uppercase" maxLength={2} />
               </div>
               <div className="flex gap-2">
-                <button onClick={addCountry} disabled={saving || !newCountry.name || !newCountry.code}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">
-                  <Save className="w-3.5 h-3.5" /> Save
-                </button>
-                <button onClick={() => setShowAddCountry(false)} className="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white transition-colors">Cancel</button>
+                <button onClick={addOriginCountry} disabled={saving || !newOrigin.name || !newOrigin.code}
+                  className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold">Save</button>
+                <button onClick={() => setShowAddOrigin(false)} className="text-xs text-gray-500 hover:text-white px-2">Cancel</button>
               </div>
             </div>
           )}
 
-          {countries.length === 0 ? (
-            <div className="text-center py-12 text-gray-600">
+          {originCountries.length === 0 ? (
+            <div className="text-center py-10 text-gray-600">
               <Globe className="w-8 h-8 mx-auto mb-3 opacity-30" />
-              <p className="font-medium">No countries yet</p>
-              <p className="text-xs mt-1">Add the first country to get started.</p>
+              <p className="font-medium">No origin countries yet</p>
+              <p className="text-xs mt-1">Add countries to use as module visibility filters.</p>
             </div>
           ) : (
             <div className="space-y-2">
-              {countries.map(country => {
-                const countryCities = cities.filter(c => c.countryId === country.countryId)
-                const isExpanded = expandedCountry === country.countryId
-                return (
-                  <div key={country.countryId} className="rounded-xl border border-gray-800 bg-gray-900 overflow-hidden">
-                    <div className="flex items-center gap-3 px-4 py-3">
-                      <button onClick={() => setExpandedCountry(isExpanded ? null : country.countryId)}
-                        className="flex-1 flex items-center gap-3 text-left">
-                        <span className="text-lg">{country.flagEmoji || '🏳️'}</span>
-                        <div>
-                          <p className="text-white font-semibold text-sm">{country.name}</p>
-                          <p className="text-gray-500 text-xs">{country.code} · {countryCities.length} cit{countryCities.length === 1 ? 'y' : 'ies'}</p>
-                        </div>
-                        <span className={`ml-2 text-xs px-1.5 py-0.5 rounded border ${
-                          country.active ? 'border-emerald-700 text-emerald-400 bg-emerald-900/20' : 'border-gray-700 text-gray-500'
-                        }`}>{country.active ? 'active' : 'inactive'}</span>
-                        <span className="ml-auto text-gray-600">{isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</span>
-                      </button>
-                      <button onClick={() => removeCountry(country.countryId)} title="Delete country"
-                        className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-900/20 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {isExpanded && (
-                      <div className="border-t border-gray-800 pl-8 pr-4 py-3 space-y-2">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Cities</p>
-                          <button onClick={() => setShowAddCity(showAddCity === country.countryId ? null : country.countryId)}
-                            className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
-                            <Plus className="w-3 h-3" /> Add City
-                          </button>
-                        </div>
-                        {showAddCity === country.countryId && (
-                          <div className="bg-gray-800 border border-indigo-700/40 rounded-lg p-3 flex gap-2">
-                            <input placeholder="City name" value={newCity.name} onChange={e => setNewCity({ name: e.target.value })}
-                              className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
-                            <button onClick={() => addCity(country.countryId)} disabled={saving || !newCity.name}
-                              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">Save</button>
-                            <button onClick={() => setShowAddCity(null)} className="px-2 py-1.5 text-xs text-gray-500 hover:text-white transition-colors">✕</button>
-                          </div>
-                        )}
-                        {countryCities.length === 0 && !showAddCity && (
-                          <p className="text-xs text-gray-600 italic">No cities yet.</p>
-                        )}
-                        {countryCities.map(city => {
-                          const cityUnis = universities.filter(u => u.cityId === city.cityId)
-                          const isCityExpanded = expandedCity === city.cityId
-                          return (
-                            <div key={city.cityId} className="rounded-lg border border-gray-800 bg-gray-950 overflow-hidden">
-                              <div className="flex items-center gap-3 px-3 py-2.5">
-                                <button onClick={() => setExpandedCity(isCityExpanded ? null : city.cityId)}
-                                  className="flex-1 flex items-center gap-2 text-left">
-                                  <Map className="w-3.5 h-3.5 text-gray-500" />
-                                  <span className="text-sm text-white">{city.name}</span>
-                                  <span className="text-xs text-gray-600">{cityUnis.length} uni{cityUnis.length !== 1 ? 's' : ''}</span>
-                                  <span className="ml-auto text-gray-600">{isCityExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}</span>
-                                </button>
-                                <button onClick={() => removeCity(city.cityId)} className="p-1 rounded text-gray-600 hover:text-red-400 hover:bg-red-900/20 transition-colors">
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
-                              </div>
-                              {isCityExpanded && (
-                                <div className="border-t border-gray-800 pl-6 pr-3 py-2 space-y-1.5">
-                                  <div className="flex items-center justify-between mb-1.5">
-                                    <p className="text-xs text-gray-600 uppercase tracking-widest">Universities</p>
-                                    <button onClick={() => setShowAddUni(showAddUni === city.cityId ? null : city.cityId)}
-                                      className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
-                                      <Plus className="w-3 h-3" /> Add University
-                                    </button>
-                                  </div>
-                                  {showAddUni === city.cityId && (
-                                    <div className="bg-gray-900 border border-indigo-700/40 rounded-lg p-2 flex gap-2 flex-wrap">
-                                      <input placeholder="Full name" value={newUni.name} onChange={e => setNewUni(v => ({ ...v, name: e.target.value }))}
-                                        className="flex-1 min-w-32 bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
-                                      <input placeholder="Short name (e.g. Bocconi)" value={newUni.shortName} onChange={e => setNewUni(v => ({ ...v, shortName: e.target.value }))}
-                                        className="flex-1 min-w-28 bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
-                                      <button onClick={() => addUniversity(city.cityId)} disabled={saving || !newUni.name}
-                                        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">Save</button>
-                                      <button onClick={() => setShowAddUni(null)} className="px-2 py-1.5 text-xs text-gray-500 hover:text-white transition-colors">✕</button>
-                                    </div>
-                                  )}
-                                  {cityUnis.length === 0 && !showAddUni && <p className="text-xs text-gray-600 italic">No universities yet.</p>}
-                                  {cityUnis.map(u => (
-                                    <div key={u.universityId} className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-800/50 group">
-                                      <div className="flex items-center gap-2">
-                                        <GraduationCap className="w-3.5 h-3.5 text-gray-600" />
-                                        <span className="text-xs text-white">{u.name}</span>
-                                        {u.shortName && <span className="text-xs text-gray-500">({u.shortName})</span>}
-                                      </div>
-                                      <button onClick={() => removeUniversity(u.universityId)}
-                                        className="p-1 rounded text-gray-700 hover:text-red-400 group-hover:text-gray-500 transition-colors opacity-0 group-hover:opacity-100">
-                                        <Trash2 className="w-3 h-3" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
+              {originCountries.map(oc => (
+                <div key={oc.originCountryId} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <Globe className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    <span className="text-white text-sm font-medium">{oc.name}</span>
+                    <span className="text-xs text-gray-500 font-mono bg-gray-800 px-1.5 py-0.5 rounded">{oc.code}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded border ${(oc.active ?? true) ? 'border-emerald-700 text-emerald-400 bg-emerald-900/20' : 'border-gray-700 text-gray-500'}`}>
+                      {(oc.active ?? true) ? 'active' : 'inactive'}
+                    </span>
                   </div>
-                )
-              })}
+                  <button onClick={() => removeOriginCountry(oc.originCountryId)}
+                    className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -1808,9 +1973,12 @@ function ContentTab() {
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Icon (emoji or name)</label>
-                  <input placeholder="e.g. ✈️" value={moduleForm.icon || ''} onChange={e => setModuleForm(v => ({ ...v, icon: e.target.value }))}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                  <label className="text-xs text-gray-500 mb-1 block">Icon</label>
+                  <select value={moduleForm.icon || ''} onChange={e => setModuleForm(v => ({ ...v, icon: e.target.value }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                    <option value="">None</option>
+                    {ICON_OPTIONS.map(name => <option key={name} value={name}>{name}</option>)}
+                  </select>
                 </div>
                 <div className="col-span-2">
                   <label className="text-xs text-gray-500 mb-1 block">Description</label>
@@ -1842,7 +2010,7 @@ function ContentTab() {
                       onChange={e => setModuleForm(v => ({ ...v, visibilityRules: { ...v.visibilityRules, destinationCountry: e.target.value || undefined } }))}
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
                       <option value="">Any country</option>
-                      {countries.map(c => <option key={c.countryId} value={c.countryId}>{c.flagEmoji} {c.name}</option>)}
+                      {countries.map(c => <option key={c.countryId} value={c.countryId}>{c.name}</option>)}
                     </select>
                   </div>
                   <div>
@@ -1876,6 +2044,15 @@ function ContentTab() {
                       <option value="">Any</option>
                       <option value="true">EU only</option>
                       <option value="false">Non-EU only</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Origin Country</label>
+                    <select value={moduleForm.visibilityRules?.originCountry ?? ''}
+                      onChange={e => setModuleForm(v => ({ ...v, visibilityRules: { ...v.visibilityRules, originCountry: e.target.value || undefined } }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                      <option value="">Any origin</option>
+                      {originCountries.map(oc => <option key={oc.originCountryId} value={oc.originCountryId}>{oc.name} ({oc.code})</option>)}
                     </select>
                   </div>
                   <div>
@@ -1921,7 +2098,7 @@ function ContentTab() {
                   <div key={m.moduleId} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-center gap-4 hover:border-gray-600 transition-colors group">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {m.icon && <span className="text-sm">{m.icon}</span>}
+                        {m.icon && <ModuleIcon name={m.icon} className="w-4 h-4 text-indigo-400 flex-shrink-0" />}
                         <span className="text-white font-semibold text-sm">{m.label}</span>
                         {m.stepNumber != null && <span className="text-xs text-gray-600">#{m.stepNumber}</span>}
                         <span className={`text-xs px-1.5 py-0.5 rounded border ${
@@ -1930,11 +2107,12 @@ function ContentTab() {
                       </div>
                       {m.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{m.description}</p>}
                       <div className="flex flex-wrap gap-1.5 mt-1.5">
-                        {country && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-900/30 border border-blue-700/50 text-blue-300 text-xs">{country.flagEmoji} {country.name}</span>}
+                        {country && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-900/30 border border-blue-700/50 text-blue-300 text-xs"><Globe className="w-3 h-3" />{country.name}</span>}
                         {city && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-900/30 border border-purple-700/50 text-purple-300 text-xs"><Map className="w-3 h-3" />{city.name}</span>}
                         {uni && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-900/30 border border-indigo-700/50 text-indigo-300 text-xs"><GraduationCap className="w-3 h-3" />{uni.shortName || uni.name}</span>}
                         {rules.originEu === true && <span className="px-1.5 py-0.5 rounded-md bg-green-900/30 border border-green-700/50 text-green-300 text-xs">EU only</span>}
                         {rules.originEu === false && <span className="px-1.5 py-0.5 rounded-md bg-orange-900/30 border border-orange-700/50 text-orange-300 text-xs">Non-EU only</span>}
+                        {rules.originCountry && (() => { const oc = originCountries.find(o => o.originCountryId === rules.originCountry); return oc ? <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal-900/30 border border-teal-700/50 text-teal-300 text-xs"><Globe className="w-3 h-3" />From: {oc.name}</span> : null })()}
                         {rules.degreeType && <span className="px-1.5 py-0.5 rounded-md bg-yellow-900/30 border border-yellow-700/50 text-yellow-300 text-xs capitalize">{rules.degreeType}</span>}
                         {!country && !city && !uni && rules.originEu === undefined && !rules.degreeType && (
                           <span className="text-xs text-gray-600 italic">shown to all users</span>

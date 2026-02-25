@@ -1061,6 +1061,14 @@ export interface ContentCountry {
   createdAt?: string
 }
 
+export interface ContentOriginCountry {
+  originCountryId: string
+  name: string
+  code: string          // ISO 3166-1 alpha-2 e.g. "CN"
+  active: boolean
+  createdAt?: string
+}
+
 export interface ContentCity {
   cityId: string
   countryId: string
@@ -1090,6 +1098,7 @@ export interface ContentModule {
     destinationCity?: string
     universityId?: string
     originEu?: boolean
+    originCountry?: string
     degreeType?: string
   }
   active?: boolean
@@ -1109,6 +1118,18 @@ export async function updateContentCountry(countryId: string, body: Partial<Cont
 }
 export async function deleteContentCountry(countryId: string): Promise<void> {
   await adminFetch<unknown>(`/admin/content/countries/${countryId}`, { method: 'DELETE' })
+}
+
+// Origin Countries
+export async function fetchAdminContentOriginCountries(): Promise<ContentOriginCountry[]> {
+  const res = await adminFetch<{ originCountries: ContentOriginCountry[] }>('/admin/content/origin-countries')
+  return res.originCountries ?? []
+}
+export async function createContentOriginCountry(body: Omit<ContentOriginCountry, 'originCountryId' | 'createdAt'>): Promise<ContentOriginCountry> {
+  return adminFetch<ContentOriginCountry>('/admin/content/origin-countries', { method: 'POST', body: JSON.stringify(body) })
+}
+export async function deleteContentOriginCountry(originCountryId: string): Promise<void> {
+  await adminFetch<unknown>(`/admin/content/origin-countries/${originCountryId}`, { method: 'DELETE' })
 }
 
 // Cities

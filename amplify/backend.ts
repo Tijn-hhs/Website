@@ -179,11 +179,20 @@ const contentModulesTable = new dynamodb.Table(apiStack, 'ContentModulesTable', 
   removalPolicy: RemovalPolicy.DESTROY,
 })
 
+// Stores countries students are coming FROM (for originCountry visibility rules).
+const contentOriginCountriesTable = new dynamodb.Table(apiStack, 'ContentOriginCountriesTable', {
+  tableName: `leavs-${env}-content-origin-countries`,
+  partitionKey: { name: 'originCountryId', type: dynamodb.AttributeType.STRING },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.DESTROY,
+})
+
 contentCountriesTable.grantReadWriteData(backend.userApi.resources.lambda)
 contentCitiesTable.grantReadWriteData(backend.userApi.resources.lambda)
 contentUniversitiesTable.grantReadWriteData(backend.userApi.resources.lambda)
 contentNeighborhoodsTable.grantReadWriteData(backend.userApi.resources.lambda)
 contentModulesTable.grantReadWriteData(backend.userApi.resources.lambda)
+contentOriginCountriesTable.grantReadWriteData(backend.userApi.resources.lambda)
 
 // Grant Lambda permission to send emails via SES
 backend.userApi.resources.lambda.addToRolePolicy(
@@ -263,6 +272,10 @@ backend.userApi.resources.lambda.addEnvironment(
 backend.userApi.resources.lambda.addEnvironment(
   'CONTENT_MODULES_TABLE_NAME',
   contentModulesTable.tableName
+)
+backend.userApi.resources.lambda.addEnvironment(
+  'CONTENT_ORIGIN_COUNTRIES_TABLE_NAME',
+  contentOriginCountriesTable.tableName
 )
 
 // Grant Lambda permission to read the Gemini API key from Secrets Manager

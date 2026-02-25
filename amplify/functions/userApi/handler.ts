@@ -226,6 +226,15 @@ interface ContentCountry {
   updatedAt?: string
 }
 
+interface ContentOriginCountry {
+  originCountryId: string
+  name: string
+  code: string          // ISO 3166-1 alpha-2 e.g. "CN"
+  active: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
 interface ContentCity {
   cityId: string
   countryId: string
@@ -290,11 +299,12 @@ const TABLE = {
   chatMessages: process.env.CHAT_MESSAGES_TABLE_NAME!,
   emailTemplates: process.env.EMAIL_TEMPLATES_TABLE_NAME || '',
   // ─ Content tables (multi-destination system) ─────────────────────────────────────
-  contentCountries:     process.env.CONTENT_COUNTRIES_TABLE_NAME     || '',
-  contentCities:        process.env.CONTENT_CITIES_TABLE_NAME         || '',
-  contentUniversities:  process.env.CONTENT_UNIVERSITIES_TABLE_NAME   || '',
-  contentNeighborhoods: process.env.CONTENT_NEIGHBORHOODS_TABLE_NAME  || '',
-  contentModules:       process.env.CONTENT_MODULES_TABLE_NAME        || '',
+  contentCountries:       process.env.CONTENT_COUNTRIES_TABLE_NAME         || '',
+  contentCities:          process.env.CONTENT_CITIES_TABLE_NAME              || '',
+  contentUniversities:    process.env.CONTENT_UNIVERSITIES_TABLE_NAME        || '',
+  contentNeighborhoods:   process.env.CONTENT_NEIGHBORHOODS_TABLE_NAME       || '',
+  contentModules:         process.env.CONTENT_MODULES_TABLE_NAME             || '',
+  contentOriginCountries: process.env.CONTENT_ORIGIN_COUNTRIES_TABLE_NAME    || '',
 } as const
 
 const SENDER_EMAIL = 'hallo@weleav.com'
@@ -1892,6 +1902,31 @@ async function handleGetContentNeighborhoods(cityId: string): Promise<ApiRespons
 
 // ─ Admin content CRUD handlers ────────────────────────────────────────────────
 
+// Origin Countries
+async function handleAdminGetOriginCountries(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentOriginCountries) return fail(503, 'Origin countries table not yet provisioned')
+  const items = await scanAll(TABLE.contentOriginCountries)
+  items.sort((a: any, b: any) => (a.name as string).localeCompare(b.name as string))
+  return ok({ originCountries: items })
+}
+async function handleAdminPostOriginCountry(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentOriginCountries) return fail(503, 'Origin countries table not yet provisioned')
+  const body = parseBody(event)
+  if (!body.name || typeof body.name !== 'string') return fail(400, 'name is required')
+  const originCountryId = (body.originCountryId as string | undefined) || crypto.randomUUID()
+  const item = { ...body, originCountryId, active: body.active !== false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+  await dynamo.send(new PutItemCommand({ TableName: TABLE.contentOriginCountries, Item: marshall(item, { removeUndefinedValues: true }) }))
+  return ok({ originCountry: item }, 201)
+}
+async function handleAdminDeleteOriginCountry(event: any, originCountryId: string): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.contentOriginCountries) return fail(503, 'Origin countries table not yet provisioned')
+  await dynamo.send(new DeleteItemCommand({ TableName: TABLE.contentOriginCountries, Key: marshall({ originCountryId }) }))
+  return ok({ message: 'Origin country deleted' })
+}
+
 // Countries
 async function handleAdminGetCountries(event: any): Promise<ApiResponse> {
   if (!isAdminCaller(event)) return fail(403, 'Forbidden')
@@ -2134,6 +2169,10 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'GET' && contentNeighborhoodMatch) return await handleGetContentNeighborhoods(contentNeighborhoodMatch[1])
 
     // ─ Admin content CRUD routes ───────────────────────────────────────────────────
+    if (method === 'GET'  && path === '/admin/content/origin-countries') return await handleAdminGetOriginCountries(event)
+    if (method === 'POST' && path === '/admin/content/origin-countries') return await handleAdminPostOriginCountry(event)
+    const adminOriginCountryMatch = path.match(/^\/admin\/content\/origin-countries\/([^/]+)$/)
+    if (method === 'DELETE' && adminOriginCountryMatch) return await handleAdminDeleteOriginCountry(event, adminOriginCountryMatch[1])
     if (method === 'GET'  && path === '/admin/content/countries')    return await handleAdminGetCountries(event)
     if (method === 'POST' && path === '/admin/content/countries')    return await handleAdminPostCountry(event)
     if (method === 'GET'  && path === '/admin/content/cities')       return await handleAdminGetCities(event)
