@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import DashboardLayout from '../components/DashboardLayout'
 
 import StepPageLayout from '../components/StepPageLayout'
 import { fetchMe } from '../lib/api'
@@ -344,7 +343,6 @@ export default function FindYourPeersPage() {
   return (
     <>
       <FeedbackWidget />
-      <DashboardLayout>
       <StepPageLayout
         stepNumber={0}
         totalSteps={0}
@@ -490,7 +488,6 @@ export default function FindYourPeersPage() {
         </div>
 
       </StepPageLayout>
-      </DashboardLayout>
-    </>  
+    </>
   )
 }

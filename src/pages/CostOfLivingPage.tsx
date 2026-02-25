@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import CostSlider from '../components/CostSlider'
@@ -389,7 +388,6 @@ export default function CostOfLivingPage() {
         </>
       )}
       <FeedbackWidget />
-      <DashboardLayout>
         <StepPageLayout
         stepNumber={13}
         totalSteps={13}
@@ -751,7 +749,6 @@ export default function CostOfLivingPage() {
           </>
         )}
         </StepPageLayout>
-      </DashboardLayout>
     </>
   )
 }

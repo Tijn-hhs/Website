@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import { fetchMe, saveProfile, fetchBuddyMatch, type BuddyMatchProfile } from '../lib/api'
@@ -314,7 +313,7 @@ function PendingView({
   const lookingForLabels = LOOKING_FOR_OPTIONS.filter((o) => lookingFor.includes(o.id)).map((o) => o.label)
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Status banner */}
       <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 text-center">
         <div className="flex justify-center mb-3">
@@ -415,115 +414,118 @@ function MatchedView({ profile, match, matchLoading }: { profile: UserProfile; m
   const program = [match.degreeType, match.fieldOfStudy].filter(Boolean).join(' — ') || 'Program not set'
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Celebration banner */}
-      <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-6 text-center">
-        <div className="flex justify-center mb-3">
-          <div className="w-14 h-14 rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center">
-            <Sparkles size={26} className="text-emerald-600" />
-          </div>
+      <div className="rounded-xl border border-indigo-100 bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-3.5 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center flex-shrink-0">
+          <Sparkles size={15} className="text-indigo-600" />
         </div>
-        <h3 className="text-lg font-bold text-slate-800">You've been matched!</h3>
-        <p className="text-sm text-slate-600 mt-1">
-          We found someone compatible. Reach out and start planning your move to Milan together.
-        </p>
+        <div>
+          <p className="text-sm font-semibold text-slate-900">You've been matched!</p>
+          <p className="text-xs text-slate-500 mt-0.5">We found someone compatible. Reach out and start planning your move to Milan together.</p>
+        </div>
       </div>
 
-      {/* Match card */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 ring-2 ring-white/30">
-            {initials}
-          </div>
-          <div className="text-white">
-            <span className="font-bold text-lg">{match.displayName}</span>
-            <p className="text-blue-100 text-sm">{program}</p>
-          </div>
-        </div>
-
-        <div className="p-5 space-y-5">
-          <div className="grid grid-cols-2 gap-3">
-            <ProfileRow icon={<Globe size={14} />} label="Nationality" value={match.nationality || '—'} />
-            <ProfileRow icon={<Calendar size={14} />} label="Arriving" value={match.programStartMonth ? new Date(`${match.programStartMonth}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'} />
+      {/* Two-column layout on wider screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left: match card */}
+        <div className="lg:col-span-3 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-5 py-4 flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 ring-2 ring-white/30">
+              {initials}
+            </div>
+            <div className="text-white">
+              <span className="font-semibold text-base">{match.displayName}</span>
+              <p className="text-indigo-200 text-xs mt-0.5">{program}</p>
+            </div>
           </div>
 
-          {matchLookingForIds.length > 0 && (
-            <div>
-              <p className="text-xs text-slate-400 mb-2">Looking for</p>
-              <div className="flex flex-wrap gap-1.5">
-                {LOOKING_FOR_OPTIONS.filter((o) => matchLookingForIds.includes(o.id)).map((o) => (
-                  <span key={o.id} className="rounded-full bg-slate-100 text-slate-600 px-2.5 py-1 text-xs font-medium">{o.label}</span>
-                ))}
+          <div className="p-5 space-y-5">
+            <div className="grid grid-cols-2 gap-3">
+              <ProfileRow icon={<Globe size={14} />} label="Nationality" value={match.nationality || '—'} />
+              <ProfileRow icon={<Calendar size={14} />} label="Arriving" value={match.programStartMonth ? new Date(`${match.programStartMonth}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'} />
+            </div>
+
+            {matchLookingForIds.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Looking for</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {LOOKING_FOR_OPTIONS.filter((o) => matchLookingForIds.includes(o.id)).map((o) => (
+                    <span key={o.id} className="rounded-full bg-slate-100 text-slate-600 px-2.5 py-1 text-xs font-medium border border-slate-200">{o.label}</span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {sharedGoals.length > 0 && (
-            <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
-              <p className="text-xs font-semibold text-blue-700 mb-1.5">You both want</p>
-              <div className="flex flex-wrap gap-1.5">
-                {sharedGoals.map((g) => (
-                  <span key={g} className="rounded-full bg-blue-600 text-white px-2.5 py-1 text-xs font-medium">{g}</span>
-                ))}
+            {sharedGoals.length > 0 && (
+              <div className="rounded-lg bg-indigo-50 border border-indigo-100 p-3">
+                <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide mb-1.5">You both want</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {sharedGoals.map((g) => (
+                    <span key={g} className="rounded-full bg-indigo-600 text-white px-2.5 py-1 text-xs font-medium">{g}</span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {match.bio && (
-            <div>
-              <p className="text-xs text-slate-400 mb-1 flex items-center gap-1.5">
-                <MessageSquare size={12} />
-                Message from {match.displayName}
-              </p>
-              <blockquote className="text-sm text-slate-700 italic bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
-                "{match.bio}"
-              </blockquote>
-            </div>
-          )}
+            {match.bio && (
+              <div>
+                <p className="text-xs text-slate-400 mb-1 flex items-center gap-1.5">
+                  <MessageSquare size={12} />
+                  Message from {match.displayName}
+                </p>
+                <blockquote className="text-sm text-slate-700 italic bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
+                  "{match.bio}"
+                </blockquote>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Contact details */}
-      <div className="space-y-3">
-        <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-          <CheckCircle2 size={16} className="text-emerald-500" />
-          Contact details — reach out directly
-        </p>
-        {match.phone && (
-          <ContactLink
-            href={`https://wa.me/${match.phone.replace(/\s+/g, '').replace('+', '')}`}
-            icon={<Phone size={18} className="text-green-600" />}
-            label="WhatsApp"
-            sublabel={match.phone}
-            color="border-green-100 hover:bg-green-50"
-          />
-        )}
-        {match.instagram && (
-          <ContactLink
-            href={`https://instagram.com/${match.instagram.replace('@', '')}`}
-            icon={<Instagram size={18} className="text-pink-500" />}
-            label="Instagram"
-            sublabel={match.instagram}
-            color="border-pink-100 hover:bg-pink-50"
-          />
-        )}
-        {match.linkedin && (
-          <ContactLink
-            href={`https://${match.linkedin}`}
-            icon={<Linkedin size={18} className="text-blue-600" />}
-            label="LinkedIn"
-            sublabel={match.linkedin}
-            color="border-blue-100 hover:bg-blue-50"
-          />
-        )}
-      </div>
+        {/* Right: contact details */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-5 space-y-3">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
+              <CheckCircle2 size={13} className="text-blue-500" />
+              Contact details — reach out directly
+            </p>
+            {match.phone && (
+              <ContactLink
+                href={`https://wa.me/${match.phone.replace(/\s+/g, '').replace('+', '')}`}
+                icon={<Phone size={18} className="text-green-600" />}
+                label="WhatsApp"
+                sublabel={match.phone}
+                color="border-green-100 hover:bg-green-50"
+              />
+            )}
+            {match.instagram && (
+              <ContactLink
+                href={`https://instagram.com/${match.instagram.replace('@', '')}`}
+                icon={<Instagram size={18} className="text-pink-500" />}
+                label="Instagram"
+                sublabel={match.instagram}
+                color="border-pink-100 hover:bg-pink-50"
+              />
+            )}
+            {match.linkedin && (
+              <ContactLink
+                href={`https://${match.linkedin}`}
+                icon={<Linkedin size={18} className="text-blue-600" />}
+                label="LinkedIn"
+                sublabel={match.linkedin}
+                color="border-blue-100 hover:bg-blue-50"
+              />
+            )}
+          </div>
 
-      {/* Reminder of your own shared details */}
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <p className="text-xs text-slate-500">
-          <span className="font-semibold text-slate-700">Your contact details</span> ({profile.buddyPhone || 'phone not set'}
-          {profile.buddyInstagram ? `, ${profile.buddyInstagram}` : ''}) have been shared with {match?.displayName}.
-        </p>
+          {/* Reminder of your own shared details */}
+          <div className="rounded-lg border border-slate-200 bg-white p-3.5 flex items-start gap-2">
+            <Users size={13} className="text-slate-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-500 leading-relaxed">
+              <span className="font-semibold text-slate-700">Your contact details</span> ({profile.buddyPhone || 'phone not set'}{profile.buddyInstagram ? `, ${profile.buddyInstagram}` : ''}) have been shared with {match?.displayName}.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -600,7 +602,6 @@ export default function BuddySystemPage() {
   return (
     <>
       <FeedbackWidget />
-      <DashboardLayout>
         <StepPageLayout
           stepNumber={0}
           totalSteps={0}
@@ -633,7 +634,6 @@ export default function BuddySystemPage() {
             <MatchedView profile={profile} match={matchData} matchLoading={matchLoading} />
           )}
         </StepPageLayout>
-      </DashboardLayout>
     </>
   )
 }

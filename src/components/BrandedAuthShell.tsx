@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import logo from '../assets/Logo_LEAVS.png'
 
 interface BrandedAuthShellProps {
   children: ReactNode
@@ -10,7 +11,7 @@ export default function BrandedAuthShell({ children }: BrandedAuthShellProps) {
       {/* Header with logo */}
       <div className="mb-8 flex items-center gap-2">
         <img
-          src="/assets/Logo.png"
+          src={logo}
           alt="Leavs Logo"
           className="h-8 w-8 object-contain"
         />

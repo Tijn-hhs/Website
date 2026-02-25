@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import logo from '../assets/Logo_LEAVS.png'
 import { signOut } from 'aws-amplify/auth'
 import {
   GraduationCap,
@@ -49,8 +50,18 @@ export default function Sidebar() {
 
   // State for checking if student visa step is disabled (fallback while plan loads)
   const [visaStepDisabled, setVisaStepDisabled] = useState(false)
-  // null = not yet loaded (show all); Set = loaded (show only routes in the set)
-  const [planRoutes, setPlanRoutes] = useState<Set<string> | null>(null)
+  // Initialize planRoutes from localStorage cache so remounts don't flash all items.
+  // null = no cached plan (first ever load for this user); Set = ready to filter.
+  const [planRoutes, setPlanRoutes] = useState<Set<string> | null>(() => {
+    try {
+      const cached = localStorage.getItem('dashboardPlanRoutes')
+      if (cached) {
+        const arr: string[] = JSON.parse(cached)
+        return new Set(arr)
+      }
+    } catch { /* ignore */ }
+    return null
+  })
 
   // Persist collapsed state to localStorage whenever it changes
   useEffect(() => {
@@ -69,9 +80,11 @@ export default function Sidebar() {
         if (data?.profile?.dashboardPlan) {
           try {
             const plan: DashboardPlanItem[] = JSON.parse(data.profile.dashboardPlan)
-            setPlanRoutes(new Set(plan.map((m) => m.route).filter(Boolean) as string[]))
+            const routes = plan.map((m) => m.route).filter(Boolean) as string[]
+            localStorage.setItem('dashboardPlanRoutes', JSON.stringify(routes))
+            setPlanRoutes(new Set(routes))
           } catch {
-            setPlanRoutes(null)
+            // Keep whatever cached value we already have
           }
         }
       } catch (error) {
@@ -86,6 +99,7 @@ export default function Sidebar() {
   const handleSignOut = async () => {
     try {
       await signOut()
+      localStorage.removeItem('dashboardPlanRoutes')
       window.location.href = '/'
     } catch (error) {
       console.error('Sign out error:', error)
@@ -213,7 +227,7 @@ export default function Sidebar() {
             aria-label="Go to dashboard"
             className="inline-flex flex-shrink-0 transition-opacity duration-75 ease-in-out"
           >
-            <img src="/assets/Logo.png" alt="Leavs Logo" className="w-24 h-auto" />
+            <img src={logo} alt="Leavs Logo" className="w-24 h-auto" />
           </Link>
         )}
 

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
-import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import { fetchMe, postChat, fetchChatHistory } from '../lib/api'
@@ -348,7 +347,6 @@ export default function AISupportPage() {
   return (
     <>
       <FeedbackWidget />
-      <DashboardLayout>
         <StepPageLayout
           stepNumber={0}
           totalSteps={0}
@@ -446,7 +444,6 @@ export default function AISupportPage() {
             </div>
           </div>
         </StepPageLayout>
-      </DashboardLayout>
     </>
   )
 }

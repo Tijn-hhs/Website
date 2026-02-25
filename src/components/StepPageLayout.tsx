@@ -108,15 +108,15 @@ export default function StepPageLayout({
       )}
 
       {/* Sticky Action Bar */}
-      <div className={`sticky z-10 rounded-xl px-5 py-3 ${useGradientBar ? 'top-4 bg-gradient-to-b from-white via-slate-50 to-slate-50 shadow-lg border border-slate-200/70' : 'top-0 bg-white shadow-md border border-slate-200'}`}>
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className={`sticky z-10 rounded-xl px-3 md:px-5 py-2 md:py-3 ${useGradientBar ? 'top-14 md:top-4 bg-gradient-to-b from-white via-slate-50 to-slate-50 shadow-lg border border-slate-200/70' : 'top-14 md:top-0 bg-white shadow-md border border-slate-200'}`}>
+        <div className="flex items-center gap-1.5 md:gap-3 overflow-x-auto scrollbar-hide">
           {/* Back to Dashboard */}
           <Link
             to="/dashboard"
-            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50 whitespace-nowrap"
+            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50 whitespace-nowrap flex-shrink-0"
           >
             <svg
-              className="w-4 h-4 mr-2"
+              className="w-3 h-3 md:w-4 md:h-4 mr-1.5 md:mr-2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -128,7 +128,7 @@ export default function StepPageLayout({
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Back to Dashboard
+            <span className="hidden sm:inline">Back to </span>Dashboard
           </Link>
 
           {/* Checklist Button */}
@@ -136,12 +136,12 @@ export default function StepPageLayout({
             <button
               ref={checklistButtonRef}
               onClick={() => setIsChecklistOpen(!isChecklistOpen)}
-              className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:opacity-90 whitespace-nowrap ${
+              className={`inline-flex items-center justify-center rounded-full px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:opacity-90 whitespace-nowrap flex-shrink-0 ${
                 allCompleted ? 'bg-green-600' : 'bg-blue-600'
               }`}
             >
               <svg
-                className="w-4 h-4 mr-2"
+                className="w-3 h-3 md:w-4 md:h-4 mr-1.5 md:mr-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -154,8 +154,8 @@ export default function StepPageLayout({
                 />
               </svg>
               Checklist
-              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">
-                {completedCount} / {totalCount}
+              <span className="ml-1.5 md:ml-2 inline-flex items-center justify-center rounded-full bg-white/20 px-1.5 md:px-2 py-0.5 text-xs font-bold">
+                {completedCount}/{totalCount}
               </span>
             </button>
 
@@ -257,10 +257,10 @@ export default function StepPageLayout({
           {showScrollTop && (
             <button
               onClick={handleScrollToTop}
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50 whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-200"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50 whitespace-nowrap flex-shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-200"
             >
               <svg
-                className="w-4 h-4 mr-2"
+                className="w-3 h-3 md:w-4 md:h-4 md:mr-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -272,17 +272,17 @@ export default function StepPageLayout({
                   d="M5 10l7-7m0 0l7 7m-7-7v18"
                 />
               </svg>
-              Scroll to top
+              <span className="hidden md:inline ml-2">Scroll to top</span>
             </button>
           )}
 
           {/* Step Progress (right-aligned) — hidden for tool pages */}
           {totalSteps > 0 && (
-            <div className="ml-auto flex items-center gap-3">
-              <div className="text-sm font-medium text-slate-600 whitespace-nowrap">
-                Step {stepNumber} of {totalSteps}
+            <div className="ml-auto flex items-center gap-1.5 md:gap-3 flex-shrink-0">
+              <div className="text-xs md:text-sm font-medium text-slate-600 whitespace-nowrap">
+                <span className="hidden sm:inline">Step </span>{stepNumber}<span className="hidden sm:inline"> of {totalSteps}</span><span className="sm:hidden">/{totalSteps}</span>
               </div>
-              <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div className="w-12 md:w-24 h-1.5 md:h-2 bg-slate-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-blue-600 transition-all duration-300"
                   style={{ width: `${(stepNumber / totalSteps) * 100}%` }}

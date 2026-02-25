@@ -263,8 +263,8 @@ export default function Step8ReviewFinish() {
         programStartMonth: draft.programStartMonth,
       }).catch(err => console.warn('[Onboarding] Welcome email failed (non-blocking):', err))
 
-      console.log('[Onboarding] Navigating to dashboard...')
-      navigate('/dashboard')
+      console.log('[Onboarding] Navigating to building screen...')
+      navigate('/onboarding/building', { replace: true })
     } catch (error) {
       console.error('[Onboarding] Error during finish:', error)
       console.error('[Onboarding] Error details:', {

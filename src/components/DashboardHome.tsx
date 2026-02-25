@@ -647,10 +647,26 @@ export default function DashboardHome() {
       <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
 
       <div className="hidden sm:block">
-      {/* Show skeleton until BOTH data is loaded AND the 750ms timer has elapsed */}
-      {(isLoading || !timelineReady) ? (
+      {/* Phase 1: data not yet loaded — fixed-height skeleton */}
+      {(isLoading || !profile?.programStartMonth) ? (
         <div className="rounded-2xl border border-slate-200 bg-white/60 animate-pulse" style={{ height: 400 }} />
-      ) : profile?.programStartMonth ? (
+      ) : !timelineReady ? (
+        /* Phase 2: data ready but wait-timer still running — render the real timeline
+           invisibly so it occupies exactly the right height; pulse overlay on top */
+        <div className="relative">
+          <div className="rounded-2xl border border-slate-200 bg-white/60 animate-pulse absolute inset-0 z-10 pointer-events-none" />
+          <div className="opacity-0 pointer-events-none">
+            <ProgramTimeline
+              programStartMonth={profile.programStartMonth}
+              deadlines={deadlines}
+              onAddDeadline={() => { setEditingDeadline(null); setClaimingMilestone(null); setIsDeadlineModalOpen(true) }}
+              onEditDeadline={(d) => { setEditingDeadline(d); setClaimingMilestone(null); setIsDeadlineModalOpen(true) }}
+              onClaimMilestone={(m) => { setEditingDeadline(null); setClaimingMilestone(m); setIsDeadlineModalOpen(true) }}
+            />
+          </div>
+        </div>
+      ) : (
+        /* Phase 3: timer elapsed — fade the timeline in */
         <div className="animate-fade-in">
           <ProgramTimeline
             programStartMonth={profile.programStartMonth}
@@ -660,7 +676,7 @@ export default function DashboardHome() {
             onClaimMilestone={(m) => { setEditingDeadline(null); setClaimingMilestone(m); setIsDeadlineModalOpen(true) }}
           />
         </div>
-      ) : null}
+      )}
       </div>
 
       <DeadlineModal
@@ -871,57 +887,73 @@ export default function DashboardHome() {
           <h2 className="text-xl font-semibold text-slate-900">Steps overview</h2>
           <span className="text-sm text-slate-500">{numberedPlan.length || numberedSteps.length} steps total</span>
         </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {(numberedPlan.length ? numberedPlan : numberedSteps.map(title => ({
-            moduleId: stepKeys[title], label: title, icon: undefined,
-            description: stepDescriptions[title], stepNumber: numberedSteps.indexOf(title) + 1, route: stepRoutes[title]
-          } as DashboardPlanItem))).map((m, index) => {
-            const pKey = progressKey(m)
-            const IconComp = m.icon ? ICON_MAP[m.icon] : null
-            return (
-              <div key={m.moduleId} className="animate-fade-in-up" style={{ animationDelay: `${200 + index * 55}ms` }}>
-                <StepCard
-                  stepNumber={m.stepNumber ?? (index + 1)}
-                  title={m.label}
-                  description={m.description ?? ''}
-                  highlighted={index === firstIncompleteIndex}
-                  to={m.route}
-                  completed={progress[pKey] || false}
-                  onComplete={(completed) => handleStepComplete(m, completed)}
-                  icon={IconComp ? <IconComp size={20} className="flex-shrink-0" /> : stepIcons[m.label]}
-                  disabled={pKey === 'student-visa' && visaStepDisabled}
-                  disabledReason={pKey === 'student-visa' && visaStepDisabled ? 'Not needed for EU citizens' : undefined}
-                />
-              </div>
-            )
-          })}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="h-36 rounded-2xl border border-slate-200 bg-white/60 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {(numberedPlan.length ? numberedPlan : numberedSteps.map(title => ({
+              moduleId: stepKeys[title], label: title, icon: undefined,
+              description: stepDescriptions[title], stepNumber: numberedSteps.indexOf(title) + 1, route: stepRoutes[title]
+            } as DashboardPlanItem))).map((m, index) => {
+              const pKey = progressKey(m)
+              const IconComp = m.icon ? ICON_MAP[m.icon] : null
+              return (
+                <div key={m.moduleId} className="animate-fade-in-up" style={{ animationDelay: `${index * 40}ms` }}>
+                  <StepCard
+                    stepNumber={m.stepNumber ?? (index + 1)}
+                    title={m.label}
+                    description={m.description ?? ''}
+                    highlighted={index === firstIncompleteIndex}
+                    to={m.route}
+                    completed={progress[pKey] || false}
+                    onComplete={(completed) => handleStepComplete(m, completed)}
+                    icon={IconComp ? <IconComp size={20} className="flex-shrink-0" /> : stepIcons[m.label]}
+                    disabled={pKey === 'student-visa' && visaStepDisabled}
+                    disabledReason={pKey === 'student-visa' && visaStepDisabled ? 'Not needed for EU citizens' : undefined}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
         <h2 className="text-xl font-semibold text-slate-900">Tools</h2>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {(toolsPlan.length ? toolsPlan : extraInformationSteps.map(title => ({
-            moduleId: stepKeys[title], label: title, icon: undefined,
-            description: stepDescriptions[title], stepNumber: undefined, route: stepRoutes[title]
-          } as DashboardPlanItem))).map((m, index) => {
-            const IconComp = m.icon ? ICON_MAP[m.icon] : null
-            return (
-              <div key={m.moduleId} className="animate-fade-in-up" style={{ animationDelay: `${300 + index * 55}ms` }}>
-                <StepCard
-                  stepNumber={0}
-                  title={m.label}
-                  description={m.description ?? ''}
-                  showStepNumber={false}
-                  isTool={true}
-                  to={m.route}
-                  completed={progress[progressKey(m)] || false}
-                  icon={IconComp ? <IconComp size={20} className="flex-shrink-0" /> : stepIcons[m.label]}
-                />
-              </div>
-            )
-          })}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-36 rounded-2xl border border-slate-200 bg-white/60 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {(toolsPlan.length ? toolsPlan : extraInformationSteps.map(title => ({
+              moduleId: stepKeys[title], label: title, icon: undefined,
+              description: stepDescriptions[title], stepNumber: undefined, route: stepRoutes[title]
+            } as DashboardPlanItem))).map((m, index) => {
+              const IconComp = m.icon ? ICON_MAP[m.icon] : null
+              return (
+                <div key={m.moduleId} className="animate-fade-in-up" style={{ animationDelay: `${index * 40}ms` }}>
+                  <StepCard
+                    stepNumber={0}
+                    title={m.label}
+                    description={m.description ?? ''}
+                    showStepNumber={false}
+                    isTool={true}
+                    to={m.route}
+                    completed={progress[progressKey(m)] || false}
+                    icon={IconComp ? <IconComp size={20} className="flex-shrink-0" /> : stepIcons[m.label]}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </section>
   )

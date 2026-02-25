@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import FindYourNeighborhood from '../components/FindYourNeighborhood'
@@ -78,7 +77,6 @@ export default function HousingPage() {
         />
       )}
       <FeedbackWidget />
-      <DashboardLayout>
         <StepPageLayout
         stepNumber={7}
         totalSteps={13}
@@ -108,7 +106,6 @@ export default function HousingPage() {
           <FindYourNeighborhood profile={profile} />
         )}
         </StepPageLayout>
-      </DashboardLayout>
     </>
   )
 }

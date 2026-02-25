@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import DashboardLayout from '../components/DashboardLayout'
 import { fetchMe, saveProfile } from '../lib/api'
 import { UserProfile } from '../types/user'
 import type { OnboardingDraft } from '../onboarding/types'
@@ -365,7 +364,7 @@ export default function MySituationPage() {
     ) : null
 
   return (
-    <DashboardLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">My Situation</h1>
         <p className="text-sm text-gray-600 mt-1">
@@ -1278,6 +1277,6 @@ export default function MySituationPage() {
           </div>
             </form>
           )}
-    </DashboardLayout>
+    </>
   )
 }

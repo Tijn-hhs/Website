@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { AuthGate } from './components/AuthGate'
 import { AdminGate } from './components/AdminGate'
 import AppLayout from './components/AppLayout'
+import DashboardLayout from './components/DashboardLayout'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import DashboardPage from './pages/DashboardPage'
 import LandingPage from './pages/LandingPage'
@@ -35,6 +36,7 @@ import Step3bApplication from './onboarding/pages/Step3bApplication'
 import Step5Visa from './onboarding/pages/Step5Visa'
 import Step6Budget from './onboarding/pages/Step6Budget'
 import Step8ReviewFinish from './onboarding/pages/Step8ReviewFinish'
+import OnboardingBuildingPage from './pages/OnboardingBuildingPage'
 import ModuleGate from './components/ModuleGate'
 
 function ScrollToTop() {
@@ -56,157 +58,29 @@ export default function App() {
         <Route path="/blog" element={<BlogOverviewPage />} />
         <Route path="/blog/:postId" element={<BlogPostPage />} />
         
-        <Route
-          path="/dashboard"
-          element={
-            <AuthGate>
-              <DashboardPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/university-application"
-          element={
-            <AuthGate>
-              <UniversityApplicationPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/funding-scholarships"
-          element={
-            <AuthGate>
-              <FundingScholarshipPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/student-visa"
-          element={
-            <AuthGate>
-              <ModuleGate moduleRoute="/dashboard/student-visa">
-                <StudentVisaPage />
-              </ModuleGate>
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/codice-fiscale"
-          element={
-            <AuthGate>
-              <CodiceFiscalePage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/before-departure"
-          element={
-            <AuthGate>
-              <BeforeDeparturePage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/immigration-registration"
-          element={
-            <AuthGate>
-              <ModuleGate moduleRoute="/dashboard/immigration-registration">
-                <ImmigrationRegistrationPage />
-              </ModuleGate>
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/housing"
-          element={
-            <AuthGate>
-              <HousingPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/banking"
-          element={
-            <AuthGate>
-              <BankingPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/insurance"
-          element={
-            <AuthGate>
-              <InsurancePage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/healthcare"
-          element={
-            <AuthGate>
-              <HealthcarePage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/information-centre"
-          element={
-            <AuthGate>
-              <InformationCentrePage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/cost-of-living"
-          element={
-            <AuthGate>
-              <CostOfLivingPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/buddy-system"
-          element={
-            <AuthGate>
-              <BuddySystemPage />
-            </AuthGate>} />
-            <Route path="/dashboard/ai-support" element={<AuthGate>
-              <AISupportPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/find-your-peers"
-          element={
-            <AuthGate>
-              <FindYourPeersPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/blog"
-          element={
-            <AuthGate>
-              <BlogOverviewPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/dashboard/blog/:postId"
-          element={
-            <AuthGate>
-              <BlogPostPage />
-            </AuthGate>
-          }
-        />
-        <Route
-          path="/my-situation"
-          element={
-            <AuthGate>
-              <MySituationPage />
-            </AuthGate>
-          }
-        />
+        {/* ── Dashboard pages — shared persistent sidebar/layout ── */}
+        <Route element={<AuthGate><DashboardLayout /></AuthGate>}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard/university-application" element={<UniversityApplicationPage />} />
+          <Route path="/dashboard/funding-scholarships" element={<FundingScholarshipPage />} />
+          <Route path="/dashboard/student-visa" element={<ModuleGate moduleRoute="/dashboard/student-visa"><StudentVisaPage /></ModuleGate>} />
+          <Route path="/dashboard/codice-fiscale" element={<CodiceFiscalePage />} />
+          <Route path="/dashboard/before-departure" element={<BeforeDeparturePage />} />
+          <Route path="/dashboard/immigration-registration" element={<ModuleGate moduleRoute="/dashboard/immigration-registration"><ImmigrationRegistrationPage /></ModuleGate>} />
+          <Route path="/dashboard/housing" element={<HousingPage />} />
+          <Route path="/dashboard/banking" element={<BankingPage />} />
+          <Route path="/dashboard/insurance" element={<InsurancePage />} />
+          <Route path="/dashboard/healthcare" element={<HealthcarePage />} />
+          <Route path="/dashboard/information-centre" element={<InformationCentrePage />} />
+          <Route path="/dashboard/cost-of-living" element={<CostOfLivingPage />} />
+          <Route path="/dashboard/buddy-system" element={<BuddySystemPage />} />
+          <Route path="/dashboard/ai-support" element={<AISupportPage />} />
+          <Route path="/dashboard/find-your-peers" element={<FindYourPeersPage />} />
+          <Route path="/my-situation" element={<MySituationPage />} />
+        </Route>
+        {/* Blog pages — use their own Header, no sidebar */}
+        <Route path="/dashboard/blog" element={<AuthGate><BlogOverviewPage /></AuthGate>} />
+        <Route path="/dashboard/blog/:postId" element={<AuthGate><BlogPostPage /></AuthGate>} />
         {/* ── Admin (hidden from all navigation) ── */}
         <Route
           path="/internal/mgmt"
@@ -226,6 +100,7 @@ export default function App() {
         <Route path="/onboarding/5" element={<Step5Visa />} />
         <Route path="/onboarding/6" element={<Step6Budget />} />
         <Route path="/onboarding/8" element={<Step8ReviewFinish />} />
+        <Route path="/onboarding/building" element={<OnboardingBuildingPage />} />
         <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AppLayout>

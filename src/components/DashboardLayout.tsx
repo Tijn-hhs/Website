@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react'
-import type { ReactNode } from 'react'
+import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import MobileNav from './MobileNav'
 
-type DashboardLayoutProps = {
-  children: ReactNode
-}
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout() {
   // Track collapsed state to adjust main content margin
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed')
@@ -49,7 +45,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           isCollapsed ? 'md:ml-[88px]' : 'md:ml-[280px]'
         }`}
       >
-        <div className="mx-auto w-full max-w-6xl">{children}</div>
+        <div className="mx-auto w-full max-w-6xl"><Outlet /></div>
       </main>
     </div>
   )

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
@@ -576,11 +575,9 @@ export default function UniversityApplicationPage() {
 
   if (!config) {
     return (
-      <DashboardLayout>
-        <div className="col-span-full rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-          No university configuration found.
-        </div>
-      </DashboardLayout>
+      <div className="col-span-full rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+        No university configuration found.
+      </div>
     )
   }
 
@@ -599,7 +596,6 @@ export default function UniversityApplicationPage() {
         />
       )}
       <FeedbackWidget />
-      <DashboardLayout>
         <StepPageLayout
           stepNumber={1}
           totalSteps={8}
@@ -1035,7 +1031,6 @@ export default function UniversityApplicationPage() {
           )}
 
         </StepPageLayout>
-      </DashboardLayout>
     </>
   )
 }

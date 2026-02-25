@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
@@ -57,7 +56,6 @@ export default function HealthcarePage() {
         />
       )}
       <FeedbackWidget />
-      <DashboardLayout>
       <StepPageLayout
         stepNumber={10}
         totalSteps={13}
@@ -75,7 +73,6 @@ export default function HealthcarePage() {
         onChecklistItemToggle={handleChecklistToggle}
       >
       </StepPageLayout>
-      </DashboardLayout>
     </>
   )
 }

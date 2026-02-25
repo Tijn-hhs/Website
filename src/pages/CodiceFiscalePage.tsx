@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import DashboardLayout from '../components/DashboardLayout'
 import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
@@ -361,7 +360,6 @@ export default function CodiceFiscalePage() {
         />
       )}
       <FeedbackWidget />
-      <DashboardLayout>
         <StepPageLayout
           stepNumber={3}
           totalSteps={12}
@@ -876,7 +874,6 @@ export default function CodiceFiscalePage() {
           )}
 
         </StepPageLayout>
-      </DashboardLayout>
     </>
   )
 }

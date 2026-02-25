@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { signOut } from 'aws-amplify/auth'
+import logo from '../assets/Logo_LEAVS.png'
 import {
   GraduationCap,
   FileText,
@@ -117,7 +118,7 @@ export default function MobileNav() {
       {/* Fixed top bar — mobile only */}
       <header className="fixed top-0 inset-x-0 z-40 md:hidden flex items-center justify-between px-4 h-14 bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm">
         <Link to="/dashboard">
-          <img src="/assets/Logo.png" alt="Leavs" className="h-7 w-auto" />
+          <img src={logo} alt="Leavs" className="h-7 w-auto" />
         </Link>
         <button
           onClick={() => setIsOpen((v) => !v)}

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { signOut, getCurrentUser } from 'aws-amplify/auth'
-import logo from '../assets/Logo.png'
+import logo from '../assets/Logo_LEAVS.png'
 
 export default function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)

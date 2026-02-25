@@ -12,6 +12,7 @@ type StepCardProps = {
   icon?: React.ReactNode
   disabled?: boolean
   disabledReason?: string
+  isTool?: boolean
 }
 
 export default function StepCard({
@@ -26,16 +27,19 @@ export default function StepCard({
   icon,
   disabled = false,
   disabledReason,
+  isTool = false,
 }: StepCardProps) {
   const navigate = useNavigate()
   const isClickable = Boolean(to) && !disabled
   const statusStyles = disabled
     ? 'border-slate-200 bg-slate-50'
-    : completed
-      ? 'border-teal-200 ring-1 ring-teal-100'
-      : highlighted
-        ? 'border-blue-300 ring-1 ring-blue-200'
-        : 'border-slate-200'
+    : isTool
+      ? 'border-violet-200 bg-violet-50/30'
+      : completed
+        ? 'border-teal-200 ring-1 ring-teal-100'
+        : highlighted
+          ? 'border-blue-300 ring-1 ring-blue-200'
+          : 'border-slate-200'
 
   return (
     <article
@@ -74,7 +78,7 @@ export default function StepCard({
         <div className="flex items-start gap-3">
           {icon && (
             <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg mt-0.5 ${
-              disabled ? 'text-slate-400 bg-slate-100' : 'text-blue-600 bg-blue-50'
+              disabled ? 'text-slate-400 bg-slate-100' : isTool ? 'text-violet-600 bg-violet-100' : 'text-blue-600 bg-blue-50'
             }`}>
               {icon}
             </div>
@@ -85,6 +89,11 @@ export default function StepCard({
                 disabled ? 'text-slate-400' : 'text-blue-600'
               }`}>
                 STEP {stepNumber}
+              </p>
+            )}
+            {!showStepNumber && isTool && (
+              <p className="text-xs font-semibold tracking-widest mb-1 text-violet-500">
+                TOOL
               </p>
             )}
             <h3 className={`text-base font-semibold leading-snug ${
