@@ -778,6 +778,8 @@ export interface AdminUserRecord {
   lastCompletedStep?: number
   flightBooked?: string
   departureDate?: string
+  // personalised plan
+  dashboardPlan?: string   // JSON string of DashboardPlanItem[]
 }
 
 export async function fetchAdminUsers(): Promise<AdminUserRecord[]> {

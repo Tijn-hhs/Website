@@ -49,6 +49,8 @@ import {
   Calculator,
   Calendar,
   HelpCircle,
+  X,
+  ExternalLink,
   type LucideProps,
 } from 'lucide-react'
 
@@ -69,7 +71,19 @@ function ModuleIcon({ name, className }: { name?: string; className?: string }) 
   if (!Icon) return null
   return <Icon className={className ?? 'w-4 h-4'} />
 }
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry } from '../lib/api'
+
+const STEP_TYPE_META: Record<StepType, { label: string; color: string; desc: string }> = {
+  journey: { label: 'Journey',  color: 'bg-indigo-900/40 border-indigo-700/50 text-indigo-300',  desc: 'A numbered step students work through in sequence.' },
+  info:    { label: 'Info',     color: 'bg-gray-800 border-gray-700 text-gray-400',               desc: 'A resource/reference page accessible at any time.' },
+  tool:    { label: 'Tool',     color: 'bg-cyan-900/30 border-cyan-700/50 text-cyan-300',         desc: 'An interactive tool such as a calculator or map.' },
+}
+
+function StepTypeBadge({ type }: { type?: StepType }) {
+  if (!type) return <span className="text-xs px-1.5 py-0.5 rounded border border-gray-800 text-gray-600">—</span>
+  const m = STEP_TYPE_META[type]
+  return <span className={`text-xs px-1.5 py-0.5 rounded border ${m.color}`}>{m.label}</span>
+}
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -773,6 +787,43 @@ function UserRow({ user }: { user: AdminUserRecord }) {
             </>
           )}
 
+          {/* ── Relocation Plan ──────────────────────────────────────── */}
+          {(() => {
+            let plan: DashboardPlanItem[] = []
+            try { plan = JSON.parse(user.dashboardPlan || '[]') } catch { /* ignore */ }
+            if (!plan.length) return null
+            const journey = plan.filter(m => m.stepNumber != null).sort((a, b) => (a.stepNumber ?? 999) - (b.stepNumber ?? 999))
+            const tools   = plan.filter(m => m.stepNumber == null)
+            return (
+              <div className="col-span-full mt-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 mb-3 flex items-center gap-1.5">
+                  <Layers className="w-3 h-3" /> Relocation Plan ({plan.length} modules)
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {journey.map((m) => (
+                    <span
+                      key={m.moduleId}
+                      className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border border-indigo-700/50 bg-indigo-900/30 text-indigo-300"
+                    >
+                      <ModuleIcon name={m.icon} className="w-3 h-3" />
+                      <span className="font-medium">{m.stepNumber}.</span>
+                      {m.label}
+                    </span>
+                  ))}
+                  {tools.map((m) => (
+                    <span
+                      key={m.moduleId}
+                      className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border border-gray-700 bg-gray-800 text-gray-400"
+                    >
+                      <ModuleIcon name={m.icon} className="w-3 h-3" />
+                      {m.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+
           <div className="col-span-full mt-2 pt-3 border-t border-gray-800">
             {user.email && (
               <p className="text-xs text-gray-400 flex items-center gap-1 mb-1">
@@ -1463,7 +1514,7 @@ function EmailsTab() {
 // TAB 6 — Content Management
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type ContentSubTab = 'destinations' | 'origins' | 'modules'
+type ContentSubTab = 'destinations' | 'origins' | 'modules' | 'visualizer'
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -1497,10 +1548,25 @@ function ContentTab() {
   const [showModuleForm, setShowModuleForm] = useState(false)
   const [editingModule, setEditingModule] = useState<ContentModule | null>(null)
   const [moduleForm, setModuleForm] = useState<Partial<ContentModule>>({
-    label: '', icon: '', description: '', stepNumber: undefined,
-    visibilityRules: {}, active: true,
+    label: '', icon: '', description: '', route: '', stepType: undefined, stepNumber: undefined,
+    visibilityRules: {}, variants: [], active: true,
+  })
+  const [showVariantForm, setShowVariantForm] = useState(false)
+  const [newVariantDraft, setNewVariantDraft] = useState({
+    label: '', contentNote: '',
+    condition: { originEu: '', originCountry: '', degreeType: '', destinationCountry: '', destinationCity: '', universityId: '' },
   })
   const [modFilter, setModFilter] = useState('')
+  const [previewRoute, setPreviewRoute] = useState<string | null>(null)
+
+  const [vizSituation, setVizSituation] = useState<{
+    destinationCountry: string
+    destinationCity: string
+    universityId: string
+    originEu: string
+    originCountry: string
+    degreeType: string
+  }>({ destinationCountry: '', destinationCity: '', universityId: '', originEu: '', originCountry: '', degreeType: '' })
 
   async function loadAll() {
     setLoading(true); setError(null)
@@ -1600,13 +1666,15 @@ function ContentTab() {
 
   function openAddModule() {
     setEditingModule(null)
-    setModuleForm({ label: '', icon: '', description: '', stepNumber: undefined, visibilityRules: {}, active: true })
+    setModuleForm({ label: '', icon: '', description: '', route: '', stepType: undefined, stepNumber: undefined, visibilityRules: {}, variants: [], active: true })
+    setShowVariantForm(false)
     setShowModuleForm(true)
   }
 
   function openEditModule(m: ContentModule) {
     setEditingModule(m)
-    setModuleForm({ ...m })
+    setModuleForm({ ...m, route: m.route ?? '', variants: m.variants ?? [] })
+    setShowVariantForm(false)
     setShowModuleForm(true)
   }
 
@@ -1618,7 +1686,7 @@ function ContentTab() {
         await updateContentModule(editingModule.moduleId, moduleForm)
       } else {
         const id = slugify(moduleForm.label!)
-        await createContentModule({ moduleId: id, label: moduleForm.label!, icon: moduleForm.icon, description: moduleForm.description, stepNumber: moduleForm.stepNumber, visibilityRules: moduleForm.visibilityRules ?? {}, active: moduleForm.active ?? true } as Omit<ContentModule, 'createdAt'>)
+        await createContentModule({ moduleId: id, label: moduleForm.label!, icon: moduleForm.icon, description: moduleForm.description, stepType: moduleForm.stepType, stepNumber: moduleForm.stepNumber, visibilityRules: moduleForm.visibilityRules ?? {}, variants: moduleForm.variants ?? [], active: moduleForm.active ?? true } as Omit<ContentModule, 'createdAt'>)
       }
       setShowModuleForm(false)
       await loadAll()
@@ -1645,6 +1713,57 @@ function ContentTab() {
     )
   }, [modules, modFilter])
 
+  const vizModules = useMemo(() => {
+    const matchField = (ruleVal: string | boolean | undefined, situationVal: string | boolean | undefined): boolean => {
+      if (ruleVal === undefined || ruleVal === null || ruleVal === '') return true
+      if (situationVal === undefined || situationVal === null || situationVal === '') return true
+      return ruleVal === situationVal
+    }
+    const sit = {
+      destinationCountry: vizSituation.destinationCountry || undefined,
+      destinationCity:    vizSituation.destinationCity || undefined,
+      universityId:       vizSituation.universityId || undefined,
+      originEu:           vizSituation.originEu === '' ? undefined : vizSituation.originEu === 'true',
+      originCountry:      vizSituation.originCountry || undefined,
+      degreeType:         vizSituation.degreeType || undefined,
+    }
+    return modules
+      .filter(m => {
+        if (m.active === false) return false
+        const r = m.visibilityRules ?? {}
+        return (
+          matchField(r.destinationCountry, sit.destinationCountry) &&
+          matchField(r.destinationCity,    sit.destinationCity) &&
+          matchField(r.universityId,       sit.universityId) &&
+          matchField(r.originEu,           sit.originEu) &&
+          matchField(r.originCountry,      sit.originCountry) &&
+          matchField(r.degreeType,         sit.degreeType)
+        )
+      })
+      .sort((a, b) => (a.stepNumber ?? 999) - (b.stepNumber ?? 999))
+  }, [modules, vizSituation])
+
+  function getActiveVariant(m: ContentModule): ContentVariant | null {
+    if (!m.variants?.length) return null
+    const strictMatch = (ruleVal: boolean | string | undefined, sitVal: string): boolean => {
+      if (ruleVal === undefined) return true      // wildcard — condition doesn't care
+      if (!sitVal) return false                   // situation not set → variant doesn't fire
+      if (typeof ruleVal === 'boolean') return ruleVal === (sitVal === 'true')
+      return ruleVal === sitVal
+    }
+    return m.variants.find(v => {
+      const c = v.condition
+      return (
+        strictMatch(c.originEu,            vizSituation.originEu) &&
+        strictMatch(c.originCountry,       vizSituation.originCountry) &&
+        strictMatch(c.degreeType,          vizSituation.degreeType) &&
+        strictMatch(c.destinationCountry,  vizSituation.destinationCountry) &&
+        strictMatch(c.destinationCity,     vizSituation.destinationCity) &&
+        strictMatch(c.universityId,        vizSituation.universityId)
+      )
+    }) ?? null
+  }
+
   if (loading) return <div className="flex items-center justify-center py-24"><RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" /></div>
 
   if (error) return (
@@ -1663,7 +1782,7 @@ function ContentTab() {
     <div className="space-y-5">
       {/* Sub-nav */}
       <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1 w-fit">
-        {(['destinations', 'origins', 'modules'] as ContentSubTab[]).map((s) => (
+        {(['destinations', 'origins', 'modules', 'visualizer'] as ContentSubTab[]).map((s) => (
           <button key={s} onClick={() => setSub(s)}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               sub === s ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
@@ -1672,7 +1791,9 @@ function ContentTab() {
               ? <><Globe className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Destinations</>
               : s === 'origins'
               ? <><UserPlus className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Origin Countries</>
-              : <><Layers className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Modules</>
+              : s === 'modules'
+              ? <><Layers className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Modules</>
+              : <><Eye className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Visualizer</>
             }
           </button>
         ))}
@@ -1985,6 +2106,25 @@ function ContentTab() {
                   <input placeholder="Short description shown to users" value={moduleForm.description || ''} onChange={e => setModuleForm(v => ({ ...v, description: e.target.value }))}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
                 </div>
+                <div className="col-span-2">
+                  <label className="text-xs text-gray-500 mb-1 block">Route</label>
+                  <input placeholder="/dashboard/banking-italy" value={moduleForm.route || ''} onChange={e => setModuleForm(v => ({ ...v, route: e.target.value || undefined }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 font-mono focus:outline-none focus:border-indigo-600" />
+                  <p className="text-xs text-gray-600 mt-1">Dashboard path this module links to — enables page preview in Visualizer.</p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Step Type</label>
+                  <select value={moduleForm.stepType ?? ''} onChange={e => setModuleForm(v => ({ ...v, stepType: (e.target.value as StepType) || undefined }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                    <option value="">— unset —</option>
+                    <option value="journey">Journey — numbered step in student journey</option>
+                    <option value="info">Info — reference / resource page</option>
+                    <option value="tool">Tool — interactive tool (calculator, map…)</option>
+                  </select>
+                  {moduleForm.stepType && (
+                    <p className="text-xs text-gray-600 mt-1">{STEP_TYPE_META[moduleForm.stepType].desc}</p>
+                  )}
+                </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Step number</label>
                   <input type="number" placeholder="e.g. 3" value={moduleForm.stepNumber ?? ''} onChange={e => setModuleForm(v => ({ ...v, stepNumber: e.target.value ? Number(e.target.value) : undefined }))}
@@ -2069,6 +2209,149 @@ function ContentTab() {
                   </div>
                 </div>
               </div>
+
+              {/* ── Content Variants ── */}
+              <div className="border-t border-gray-800 pt-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">Content Variants</p>
+                <p className="text-xs text-gray-600 mb-3">Define different content notes for specific user situations. The first matching variant wins; unset condition fields act as wildcards.</p>
+
+                {/* Existing variants */}
+                {(moduleForm.variants ?? []).length > 0 && (
+                  <div className="space-y-2 mb-3">
+                    {(moduleForm.variants ?? []).map((v, idx) => (
+                      <div key={v.variantId} className="bg-gray-800/60 border border-gray-700 rounded-lg px-3 py-2.5 flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-white">{v.label}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 whitespace-pre-wrap">{v.contentNote}</p>
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {v.condition.originEu !== undefined && <span className="px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 text-xs">{v.condition.originEu ? 'EU' : 'Non-EU'}</span>}
+                            {v.condition.originCountry && <span className="px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 text-xs">from: {v.condition.originCountry}</span>}
+                            {v.condition.degreeType && <span className="px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 text-xs">{v.condition.degreeType}</span>}
+                            {v.condition.destinationCountry && <span className="px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 text-xs">to: {v.condition.destinationCountry}</span>}
+                            {v.condition.destinationCity && <span className="px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 text-xs">city: {v.condition.destinationCity}</span>}
+                            {v.condition.universityId && <span className="px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 text-xs">uni: {v.condition.universityId}</span>}
+                          </div>
+                        </div>
+                        <button onClick={() => setModuleForm(f => ({ ...f, variants: (f.variants ?? []).filter((_, i) => i !== idx) }))}
+                          className="text-gray-600 hover:text-red-400 transition-colors flex-shrink-0 mt-0.5">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add variant toggle */}
+                {!showVariantForm ? (
+                  <button onClick={() => setShowVariantForm(true)} className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                    <Plus className="w-3.5 h-3.5" /> Add Variant
+                  </button>
+                ) : (
+                  <div className="bg-gray-800/40 border border-gray-700 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-gray-300">New Variant</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2">
+                        <label className="text-xs text-gray-500 mb-1 block">Label *</label>
+                        <input placeholder="e.g. Non-EU from China" value={newVariantDraft.label}
+                          onChange={e => setNewVariantDraft(d => ({ ...d, label: e.target.value }))}
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600" />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-xs text-gray-500 mb-1 block">Content Note *</label>
+                        <textarea rows={2} placeholder="What content is shown for this situation…" value={newVariantDraft.contentNote}
+                          onChange={e => setNewVariantDraft(d => ({ ...d, contentNote: e.target.value }))}
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-600 resize-none" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Origin EU</label>
+                        <select value={newVariantDraft.condition.originEu}
+                          onChange={e => setNewVariantDraft(d => ({ ...d, condition: { ...d.condition, originEu: e.target.value } }))}
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                          <option value="">Any</option>
+                          <option value="true">EU</option>
+                          <option value="false">Non-EU</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Origin Country</label>
+                        <select value={newVariantDraft.condition.originCountry}
+                          onChange={e => setNewVariantDraft(d => ({ ...d, condition: { ...d.condition, originCountry: e.target.value } }))}
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                          <option value="">Any</option>
+                          {originCountries.map(oc => <option key={oc.originCountryId} value={oc.originCountryId}>{oc.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Degree Type</label>
+                        <select value={newVariantDraft.condition.degreeType}
+                          onChange={e => setNewVariantDraft(d => ({ ...d, condition: { ...d.condition, degreeType: e.target.value } }))}
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                          <option value="">Any</option>
+                          <option value="bachelor">Bachelor</option>
+                          <option value="master">Master</option>
+                          <option value="phd">PhD</option>
+                          <option value="exchange">Exchange</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Destination Country</label>
+                        <select value={newVariantDraft.condition.destinationCountry}
+                          onChange={e => setNewVariantDraft(d => ({ ...d, condition: { ...d.condition, destinationCountry: e.target.value } }))}
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                          <option value="">Any</option>
+                          {countries.map(c => <option key={c.countryId} value={c.countryId}>{c.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Destination City</label>
+                        <select value={newVariantDraft.condition.destinationCity}
+                          onChange={e => setNewVariantDraft(d => ({ ...d, condition: { ...d.condition, destinationCity: e.target.value } }))}
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                          <option value="">Any</option>
+                          {cities.map(c => <option key={c.cityId} value={c.cityId}>{c.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">University</label>
+                        <select value={newVariantDraft.condition.universityId}
+                          onChange={e => setNewVariantDraft(d => ({ ...d, condition: { ...d.condition, universityId: e.target.value } }))}
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                          <option value="">Any</option>
+                          {universities.map(u => <option key={u.universityId} value={u.universityId}>{u.shortName || u.name}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        disabled={!newVariantDraft.label || !newVariantDraft.contentNote}
+                        onClick={() => {
+                          const c = newVariantDraft.condition
+                          const newVariant: ContentVariant = {
+                            variantId: crypto.randomUUID(),
+                            label: newVariantDraft.label,
+                            contentNote: newVariantDraft.contentNote,
+                            condition: {
+                              originEu: c.originEu === '' ? undefined : c.originEu === 'true',
+                              originCountry: c.originCountry || undefined,
+                              degreeType: c.degreeType || undefined,
+                              destinationCountry: c.destinationCountry || undefined,
+                              destinationCity: c.destinationCity || undefined,
+                              universityId: c.universityId || undefined,
+                            },
+                          }
+                          setModuleForm(f => ({ ...f, variants: [...(f.variants ?? []), newVariant] }))
+                          setNewVariantDraft({ label: '', contentNote: '', condition: { originEu: '', originCountry: '', degreeType: '', destinationCountry: '', destinationCity: '', universityId: '' } })
+                          setShowVariantForm(false)
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">
+                        Add Variant
+                      </button>
+                      <button onClick={() => setShowVariantForm(false)} className="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white transition-colors">Cancel</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-2 pt-1">
                 <button onClick={saveModule} disabled={saving || !moduleForm.label}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors">
@@ -2101,6 +2384,7 @@ function ContentTab() {
                         {m.icon && <ModuleIcon name={m.icon} className="w-4 h-4 text-indigo-400 flex-shrink-0" />}
                         <span className="text-white font-semibold text-sm">{m.label}</span>
                         {m.stepNumber != null && <span className="text-xs text-gray-600">#{m.stepNumber}</span>}
+                        <StepTypeBadge type={m.stepType} />
                         <span className={`text-xs px-1.5 py-0.5 rounded border ${
                           (m.active ?? true) ? 'border-emerald-700 text-emerald-400 bg-emerald-900/20' : 'border-gray-700 text-gray-500'
                         }`}>{(m.active ?? true) ? 'active' : 'inactive'}</span>
@@ -2135,6 +2419,301 @@ function ContentTab() {
           )}
         </div>
       )}
+
+      {/* ── VISUALIZER ───────────────────────────────────────────────────────── */}
+      {sub === 'visualizer' && (
+        <div className="space-y-5">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Module Visualizer</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Set a user's situation to preview which modules they would see and in what order.</p>
+          </div>
+
+          {/* Legend */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">How modules work — 3 layers</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="bg-gray-800/60 rounded-lg p-3 border border-gray-700">
+                <p className="font-semibold text-white mb-1">Layer 1 — Visibility Rules</p>
+                <p className="text-gray-400">Decides <strong>whether</strong> a module appears for this user at all. Filters by destination, origin, EU status, degree type.</p>
+              </div>
+              <div className="bg-gray-800/60 rounded-lg p-3 border border-gray-700">
+                <p className="font-semibold text-white mb-1">Layer 2 — Step Type</p>
+                <div className="space-y-1 mt-1.5">
+                  {(Object.keys(STEP_TYPE_META) as StepType[]).map(t => (
+                    <div key={t} className="flex items-center gap-1.5">
+                      <StepTypeBadge type={t} />
+                      <span className="text-gray-400">{STEP_TYPE_META[t].desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-gray-800/60 rounded-lg p-3 border border-gray-700">
+                <p className="font-semibold text-white mb-1">Layer 3 — Content Variants</p>
+                <p className="text-gray-400">The first matching variant determines <strong>what content</strong> is shown inside the step. Unset fields act as wildcards.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+
+            {/* ── Inputs ── */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">User Situation</p>
+                <button onClick={() => setVizSituation({ destinationCountry: '', destinationCity: '', universityId: '', originEu: '', originCountry: '', degreeType: '' })}
+                  className="text-xs text-gray-500 hover:text-white flex items-center gap-1 transition-colors">
+                  <RotateCcw className="w-3 h-3" /> Reset
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Destination Country</label>
+                  <select value={vizSituation.destinationCountry}
+                    onChange={e => setVizSituation(v => ({ ...v, destinationCountry: e.target.value, destinationCity: '', universityId: '' }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                    <option value="">Any / not set</option>
+                    {countries.map(c => <option key={c.countryId} value={c.countryId}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Destination City</label>
+                  <select value={vizSituation.destinationCity}
+                    onChange={e => setVizSituation(v => ({ ...v, destinationCity: e.target.value, universityId: '' }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                    <option value="">Any / not set</option>
+                    {cities
+                      .filter(c => !vizSituation.destinationCountry || c.countryId === vizSituation.destinationCountry)
+                      .map(c => <option key={c.cityId} value={c.cityId}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">University</label>
+                  <select value={vizSituation.universityId}
+                    onChange={e => setVizSituation(v => ({ ...v, universityId: e.target.value }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                    <option value="">Any / not set</option>
+                    {universities
+                      .filter(u => (!vizSituation.destinationCity || u.cityId === vizSituation.destinationCity) &&
+                                   (!vizSituation.destinationCountry || u.countryId === vizSituation.destinationCountry))
+                      .map(u => <option key={u.universityId} value={u.universityId}>{u.shortName || u.name}</option>)}
+                  </select>
+                </div>
+
+                <div className="border-t border-gray-800 pt-3">
+                  <p className="text-xs text-gray-600 uppercase tracking-widest mb-3">Student background</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">EU Citizen</label>
+                      <select value={vizSituation.originEu}
+                        onChange={e => setVizSituation(v => ({ ...v, originEu: e.target.value }))}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                        <option value="">Any / not set</option>
+                        <option value="true">EU citizen</option>
+                        <option value="false">Non-EU citizen</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Origin Country</label>
+                      <select value={vizSituation.originCountry}
+                        onChange={e => setVizSituation(v => ({ ...v, originCountry: e.target.value }))}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                        <option value="">Any / not set</option>
+                        {originCountries.map(oc => <option key={oc.originCountryId} value={oc.originCountryId}>{oc.name} ({oc.code})</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Degree Type</label>
+                      <select value={vizSituation.degreeType}
+                        onChange={e => setVizSituation(v => ({ ...v, degreeType: e.target.value }))}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
+                        <option value="">Any / not set</option>
+                        <option value="bachelor">Bachelor</option>
+                        <option value="master">Master</option>
+                        <option value="phd">PhD</option>
+                        <option value="exchange">Exchange</option>
+                      </select>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              {/* Active filter chips */}
+              {Object.values(vizSituation).some(v => v !== '') && (
+                <div className="border-t border-gray-800 pt-3 flex flex-wrap gap-1.5">
+                  {vizSituation.destinationCountry && (() => { const c = countries.find(x => x.countryId === vizSituation.destinationCountry); return c ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-900/40 border border-blue-700/50 text-blue-300 text-xs"><Globe className="w-3 h-3" />{c.name}</span> : null })()}
+                  {vizSituation.destinationCity && (() => { const c = cities.find(x => x.cityId === vizSituation.destinationCity); return c ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-900/40 border border-purple-700/50 text-purple-300 text-xs"><Map className="w-3 h-3" />{c.name}</span> : null })()}
+                  {vizSituation.universityId && (() => { const u = universities.find(x => x.universityId === vizSituation.universityId); return u ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-900/40 border border-indigo-700/50 text-indigo-300 text-xs"><GraduationCap className="w-3 h-3" />{u.shortName || u.name}</span> : null })()}
+                  {vizSituation.originEu === 'true' && <span className="px-2 py-0.5 rounded-full bg-green-900/40 border border-green-700/50 text-green-300 text-xs">EU citizen</span>}
+                  {vizSituation.originEu === 'false' && <span className="px-2 py-0.5 rounded-full bg-orange-900/40 border border-orange-700/50 text-orange-300 text-xs">Non-EU citizen</span>}
+                  {vizSituation.originCountry && (() => { const oc = originCountries.find(x => x.originCountryId === vizSituation.originCountry); return oc ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-900/40 border border-teal-700/50 text-teal-300 text-xs"><Globe className="w-3 h-3" />From {oc.name}</span> : null })()}
+                  {vizSituation.degreeType && <span className="px-2 py-0.5 rounded-full bg-yellow-900/40 border border-yellow-700/50 text-yellow-300 text-xs capitalize">{vizSituation.degreeType}</span>}
+
+                </div>
+              )}
+            </div>
+
+            {/* ── Preview ── */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Dashboard Preview</p>
+                <span className="text-xs text-gray-500">
+                  {vizModules.length} of {modules.filter(m => m.active !== false).length} active modules shown
+                </span>
+              </div>
+
+              {vizModules.length === 0 ? (
+                <div className="bg-gray-900 border border-gray-800 rounded-xl p-10 text-center text-gray-600">
+                  <EyeOff className="w-8 h-8 mx-auto mb-3 opacity-30" />
+                  <p className="font-medium">No modules match</p>
+                  <p className="text-xs mt-1">Try loosening the situation filters.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {(() => {
+                    const numbered = vizModules.filter(m => m.stepNumber != null)
+                    const info     = vizModules.filter(m => m.stepNumber == null)
+                    return (
+                      <>
+                        {numbered.length > 0 && (
+                          <>
+                            <p className="text-xs text-gray-600 uppercase tracking-widest px-1 pt-1">Steps</p>
+                            {numbered.map((m, idx) => {
+                              const activeVariant = getActiveVariant(m)
+                              const variantCount = m.variants?.length ?? 0
+                              return (
+                              <div key={m.moduleId} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-900/40 border border-indigo-700/40 flex items-center justify-center flex-shrink-0 text-indigo-400 font-bold text-sm mt-0.5">
+                                  {idx + 1}
+                                </div>
+                                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gray-800 flex-shrink-0 text-gray-400 mt-0.5">
+                                  <ModuleIcon name={m.icon} className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <p className="text-white text-sm font-semibold">{m.label}</p>
+                                    <StepTypeBadge type={m.stepType} />
+                                    <span className="text-xs text-gray-700 font-mono">#{m.stepNumber}</span>
+                                  </div>
+                                  {m.description && <p className="text-xs text-gray-500 truncate mt-0.5">{m.description}</p>}
+                                  {variantCount > 0 && (
+                                    <div className={`mt-1.5 rounded-md px-2.5 py-1.5 text-xs border ${activeVariant
+                                      ? 'bg-indigo-950/50 border-indigo-700/50 text-indigo-300'
+                                      : 'bg-gray-800/60 border-gray-700 text-gray-500'}`}>
+                                      {activeVariant
+                                        ? <><span className="font-semibold">Variant active:</span> {activeVariant.label} — {activeVariant.contentNote}</>
+                                        : <>Default content — {variantCount} variant{variantCount !== 1 ? 's' : ''} not triggered</>}
+                                    </div>
+                                  )}
+                                  {m.route && (
+                                    <button onClick={() => setPreviewRoute(m.route!)} className="mt-2 flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                                      <Eye className="w-3 h-3" /> Preview page
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )})}
+
+                          </>
+                        )}
+                        {info.length > 0 && (
+                          <>
+                            <p className="text-xs text-gray-600 uppercase tracking-widest px-1 pt-2">Info pages</p>
+                            {info.map(m => {
+                              const activeVariant = getActiveVariant(m)
+                              const variantCount = m.variants?.length ?? 0
+                              return (
+                              <div key={m.moduleId} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-start gap-3">
+                                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gray-800 flex-shrink-0 text-gray-400 mt-0.5">
+                                  <ModuleIcon name={m.icon} className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <p className="text-white text-sm font-semibold">{m.label}</p>
+                                    <StepTypeBadge type={m.stepType} />
+                                  </div>
+                                  {m.description && <p className="text-xs text-gray-500 truncate mt-0.5">{m.description}</p>}
+                                  {variantCount > 0 && (
+                                    <div className={`mt-1.5 rounded-md px-2.5 py-1.5 text-xs border ${activeVariant
+                                      ? 'bg-indigo-950/50 border-indigo-700/50 text-indigo-300'
+                                      : 'bg-gray-800/60 border-gray-700 text-gray-500'}`}>
+                                      {activeVariant
+                                        ? <><span className="font-semibold">Variant active:</span> {activeVariant.label} — {activeVariant.contentNote}</>
+                                        : <>Default content — {variantCount} variant{variantCount !== 1 ? 's' : ''} not triggered</>}
+                                    </div>
+                                  )}
+                                  {m.route && (
+                                    <button onClick={() => setPreviewRoute(m.route!)} className="mt-2 flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                                      <Eye className="w-3 h-3" /> Preview page
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )})}
+                          </>
+                        )}
+                      </>
+                    )
+                  })()}
+                </div>
+              )}
+
+              {/* Hidden modules collapsible */}
+              {(() => {
+                const allActive = modules.filter(m => m.active !== false)
+                const hiddenModules = allActive.filter(m => !vizModules.find(v => v.moduleId === m.moduleId))
+                return hiddenModules.length > 0 ? (
+                  <details className="group">
+                    <summary className="cursor-pointer text-xs text-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1 px-1 py-2 select-none">
+                      <ChevronDown className="w-3 h-3 group-open:rotate-180 transition-transform" />
+                      {hiddenModules.length} module{hiddenModules.length !== 1 ? 's' : ''} hidden by current filters
+                    </summary>
+                    <div className="space-y-1.5 mt-1">
+                      {hiddenModules.map(m => (
+                        <div key={m.moduleId} className="bg-gray-950 border border-gray-800/50 rounded-xl px-4 py-2.5 flex items-center gap-3 opacity-40">
+                          <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-800 flex-shrink-0">
+                            <ModuleIcon name={m.icon} className="w-3.5 h-3.5 text-gray-500" />
+                          </div>
+                          <p className="text-gray-500 text-sm flex-1">{m.label}</p>
+                          {m.stepNumber != null && <span className="text-xs text-gray-700">#{m.stepNumber}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                ) : null
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Page Preview Modal ── */}
+      {previewRoute && (
+        <div className="fixed inset-0 z-50 flex flex-col" style={{ background: 'rgba(0,0,0,0.85)' }}>
+          <div className="flex items-center gap-3 bg-gray-900 border-b border-gray-800 px-4 py-3 flex-shrink-0">
+            <button onClick={() => setPreviewRoute(null)} className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors" title="Close">
+              <X className="w-4 h-4" />
+            </button>
+            <span className="text-xs text-gray-500 font-mono flex-1 truncate">{window.location.origin}{previewRoute}</span>
+            <a href={previewRoute} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex-shrink-0">
+              <ExternalLink className="w-3.5 h-3.5" /> Open in new tab
+            </a>
+          </div>
+          <iframe
+            key={previewRoute}
+            src={previewRoute}
+            className="flex-1 w-full"
+            title="Page preview"
+            style={{ border: 'none', background: '#fff' }}
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -2145,8 +2724,17 @@ function ContentTab() {
 
 type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails' | 'content'
 
+const ADMIN_TAB_KEY = 'adminDashboardTab'
+
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('overview')
+  const [activeTab, setActiveTab] = useState<Tab>(
+    () => (localStorage.getItem(ADMIN_TAB_KEY) as Tab | null) ?? 'overview'
+  )
+
+  function switchTab(tab: Tab) {
+    setActiveTab(tab)
+    localStorage.setItem(ADMIN_TAB_KEY, tab)
+  }
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [statsLoading, setStatsLoading] = useState(true)
   const [statsError, setStatsError] = useState<string | null>(null)
@@ -2205,7 +2793,7 @@ export default function AdminDashboardPage() {
         {/* Tab bar */}
         <div className="max-w-7xl mx-auto px-6 flex gap-1">
           {TABS.map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            <button key={tab.id} onClick={() => switchTab(tab.id)}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id ? 'border-indigo-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'
               }`}>
