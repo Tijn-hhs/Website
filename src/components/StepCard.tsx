@@ -43,7 +43,7 @@ export default function StepCard({
 
   return (
     <article
-      className={`rounded-2xl border bg-white p-6 shadow-sm transition-shadow duration-200 ${
+      className={`rounded-xl sm:rounded-2xl border bg-white p-3 sm:p-6 shadow-sm transition-shadow duration-200 ${
         disabled ? 'opacity-60' : 'hover:shadow-md'
       } h-full flex flex-col ${statusStyles} ${
         isClickable ? 'cursor-pointer' : 'cursor-not-allowed'
@@ -68,16 +68,16 @@ export default function StepCard({
     >
       {/* Disabled reason banner */}
       {disabled && disabledReason && (
-        <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+        <div className="mb-2 sm:mb-4 p-2 sm:p-3 rounded-lg bg-amber-50 border border-amber-200">
           <p className="text-xs font-medium text-amber-800">{disabledReason}</p>
         </div>
       )}
 
       {/* Header with icon and badges */}
-      <div className="flex items-start justify-between gap-4 mb-3 flex-shrink-0">
-        <div className="flex items-start gap-3">
+      <div className="flex items-start justify-between gap-2 sm:gap-4 mb-2 sm:mb-3 flex-shrink-0">
+        <div className="flex items-start gap-2 sm:gap-3">
           {icon && (
-            <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg mt-0.5 ${
+            <div className={`flex-shrink-0 w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center rounded-md sm:rounded-lg ${
               disabled ? 'text-slate-400 bg-slate-100' : isTool ? 'text-violet-600 bg-violet-100' : 'text-blue-600 bg-blue-50'
             }`}>
               {icon}
@@ -96,12 +96,12 @@ export default function StepCard({
                 TOOL
               </p>
             )}
-            <h3 className={`text-base font-semibold leading-snug ${
+            <h3 className={`text-xs sm:text-base font-semibold leading-snug ${
               disabled ? 'text-slate-600' : 'text-slate-900'
             }`}>{title}</h3>
           </div>
         </div>
-        <div className="flex flex-col gap-2 flex-shrink-0">
+        <div className="hidden sm:flex flex-col gap-2 flex-shrink-0">
           {completed ? (
             <span className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
               disabled
@@ -120,13 +120,13 @@ export default function StepCard({
       </div>
 
       {/* Description - grows to fill available space */}
-      <p className={`text-sm mb-4 flex-grow ${
+      <p className={`hidden sm:block text-sm mb-4 flex-grow ${
         disabled ? 'text-slate-500' : 'text-slate-600'
       }`}>{description}</p>
 
-      {/* Checkbox - only shown on steps that support completion */}
+      {/* Checkbox - only shown on steps that support completion, hidden on mobile */}
       {onComplete && (
-        <div className="flex-shrink-0">
+        <div className="hidden sm:block flex-shrink-0">
           <label
             className={`inline-flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150 ${
               disabled

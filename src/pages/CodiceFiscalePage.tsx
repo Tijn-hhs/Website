@@ -83,13 +83,52 @@ function TabNavigation({
   onSelect: (id: string) => void
   isMerged?: boolean
 }) {
+  const [open, setOpen] = useState(false)
+  const activeSection = PAGE_SECTIONS.find(s => s.id === activeId)
+  const ActiveIcon = activeSection?.icon
   return (
-    <nav
-      className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide"
-      style={{ visibility: isMerged ? 'hidden' : 'visible', transition: 'visibility 0ms' }}
-    >
-      <TabBarButtons activeId={activeId} onSelect={onSelect} />
-    </nav>
+    <div style={{ visibility: isMerged ? 'hidden' : 'visible', transition: 'visibility 0ms' }}>
+      {/* Mobile: custom dropdown */}
+      <div className="sm:hidden relative">
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+        >
+          <div className="flex items-center gap-2.5">
+            {ActiveIcon && <ActiveIcon size={15} className="text-blue-600 flex-shrink-0" />}
+            <span className="text-sm font-semibold text-slate-800">{activeSection?.label}</span>
+          </div>
+          <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {open && (
+          <>
+            <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+            <div className="absolute top-full left-0 right-0 mt-1.5 z-30 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+              {PAGE_SECTIONS.map(({ id, label, icon: Icon }) => {
+                const isActive = id === activeId
+                return (
+                  <button
+                    key={id}
+                    onClick={() => { onSelect(id); setOpen(false) }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-b border-slate-100 last:border-b-0 ${
+                      isActive ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Icon size={15} className={isActive ? 'text-white/70' : 'text-slate-400'} />
+                    {label}
+                    {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/70" />}
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
+      {/* Desktop: scrollable button row */}
+      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
+        <TabBarButtons activeId={activeId} onSelect={onSelect} />
+      </nav>
+    </div>
   )
 }
 

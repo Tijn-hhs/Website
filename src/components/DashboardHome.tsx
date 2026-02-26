@@ -888,13 +888,13 @@ export default function DashboardHome() {
           <span className="text-sm text-slate-500">{numberedPlan.length || numberedSteps.length} steps total</span>
         </div>
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="h-36 rounded-2xl border border-slate-200 bg-white/60 animate-pulse" />
+              <div key={i} className="h-20 sm:h-36 rounded-xl sm:rounded-2xl border border-slate-200 bg-white/60 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {(numberedPlan.length ? numberedPlan : numberedSteps.map(title => ({
               moduleId: stepKeys[title], label: title, icon: undefined,
               description: stepDescriptions[title], stepNumber: numberedSteps.indexOf(title) + 1, route: stepRoutes[title]
@@ -925,13 +925,13 @@ export default function DashboardHome() {
       <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
         <h2 className="text-xl font-semibold text-slate-900">Tools</h2>
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-36 rounded-2xl border border-slate-200 bg-white/60 animate-pulse" />
+              <div key={i} className="h-20 sm:h-36 rounded-xl sm:rounded-2xl border border-slate-200 bg-white/60 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {(toolsPlan.length ? toolsPlan : extraInformationSteps.map(title => ({
               moduleId: stepKeys[title], label: title, icon: undefined,
               description: stepDescriptions[title], stepNumber: undefined, route: stepRoutes[title]

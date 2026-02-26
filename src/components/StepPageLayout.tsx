@@ -292,9 +292,10 @@ export default function StepPageLayout({
           )}
         </div>
 
-        {/* Merged Tab Bar row — slides in below action row when isTabMerged */}
+        {/* Merged Tab Bar row — slides in below action row when isTabMerged (desktop only) */}
         {mergedTabBar && (
           <div
+            className="hidden sm:block"
             style={{
               maxHeight: isTabMerged ? '56px' : '0px',
               opacity: isTabMerged ? 1 : 0,
