@@ -227,7 +227,7 @@ export default function Sidebar() {
             aria-label="Go to dashboard"
             className="inline-flex flex-shrink-0 transition-opacity duration-75 ease-in-out"
           >
-            <img src={logo} alt="Leavs Logo" className="w-24 h-auto" />
+            <img src={logo} alt="Leavs Logo" className="w-24 h-auto" fetchPriority="high" width={96} height={26} />
           </Link>
         )}
 

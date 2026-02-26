@@ -43,6 +43,9 @@ export default function Header() {
               src={logo}
               alt="Leavs"
               className="h-9 w-auto"
+              fetchPriority="high"
+              width={144}
+              height={39}
             />
           </Link>
         </div>
