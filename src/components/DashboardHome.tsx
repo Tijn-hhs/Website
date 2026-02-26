@@ -906,7 +906,7 @@ export default function DashboardHome() {
               return (
                 <div key={m.moduleId} className="animate-fade-in-up" style={{ animationDelay: `${index * 40}ms` }}>
                   <StepCard
-                    stepNumber={m.stepNumber ?? (index + 1)}
+                    stepNumber={index + 1}
                     title={m.label}
                     description={m.description ?? ''}
                     highlighted={index === firstIncompleteIndex}
