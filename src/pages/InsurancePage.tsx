@@ -407,31 +407,13 @@ export default function InsurancePage() {
               </div>
             </SectionCard>
 
-            {/* Emergency info card */}
-            <div className="col-span-full rounded-xl border border-red-200 bg-red-50 p-5">
-              <div className="flex items-start gap-3">
-                <Phone size={18} className="mt-0.5 flex-shrink-0 text-red-500" />
-                <div>
-                  <p className="text-sm font-semibold text-red-800">Emergency numbers — save these now</p>
-                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {[
-                      { label: '118', desc: 'Medical emergency (ambulanza)' },
-                      { label: '112', desc: 'European emergency (all services)' },
-                      { label: '115', desc: 'Fire brigade (vigili del fuoco)' },
-                      { label: '113', desc: 'Police (polizia di stato)' },
-                    ].map(e => (
-                      <div key={e.label} className="rounded-lg border border-red-200 bg-white px-3 py-2 text-center">
-                        <p className="text-lg font-bold text-red-700">{e.label}</p>
-                        <p className="mt-0.5 text-xs text-slate-500">{e.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs text-red-700">
-                    Pronto soccorso (A&amp;E) is <strong>always free</strong>, regardless of insurance status.
-                    For non-urgent care, ask for a guardia medica (out-of-hours GP) or walk-in clinic.
-                  </p>
-                </div>
-              </div>
+            {/* Cross-reference to Healthcare step */}
+            <div className="col-span-full flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <Info size={16} className="mt-0.5 flex-shrink-0 text-slate-400" />
+              <p className="text-sm text-slate-600">
+                Once insured, head to the <strong>Healthcare step</strong> for practical guidance on emergency numbers,
+                registering with a GP, pharmacies, hospitals, and mental health support in Milan.
+              </p>
             </div>
           </>
         )}
@@ -856,11 +838,7 @@ export default function InsurancePage() {
               {[
                 'Apply for your EHIC card 3–4 weeks before departure — it can take time to arrive (EU/EEA students).',
                 'The Bocconi International Office can advise on recommended insurance providers and whether your existing policy satisfies visa requirements.',
-                'Once you have your EHIC or SSN enrollment, register with a medico di base (GP) immediately. You need them to get referrals for any specialist care.',
-                'Pronto soccorso (A&E) is always free for genuine emergencies. For minor issues, use a guardia medica (out-of-hours GP) or a walk-in clinic (poliambulatorio) to avoid a long wait at A&E.',
                 'The Tessera Sanitaria (health card) doubles as your Codice Fiscale card — carry it with you everywhere.',
-                'Pharmacies (farmacie) in Italy are excellent first-stop resources. Pharmacists are highly trained and can advise on minor ailments and sell many medicines over-the-counter.',
-                'Look for the green cross ✚ sign to find a pharmacy. Each zone has a farmacia di turno (duty pharmacy) open at night — posted on the door of any pharmacy.',
                 'Top up or check SSN for dental referrals before having any procedure — dental work is expensive in Milan without coverage.',
                 "If you have a chronic condition or disability, inform Bocconi's Equal Opportunities Office — they coordinate with healthcare providers for additional support.",
                 'Renew your SSN enrollment and private insurance before expiry — gaps in coverage can cause complications when renewing your permesso di soggiorno.',
