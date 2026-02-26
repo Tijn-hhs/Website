@@ -3,6 +3,7 @@ import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import { fetchMe } from '../lib/api'
 import { usePageSections } from '../lib/PageSectionsContext'
@@ -207,6 +208,7 @@ function StepItem({ number, title, detail }: { number: number; title: string; de
 
 export default function InsurancePage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('insurance')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(9, 10)
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
   const [isEuCitizen, setIsEuCitizen]         = useState<boolean | null>(null)
   const [activeSection, setActiveSection]     = useState('overview')
@@ -284,9 +286,9 @@ export default function InsurancePage() {
       )}
       <FeedbackWidget />
       <StepPageLayout
-        stepNumber={9}
-        totalSteps={13}
-        stepLabel="STEP 9"
+        stepNumber={stepNumber}
+        totalSteps={totalSteps}
+        stepLabel={`STEP ${stepNumber}`}
         title="Insurance"
         subtitle="Everything you need to stay protected in Milan — health, housing, and beyond."
         useGradientBar={true}

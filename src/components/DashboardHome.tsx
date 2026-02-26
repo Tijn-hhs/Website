@@ -598,6 +598,8 @@ export default function DashboardHome() {
         } catch { /* leave empty — renders hardcoded fallback below */ }
       }
       setDashboardPlan(plan)
+      // Cache plan items so individual step pages can compute their dynamic number/total
+      try { localStorage.setItem('dashboardPlanItems', JSON.stringify(plan)) } catch { /* quota */ }
     } catch (error) {
       console.error('Error loading progress:', error)
     } finally {

@@ -4,6 +4,7 @@ import StepPageLayout from '../components/StepPageLayout'
 import FindYourNeighborhood from '../components/FindYourNeighborhood'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { fetchMe } from '../lib/api'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import type { UserProfile } from '../types/user'
@@ -12,6 +13,7 @@ const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:housing'
 
 export default function HousingPage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('housing')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(7, 10)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
@@ -78,9 +80,9 @@ export default function HousingPage() {
       )}
       <FeedbackWidget />
         <StepPageLayout
-        stepNumber={7}
-        totalSteps={13}
-        stepLabel="STEP 7"
+        stepNumber={stepNumber}
+        totalSteps={totalSteps}
+        stepLabel={`STEP ${stepNumber}`}
         title="Find your apartment"
         subtitle="Discover the perfect neighborhood and secure a place to live."
         useGradientBar={true}

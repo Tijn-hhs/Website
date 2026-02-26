@@ -3,6 +3,7 @@ import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import { fetchMe } from '../lib/api'
 import { usePageSections } from '../lib/PageSectionsContext'
@@ -489,6 +490,7 @@ const VISA_DOCUMENTS = [
 
 export default function StudentVisaPage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('student-visa')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(3, 10)
   const [isEuCitizen, setIsEuCitizen] = useState(false)
   const [nationality, setNationality] = useState<string | null>(null)
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
@@ -584,9 +586,9 @@ export default function StudentVisaPage() {
         )}
         <FeedbackWidget />
           <StepPageLayout
-            stepNumber={3}
-            totalSteps={10}
-            stepLabel="STEP 3"
+            stepNumber={stepNumber}
+            totalSteps={totalSteps}
+            stepLabel={`STEP ${stepNumber}`}
             title="Student Visa"
             subtitle="Prepare, apply, and track your student visa."
             checklistItems={checklistItems}
@@ -623,9 +625,9 @@ export default function StudentVisaPage() {
       )}
       <FeedbackWidget />
         <StepPageLayout
-          stepNumber={3}
-          totalSteps={10}
-          stepLabel="STEP 3"
+          stepNumber={stepNumber}
+          totalSteps={totalSteps}
+          stepLabel={`STEP ${stepNumber}`}
           title="Student Visa"
           subtitle={
             <span>

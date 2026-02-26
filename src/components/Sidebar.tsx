@@ -82,6 +82,7 @@ export default function Sidebar() {
             const plan: DashboardPlanItem[] = JSON.parse(data.profile.dashboardPlan)
             const routes = plan.map((m) => m.route).filter(Boolean) as string[]
             localStorage.setItem('dashboardPlanRoutes', JSON.stringify(routes))
+            localStorage.setItem('dashboardPlanItems', JSON.stringify(plan))
             setPlanRoutes(new Set(routes))
           } catch {
             // Keep whatever cached value we already have
@@ -100,6 +101,7 @@ export default function Sidebar() {
     try {
       await signOut()
       localStorage.removeItem('dashboardPlanRoutes')
+      localStorage.removeItem('dashboardPlanItems')
       window.location.href = '/'
     } catch (error) {
       console.error('Sign out error:', error)

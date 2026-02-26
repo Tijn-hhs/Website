@@ -42,10 +42,10 @@ export default function Header() {
               // Vite-imported asset avoids production path issues on AWS.
               src={logo}
               alt="Leavs"
-              className="h-9 w-auto"
+              className="h-7 sm:h-8 w-auto"
               fetchPriority="high"
-              width={144}
-              height={39}
+              width={128}
+              height={35}
             />
           </Link>
         </div>

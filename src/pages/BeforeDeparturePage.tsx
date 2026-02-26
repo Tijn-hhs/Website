@@ -3,6 +3,7 @@ import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import { fetchMe, saveProfile } from '../lib/api'
 import { usePageSections } from '../lib/PageSectionsContext'
@@ -456,6 +457,7 @@ function DepartureOnboarding({
 
 export default function BeforeDeparturePage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('before-departure')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(5, 10)
 
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
   const [docChecklist, setDocChecklist] = useState<Record<string, boolean>>({})
@@ -650,9 +652,9 @@ export default function BeforeDeparturePage() {
 
       <FeedbackWidget />
         <StepPageLayout
-          stepNumber={4}
-          totalSteps={13}
-          stepLabel="STEP 4"
+          stepNumber={stepNumber}
+          totalSteps={totalSteps}
+          stepLabel={`STEP ${stepNumber}`}
           title="Before Departure"
           subtitle="Documents, airport transport & everything to sort before you fly."
           useGradientBar={true}

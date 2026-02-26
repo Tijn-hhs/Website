@@ -3,6 +3,7 @@ import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import { fetchMe } from '../lib/api'
 import { usePageSections } from '../lib/PageSectionsContext'
@@ -207,6 +208,7 @@ function DocItem({
 
 export default function ImmigrationRegistrationPage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('immigration-registration')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(6, 10)
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
   const [docChecklist, setDocChecklist] = useState<Record<string, boolean>>({})
   const [activeSection, setActiveSection] = useState('overview')
@@ -336,9 +338,9 @@ export default function ImmigrationRegistrationPage() {
       )}
       <FeedbackWidget />
         <StepPageLayout
-          stepNumber={5}
-          totalSteps={13}
-          stepLabel="STEP 5"
+          stepNumber={stepNumber}
+          totalSteps={totalSteps}
+          stepLabel={`STEP ${stepNumber}`}
           title="Residence Permit"
           subtitle="Legalise your stay in Italy — required for non-EU citizens within 8 working days of arrival."
           useGradientBar={true}

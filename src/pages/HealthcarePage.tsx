@@ -3,12 +3,14 @@ import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 
 const CHECKLIST_STORAGE_KEY = 'dashboard-checklist:healthcare'
 
 export default function HealthcarePage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('healthcare')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(10, 10)
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
 
   // Load checklist state from localStorage
@@ -57,9 +59,9 @@ export default function HealthcarePage() {
       )}
       <FeedbackWidget />
       <StepPageLayout
-        stepNumber={10}
-        totalSteps={13}
-        stepLabel="STEP 9"
+        stepNumber={stepNumber}
+        totalSteps={totalSteps}
+        stepLabel={`STEP ${stepNumber}`}
         title="Healthcare"
         subtitle="Understand healthcare access, providers, and student coverage."
         useGradientBar={true}

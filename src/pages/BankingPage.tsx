@@ -3,6 +3,7 @@ import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import { usePageSections } from '../lib/PageSectionsContext'
 import {
@@ -216,6 +217,7 @@ function TipRow({ text }: { text: string }) {
 
 export default function BankingPage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('banking')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(8, 10)
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
   const [activeSection, setActiveSection] = useState('overview')
   const { setSections, clearSections } = usePageSections()
@@ -300,9 +302,9 @@ export default function BankingPage() {
       )}
       <FeedbackWidget />
         <StepPageLayout
-          stepNumber={8}
-          totalSteps={13}
-          stepLabel="STEP 8"
+          stepNumber={stepNumber}
+          totalSteps={totalSteps}
+          stepLabel={`STEP ${stepNumber}`}
           title="Banking"
           subtitle="Set up bank accounts and manage financial essentials."
           useGradientBar={true}

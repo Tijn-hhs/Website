@@ -3,6 +3,7 @@ import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import { fetchMe } from '../lib/api'
 import { usePageSections } from '../lib/PageSectionsContext'
@@ -213,6 +214,7 @@ function ChecklistItem({
 
 export default function FundingScholarshipPage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('funding-scholarships')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(2, 10)
   const [activeSection, setActiveSection] = useState('overview')
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
   const [programLevel, setProgramLevel] = useState<'bachelor' | 'master'>('master')
@@ -294,9 +296,9 @@ export default function FundingScholarshipPage() {
       )}
       <FeedbackWidget />
         <StepPageLayout
-          stepNumber={2}
-          totalSteps={9}
-          stepLabel="STEP 2"
+          stepNumber={stepNumber}
+          totalSteps={totalSteps}
+          stepLabel={`STEP ${stepNumber}`}
           title="Funding & Scholarships"
           subtitle={
             <span>

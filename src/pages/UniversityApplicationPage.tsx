@@ -3,6 +3,7 @@ import FeedbackWidget from '../components/FeedbackWidget'
 import StepPageLayout from '../components/StepPageLayout'
 import StepIntroModal from '../components/StepIntroModal'
 import { useStepIntro } from '../hooks/useStepIntro'
+import { useDashboardStepPosition } from '../hooks/useDashboardStepPosition'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import { getUniversityConfig, type UniversityConfig, type ApplicationRound, type DocTips } from '../lib/universityConfig'
 import { fetchMe, saveProfile } from '../lib/api'
@@ -462,6 +463,7 @@ function GmatScoreCard({ gmatScore }: { gmatScore: string }) {
 
 export default function UniversityApplicationPage() {
   const { showModal, handleConfirm, handleBack } = useStepIntro('university-application')
+  const { stepNumber, totalSteps } = useDashboardStepPosition(1, 10)
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({})
   const [programLevel, setProgramLevel] = useState<'bachelor' | 'master'>('master')
   const [activeSection, setActiveSection] = useState('overview')
@@ -633,9 +635,9 @@ export default function UniversityApplicationPage() {
       )}
       <FeedbackWidget />
         <StepPageLayout
-          stepNumber={1}
-          totalSteps={8}
-          stepLabel="STEP 1"
+          stepNumber={stepNumber}
+          totalSteps={totalSteps}
+          stepLabel={`STEP ${stepNumber}`}
           title="University Application"
           subtitle={
             <span>
