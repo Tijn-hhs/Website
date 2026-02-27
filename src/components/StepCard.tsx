@@ -43,7 +43,7 @@ export default function StepCard({
 
   return (
     <article
-      className={`rounded-xl sm:rounded-2xl border bg-white p-3 sm:p-6 shadow-sm transition-shadow duration-200 ${
+      className={`rounded-xl sm:rounded-2xl border bg-[#F9F8FF] p-3 sm:p-6 shadow-sm transition-shadow duration-200 ${
         disabled ? 'opacity-60' : 'hover:shadow-md'
       } h-full flex flex-col ${statusStyles} ${
         isClickable ? 'cursor-pointer' : 'cursor-not-allowed'
@@ -78,7 +78,7 @@ export default function StepCard({
         <div className="flex items-start gap-2 sm:gap-3">
           {icon && (
             <div className={`flex-shrink-0 w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center rounded-md sm:rounded-lg ${
-              disabled ? 'text-slate-400 bg-slate-100' : isTool ? 'text-[#8870FF] bg-[#D9D3FB]' : 'text-[#FF5402] bg-[#D9D3FB]/50'
+              disabled ? 'text-slate-400 bg-slate-100' : isTool ? 'text-[#8870FF] bg-[#D9D3FB]' : 'text-[#8870FF] bg-[#D9D3FB]/50'
             }`}>
               {icon}
             </div>
@@ -86,7 +86,7 @@ export default function StepCard({
           <div>
             {showStepNumber && (
               <p className={`text-xs font-semibold tracking-widest mb-1 ${
-                disabled ? 'text-slate-400' : 'text-[#FF5402]'
+                disabled ? 'text-slate-400' : 'text-[#8870FF]'
               }`}>
                 STEP {stepNumber}
               </p>
@@ -145,10 +145,10 @@ export default function StepCard({
               }}
               onClick={(event) => event.stopPropagation()}
               disabled={disabled}
-              className={`w-5 h-5 rounded-md border-2 transition-all duration-150 accent-[#FF5402] ${
+              className={`w-5 h-5 rounded-md border-2 transition-all duration-150 accent-[#8870FF] ${
                 disabled
                   ? 'border-slate-300 bg-slate-100 cursor-not-allowed'
-                  : 'border-slate-300 text-[#FF5402] bg-white cursor-pointer hover:border-[#FF5402] focus:ring-2 focus:ring-[#FF5402] focus:ring-offset-1'
+                  : 'border-slate-300 text-[#8870FF] bg-[#F9F8FF] cursor-pointer hover:border-[#8870FF] focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-1'
               }`}
             />
             <span className={disabled ? 'text-slate-400' : 'group-hover:text-slate-900'}>Mark as done</span>

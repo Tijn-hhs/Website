@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import heroMock from '../assets/Hero_mock.png'
+
 import Header from '../components/Header'
 import LandingSections from '../components/LandingSections'
 import { isSignedIn } from '../lib/auth'
@@ -24,51 +24,48 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="bg-slate-50">
+    <div className="bg-[#F5F1E4]">
       <Header />
       
-      {/* Hero Section */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-b from-slate-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left Content */}
-            <div className="flex flex-col justify-center space-y-6">
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase">
+      {/* Hero Section — full viewport height so everything is visible on load */}
+      <section className="bg-[#F5F1E4] h-[calc(100vh-72px)] min-h-[560px]">
+        <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+          <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-8">
+            {/* Left Content — lavender card */}
+            <div className="bg-[#D9D3FB] rounded-3xl p-7 sm:p-10 flex flex-col justify-between shadow-sm">
+              <div className="space-y-4">
+                <p className="text-xs font-bold text-[#8870FF] tracking-widest uppercase">
                   Welcome to Leavs
                 </p>
-                <h1 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-slate-900 leading-tight">
+                <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 leading-[1.1]">
                   Your international student journey, simplified.
                 </h1>
-              </div>
-              
-              <p className="text-lg text-slate-600 leading-relaxed max-w-lg">
-                From choosing the right university to settling into your new city Leavs guides you through every step of your relocation.
-              </p>
-
-              {/* Free for students badge */}
-              <div className="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-200 rounded-full">
-                <span className="text-sm font-medium text-blue-700">Free for students</span>
+                <p className="text-base text-slate-700 leading-relaxed max-w-md">
+                  From visa to housing to banking — Leavs gives you a personalised step-by-step plan for moving to your new city.
+                </p>
               </div>
 
-              {/* CTA Button */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <button
-                  onClick={handleGetStarted}
-                  disabled={isLoading}
-                  className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-800 hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? 'Loading...' : 'Get Started'}
-                </button>
+              <div className="space-y-3 mt-6">
+                <div className="flex flex-row gap-4 items-center">
+                  <button
+                    onClick={handleGetStarted}
+                    disabled={isLoading}
+                    className="inline-flex items-center justify-center px-7 py-3.5 bg-[#FF5402] text-white font-semibold rounded-xl shadow-lg hover:bg-[#e64a00] hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#FF5402] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed text-base"
+                  >
+                    {isLoading ? 'Loading...' : 'Get Started →'}
+                  </button>
+                  <span className="text-sm text-slate-600 font-medium">Free for students</span>
+                </div>
+                <p className="text-xs text-slate-500">Helping international students move to Milan, Italy</p>
               </div>
             </div>
 
-            {/* Right Image */}
-            <div className="flex justify-center lg:justify-end">
+            {/* Right Image — fills remaining height, cropped below sky */}
+            <div className="rounded-3xl overflow-hidden shadow-xl hidden lg:block">
               <img
-                src={heroMock}
-                alt="International students in a modern city"
-                className="w-full h-auto"
+                src="/assets/new-hompage.jpg"
+                alt="Milan Duomo cathedral"
+                className="w-full h-full object-cover object-[50%_65%]"
               />
             </div>
           </div>

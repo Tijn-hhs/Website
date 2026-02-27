@@ -1,31 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
-  const location = useLocation()
-
-  // Mirror the sidebar collapsed state so the footer never slides under the sidebar
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    const saved = localStorage.getItem('sidebarCollapsed')
-    return saved ? JSON.parse(saved) : false
-  })
-
-  useEffect(() => {
-    const sync = () => {
-      const saved = localStorage.getItem('sidebarCollapsed')
-      setIsCollapsed(saved ? JSON.parse(saved) : false)
-    }
-    window.addEventListener('storage', sync)
-    const interval = setInterval(sync, 100)
-    return () => {
-      window.removeEventListener('storage', sync)
-      clearInterval(interval)
-    }
-  }, [])
-
-  // Only offset the footer when the sidebar is visible (dashboard / my-situation pages)
-  const hasSidebar = location.pathname.startsWith('/dashboard') || location.pathname === '/my-situation'
 
   const productLinks = [
     { label: 'How it works', to: '/' },
@@ -42,9 +18,7 @@ export default function Footer() {
 
   return (
     <footer
-      className={`bg-white border-t border-slate-200 mt-auto transition-all duration-75 ease-in-out ${
-        hasSidebar ? (isCollapsed ? 'md:ml-[88px]' : 'md:ml-[280px]') : ''
-      }`}
+      className="bg-[#1E1152] border-t border-[#8870FF]/30 mt-auto"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         {/* Main Footer Content */}
@@ -53,19 +27,19 @@ export default function Footer() {
           <div className="space-y-3">
             <Link
               to="/"
-              className="inline-block text-2xl font-bold text-slate-900 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              className="inline-block text-2xl font-bold text-white hover:text-[#D9D3FB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-2 focus:ring-offset-[#1E1152] rounded"
             >
               Leavs
             </Link>
-            <p className="text-sm text-slate-600 leading-relaxed max-w-xs">
+            <p className="text-sm text-[#D9D3FB]/80 leading-relaxed max-w-xs">
               Your international student journey, simplified.
             </p>
-            <p className="text-xs text-blue-700 font-medium">Free for students.</p>
+            <p className="text-xs text-[#FF5402] font-medium">Free for students.</p>
           </div>
 
           {/* Middle Block - Product Links */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-[#D9D3FB] uppercase tracking-wider mb-4">
               Product
             </h3>
             <ul className="space-y-3">
@@ -74,14 +48,14 @@ export default function Footer() {
                   {link.href ? (
                     <a
                       href={link.href}
-                      className="text-slate-600 hover:text-blue-700 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded inline-block"
+                      className="text-[#D9D3FB]/70 hover:text-white hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-1 rounded inline-block"
                     >
                       {link.label}
                     </a>
                   ) : (
                     <Link
                       to={link.to!}
-                      className="text-slate-600 hover:text-blue-700 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded inline-block"
+                      className="text-[#D9D3FB]/70 hover:text-white hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-1 rounded inline-block"
                     >
                       {link.label}
                     </Link>
@@ -93,7 +67,7 @@ export default function Footer() {
 
           {/* Right Block - Company Links */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-[#D9D3FB] uppercase tracking-wider mb-4">
               Company
             </h3>
             <ul className="space-y-3">
@@ -102,14 +76,14 @@ export default function Footer() {
                   {link.href ? (
                     <a
                       href={link.href}
-                      className="text-slate-600 hover:text-blue-700 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded inline-block"
+                      className="text-[#D9D3FB]/70 hover:text-white hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-1 rounded inline-block"
                     >
                       {link.label}
                     </a>
                   ) : (
                     <Link
                       to={link.to!}
-                      className="text-slate-600 hover:text-blue-700 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded inline-block"
+                      className="text-[#D9D3FB]/70 hover:text-white hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-1 rounded inline-block"
                     >
                       {link.label}
                     </Link>
@@ -121,8 +95,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom Row - Copyright */}
-        <div className="pt-8 border-t border-slate-200">
-          <p className="text-sm text-slate-500 text-center">
+        <div className="pt-8 border-t border-[#8870FF]/30">
+          <p className="text-sm text-[#D9D3FB]/50 text-center">
             © {currentYear} Leavs. All rights reserved.
           </p>
         </div>

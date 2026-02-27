@@ -252,7 +252,7 @@ export default function Sidebar() {
       <div className="px-2 pb-2">
         <button
           onClick={openSearch}
-          className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 focus:ring-[#8870FF] text-slate-500 hover:text-slate-800 bg-white/70 hover:bg-white border border-slate-200/80 shadow-sm ${
+          className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 focus:ring-[#8870FF] text-slate-500 hover:text-slate-800 bg-[#F9F8FF] hover:bg-[#F0EDFF] border border-[#D9D3FB]/60 shadow-sm ${
             isCollapsed ? 'px-0 justify-center' : 'px-3 gap-2'
           }`}
           aria-label="Search (⌘K)"
@@ -292,7 +292,7 @@ export default function Sidebar() {
                 ? 'text-slate-300 cursor-not-allowed opacity-60'
                 : isActive
                   ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold border-[#8870FF] shadow-sm focus:ring-[#8870FF]'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-[#F0EDFF]/60 focus:ring-[#D9D3FB]'
             }`
 
             return (
@@ -336,7 +336,7 @@ export default function Sidebar() {
                       <li key={section.id}>
                         <a
                           href={`#${section.id}`}
-                          className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-slate-400 hover:text-slate-700 hover:bg-white/70 transition-colors"
+                          className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-slate-400 hover:text-slate-700 hover:bg-[#F0EDFF]/60 transition-colors"
                         >
                           <span className="h-1 w-1 flex-shrink-0 rounded-full bg-slate-300" />
                           {section.label}
@@ -365,7 +365,7 @@ export default function Sidebar() {
             } ${
               isActive
                 ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold border-[#8870FF] shadow-sm focus:ring-[#8870FF]'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-[#F0EDFF]/60 focus:ring-[#D9D3FB]'
             }`
 
             return (
@@ -390,7 +390,7 @@ export default function Sidebar() {
             )
           })}
 
-          {/* Blog Section Header */
+          {/* Blog Section Header */}
           {!isCollapsed && (
             <li className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wide mt-6">
               Blog
@@ -406,7 +406,7 @@ export default function Sidebar() {
             } ${
               isActive
                 ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold border-[#8870FF] shadow-sm focus:ring-[#8870FF]'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-[#F0EDFF]/60 focus:ring-[#D9D3FB]'
             }`
 
             return (
@@ -443,7 +443,7 @@ export default function Sidebar() {
           } ${
             isMySituationActive
               ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold focus:ring-[#8870FF]'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-[#F0EDFF]/60 focus:ring-[#D9D3FB]'
           }`}
           aria-label="My Situation"
           aria-current={isMySituationActive ? 'page' : undefined}
@@ -471,7 +471,7 @@ export default function Sidebar() {
           } ${
             isHomeActive
               ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold focus:ring-[#8870FF]'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-[#F0EDFF]/60 focus:ring-[#D9D3FB]'
           }`}
           aria-label="Home"
           aria-current={isHomeActive ? 'page' : undefined}

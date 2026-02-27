@@ -288,12 +288,12 @@ function ProgramTimeline({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-[#F9F8FF] shadow-sm">
       {/* Header */}
-      <div className="px-4 md:px-6 py-4 md:py-5 bg-[#FF5402] flex flex-wrap items-start justify-between gap-y-2 rounded-t-2xl">
+      <div className="px-4 md:px-5 py-3 bg-[#8870FF] flex flex-wrap items-center justify-between gap-y-1.5 rounded-t-2xl">
         <div>
-          <h2 className="text-lg font-semibold text-white">Journey Timeline</h2>
-          <p className="mt-0.5 text-sm text-blue-200">
+          <h2 className="text-sm font-semibold text-white">Journey Timeline</h2>
+          <p className="mt-0 text-xs text-[#D9D3FB]/80">
             {daysToStart > 0
               ? `${daysToStart} days until program start`
               : daysToStart === 0
@@ -301,15 +301,15 @@ function ProgramTimeline({
               : '✈️ You have arrived!'}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-[#D9D3FB] bg-white/10 rounded-full px-3 py-1">
+        <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-medium text-[#D9D3FB] bg-white/10 rounded-full px-2.5 py-0.5">
             {confirmedCount} / {totalMilestoneCount} milestones set
           </span>
           <button
             onClick={onAddDeadline}
-            className="flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 text-sm font-medium text-white"
+            className="flex items-center gap-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors px-3 py-1 text-xs font-medium text-white"
           >
-            <Plus size={14} />
+            <Plus size={12} />
             Add deadline
           </button>
         </div>
@@ -404,7 +404,7 @@ function ProgramTimeline({
                         ? 'bg-amber-50 border-amber-200'
                         : m.isMock
                         ? 'bg-slate-50 border-dashed border-slate-200'
-                        : 'bg-white border-slate-200'
+                        : '!bg-[#F9F8FF] border-slate-200'
                     }`}>
                       <p className={`text-[11px] leading-tight ${labelCls[style]}`}>{m.label}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">
@@ -691,7 +691,7 @@ export default function DashboardHome() {
       />
 
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col">
+        <div className="rounded-2xl border border-slate-200 bg-[#F9F8FF] p-6 shadow-sm flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -706,7 +706,7 @@ export default function DashboardHome() {
             </div>
             <button
               onClick={() => setIsDeadlineModalOpen(true)}
-              className="flex items-center gap-1 text-xs font-medium text-[#FF5402] hover:text-[#e64a00] transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-[#8870FF] hover:text-[#6a54e0] transition-colors"
             >
               <Plus size={13} /> Add
             </button>
@@ -744,7 +744,7 @@ export default function DashboardHome() {
                 return (
                   <div
                     key={d.deadlineId}
-                    className="group flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-3 hover:bg-white hover:shadow-sm transition-all"
+                    className="group flex items-start gap-3 rounded-xl border border-slate-100 bg-[#F0EDFF]/40 px-3.5 py-3 hover:bg-[#F9F8FF] hover:shadow-sm transition-all"
                   >
                     {/* Urgency dot */}
                     <div className="mt-1 flex-shrink-0">
@@ -789,7 +789,7 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-[#F9F8FF] p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900 mb-3">
             Your journey
           </h2>
@@ -832,7 +832,7 @@ export default function DashboardHome() {
                     <div
                       className={`flex-1 mb-2 rounded-xl px-3.5 py-2.5 ${
                         isCurrent
-                          ? 'bg-[#FF5402] shadow-md'
+                          ? 'bg-[#8870FF] shadow-md'
                           : 'bg-slate-50'
                       }`}
                     >

@@ -35,7 +35,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full px-4 pt-4">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between bg-gradient-to-b from-white via-slate-50 to-slate-50 shadow-lg border border-slate-200/70 rounded-xl">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between bg-[#F5F1E4] shadow-lg border border-[#D9D3FB]/60 rounded-xl">
         <div className="flex items-center">
           <Link to="/" aria-label="Go to homepage">
             <img
@@ -53,7 +53,7 @@ export default function Header() {
         <div className="flex items-center gap-1 sm:gap-2">
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#8870FF] hover:bg-[#D9D3FB]/40 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-1"
           >
             <svg
               className="w-4 h-4"
