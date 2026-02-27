@@ -21,7 +21,7 @@ export default function OnboardingStart() {
       title={step.title}
       subtitle="Loading your onboarding progress..."
     >
-      <div className="rounded-2xl border border-blue-100 bg-white/80 p-6 shadow-sm">
+      <div className="rounded-2xl border border-[#EDE9D8] bg-white p-6 shadow-sm">
         <p className="text-sm text-slate-600">Loading your draft...</p>
       </div>
     </OnboardingLayout>

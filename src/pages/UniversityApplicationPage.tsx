@@ -65,8 +65,8 @@ function TabBarButtons({
               compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
             } ${
               isActive
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                ? 'bg-[#8870FF] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-[#D9D3FB]/60 hover:text-slate-700'
             }`}
           >
             <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
@@ -100,7 +100,7 @@ function TabNavigation({
           className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
         >
           <div className="flex items-center gap-2.5">
-            {ActiveIcon && <ActiveIcon size={15} className="text-blue-600 flex-shrink-0" />}
+            {ActiveIcon && <ActiveIcon size={15} className="text-[#8870FF] flex-shrink-0" />}
             <span className="text-sm font-semibold text-slate-800">{activeSection?.label}</span>
           </div>
           <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -116,7 +116,7 @@ function TabNavigation({
                     key={id}
                     onClick={() => { onSelect(id); setOpen(false) }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-b border-slate-100 last:border-b-0 ${
-                      isActive ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                      isActive ? 'bg-[#8870FF] text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <Icon size={15} className={isActive ? 'text-white/70' : 'text-slate-400'} />
@@ -130,7 +130,7 @@ function TabNavigation({
         )}
       </div>
       {/* Desktop: scrollable button row */}
-      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
+      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-1.5 shadow-sm scrollbar-hide">
         <TabBarButtons activeId={activeId} onSelect={onSelect} />
       </nav>
     </div>
@@ -227,7 +227,7 @@ function DocChecklistItem({
             <p className="mt-0.5 text-xs text-slate-400">{notes}</p>
           )}
           {fromProfile && checked && (
-            <p className="mt-0.5 text-xs text-blue-500">Pre-filled from your profile</p>
+            <p className="mt-0.5 text-xs text-[#8870FF]">Pre-filled from your profile</p>
           )}
         </div>
 
@@ -241,7 +241,7 @@ function DocChecklistItem({
           {tips && (
             <button
               onClick={() => setOpen((o) => !o)}
-              className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors"
+              className="inline-flex items-center gap-1 rounded-md border border-[#D9D3FB] bg-[#F0EDFF] px-2 py-1 text-xs font-medium text-[#8870FF] hover:bg-[#F0EDFF] transition-colors"
               aria-expanded={open}
             >
               <Lightbulb size={12} />
@@ -254,14 +254,14 @@ function DocChecklistItem({
 
       {/* Expandable tips */}
       {tips && open && (
-        <div className="border-t border-blue-100 bg-blue-50/40 px-4 pb-4 pt-3">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-blue-600">
+        <div className="border-t border-[#EDE9D8] bg-[#F0EDFF]/40 px-4 pb-4 pt-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8870FF]">
             {tips.heading}
           </p>
           <ul className="space-y-1.5">
             {tips.points.map((point, i) => (
               <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
-                <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                 {point}
               </li>
             ))}
@@ -283,7 +283,7 @@ function Badge({
   const styles: Record<string, string> = {
     required: 'bg-red-50 text-red-700 border-red-200',
     optional: 'bg-slate-100 text-slate-600 border-slate-200',
-    alternative: 'bg-blue-50 text-blue-700 border-blue-200',
+    alternative: 'bg-[#F0EDFF] text-[#6a54e0] border-[#D9D3FB]',
     tip: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     warning: 'bg-amber-50 text-amber-700 border-amber-200',
   }
@@ -347,7 +347,7 @@ function DeadlineRow({ round, isNext, isTarget }: { round: ApplicationRound; isN
         isTarget && !isPast
           ? 'border-emerald-300 bg-emerald-50 ring-2 ring-emerald-200'
           : isNext
-          ? 'border-blue-200 bg-blue-50'
+          ? 'border-[#D9D3FB] bg-[#F0EDFF]'
           : isPast
           ? 'border-slate-200 bg-slate-50 opacity-60'
           : 'border-slate-200 bg-white'
@@ -359,7 +359,7 @@ function DeadlineRow({ round, isNext, isTarget }: { round: ApplicationRound; isN
         ) : isTarget ? (
           <CheckCircle2 size={18} className="flex-shrink-0 text-emerald-500" />
         ) : isNext ? (
-          <Circle size={18} className="flex-shrink-0 text-blue-500" />
+          <Circle size={18} className="flex-shrink-0 text-[#8870FF]" />
         ) : (
           <Circle size={18} className="flex-shrink-0 text-slate-300" />
         )}
@@ -393,7 +393,7 @@ function DeadlineRow({ round, isNext, isTarget }: { round: ApplicationRound; isN
           </span>
         )}
         {!isPast && !isTarget && isNext && (
-          <span className="ml-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+          <span className="ml-1 rounded-full bg-[#F0EDFF] px-2.5 py-0.5 text-xs font-semibold text-[#6a54e0]">
             {daysLeft > 0 ? `${daysLeft}d left` : 'Today!'}
           </span>
         )}
@@ -412,7 +412,7 @@ type GmatTier = { label: string; barColor: string; badgeClass: string; note: str
 function getGmatTier(score: number, raw: string): GmatTier {
   if (isNaN(score)) return { label: raw, barColor: 'bg-slate-300', badgeClass: 'border-slate-200 bg-slate-50 text-slate-700', note: '' }
   if (score >= 750) return { label: 'Excellent', barColor: 'bg-emerald-500', badgeClass: 'border-emerald-200 bg-emerald-50 text-emerald-700', note: 'Puts you in the top applicant tier — very strong advantage.' }
-  if (score >= 700) return { label: 'Strong',    barColor: 'bg-blue-500',    badgeClass: 'border-blue-200 bg-blue-50 text-blue-700',       note: 'Well above the recommended minimum — a clear positive signal.' }
+  if (score >= 700) return { label: 'Strong',    barColor: 'bg-[#8870FF]',    badgeClass: 'border-[#D9D3FB] bg-[#F0EDFF] text-[#6a54e0]',       note: 'Well above the recommended minimum — a clear positive signal.' }
   if (score >= 650) return { label: 'Good',      barColor: 'bg-violet-400',  badgeClass: 'border-violet-200 bg-violet-50 text-violet-700',  note: 'Meets the recommended minimum. Consider retaking if GPA is average.' }
   if (score >= 600) return { label: 'Borderline',barColor: 'bg-amber-400',   badgeClass: 'border-amber-200 bg-amber-50 text-amber-700',    note: "Below Bocconi's recommended 650. A retake would strengthen your application." }
   return               { label: 'Below target', barColor: 'bg-red-400',     badgeClass: 'border-red-200 bg-red-50 text-red-700',          note: 'Significantly below the recommended minimum. A strong retake is advised.' }
@@ -453,7 +453,7 @@ function GmatScoreCard({ gmatScore }: { gmatScore: string }) {
       )}
       <p className="mt-1.5 text-xs text-slate-400">
         Update your score in{' '}
-        <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>.
+        <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>.
       </p>
     </div>
   )
@@ -654,7 +654,7 @@ export default function UniversityApplicationPage() {
                 {programLevel === 'bachelor' ? 'Bachelor of Science' : 'Master of Science'}
               </strong>
               {'. '}Update in{' '}
-              <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>.
+              <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>.
             </>
           }
           userInfoFields={[
@@ -738,7 +738,7 @@ export default function UniversityApplicationPage() {
                   <span className="text-sm text-slate-600">
                     Showing requirements for <strong className="text-slate-800">{specificProgram}</strong>
                   </span>
-                  <a href="/dashboard/my-situation" className="ml-auto text-xs text-blue-500 hover:underline">Edit</a>
+                  <a href="/dashboard/my-situation" className="ml-auto text-xs text-[#8870FF] hover:underline">Edit</a>
                 </div>
               )}
               {/* Bocconi test status card */}
@@ -747,20 +747,20 @@ export default function UniversityApplicationPage() {
                   bocconiTestStatus === 'done'
                     ? 'border-emerald-200 bg-emerald-50'
                     : bocconiTestStatus === 'scheduled'
-                    ? 'border-blue-200 bg-blue-50'
+                    ? 'border-[#D9D3FB] bg-[#F0EDFF]'
                     : 'border-amber-200 bg-amber-50'
                 }`}>
                   {bocconiTestStatus === 'done' ? (
                     <CheckCircle2 size={18} className="mt-0.5 flex-shrink-0 text-emerald-500" />
                   ) : bocconiTestStatus === 'scheduled' ? (
-                    <Info size={18} className="mt-0.5 flex-shrink-0 text-blue-500" />
+                    <Info size={18} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                   ) : (
                     <AlertTriangle size={18} className="mt-0.5 flex-shrink-0 text-amber-500" />
                   )}
                   <div className="flex-1">
                     <p className={`text-sm font-semibold ${
                       bocconiTestStatus === 'done' ? 'text-emerald-800'
-                      : bocconiTestStatus === 'scheduled' ? 'text-blue-800'
+                      : bocconiTestStatus === 'scheduled' ? 'text-[#5b3fd4]'
                       : 'text-amber-800'
                     }`}>
                       {bocconiTestStatus === 'done' && 'Bocconi Online Test — completed ✓'}
@@ -769,7 +769,7 @@ export default function UniversityApplicationPage() {
                     </p>
                     <p className={`mt-0.5 text-xs ${
                       bocconiTestStatus === 'done' ? 'text-emerald-700'
-                      : bocconiTestStatus === 'scheduled' ? 'text-blue-700'
+                      : bocconiTestStatus === 'scheduled' ? 'text-[#6a54e0]'
                       : 'text-amber-700'
                     }`}>
                       {bocconiTestStatus === 'done' && 'Great — this is one less thing to worry about. Keep your confirmation email safe.'}
@@ -819,7 +819,7 @@ export default function UniversityApplicationPage() {
                         href={t.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                        className="inline-flex items-center gap-1 text-[#8870FF] hover:underline"
                       >
                         More information <ExternalLink size={12} />
                       </a>
@@ -842,7 +842,7 @@ export default function UniversityApplicationPage() {
           {/* ── Language requirements ── */}
           {activeSection === 'language' && (
             <SectionCard title="Language requirements" icon={<Languages size={18} />}>
-              <div className="mb-3 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+              <div className="mb-3 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-sm text-[#5b3fd4]">
                 <Info size={16} className="mt-0.5 flex-shrink-0" />
                 <span>{config.languageRequirements.notes}</span>
               </div>
@@ -888,7 +888,7 @@ export default function UniversityApplicationPage() {
                 <p className="mb-4 text-sm text-slate-500">
                   Bocconi uses a competitive round-based system. Earlier rounds have more places available
                   and higher scholarship priority. You can only apply to one round at a time.
-                  {' '}<a href="/dashboard/my-situation" className="text-blue-500 hover:underline">Set your target round →</a>
+                  {' '}<a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">Set your target round →</a>
                 </p>
               )}
               <div className="space-y-3">
@@ -927,11 +927,11 @@ export default function UniversityApplicationPage() {
               <SectionCard title="Documents checklist" icon={<FileText size={18} />}>
                 {/* English-degree exemption banner */}
                 {englishExempt && prevDegreeLanguage === 'english' && (
-                  <div className="mb-4 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
-                    <Info size={16} className="mt-0.5 flex-shrink-0 text-blue-500" />
+                  <div className="mb-4 flex items-start gap-3 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3">
+                    <Info size={16} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                     <div>
-                      <p className="text-sm font-semibold text-blue-800">Possibly exempt from English proof</p>
-                      <p className="mt-0.5 text-xs text-blue-700">
+                      <p className="text-sm font-semibold text-[#5b3fd4]">Possibly exempt from English proof</p>
+                      <p className="mt-0.5 text-xs text-[#6a54e0]">
                         Your previous degree was in English — Bocconi may waive the language requirement. "Proof of English" has been pre-checked.
                         Confirm this with the{' '}
                         <a href="https://www.unibocconi.it/en/contact-us" target="_blank" rel="noopener noreferrer" className="underline">International Office</a>.
@@ -1058,7 +1058,7 @@ export default function UniversityApplicationPage() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-[#a594ff] hover:bg-[#F0EDFF] hover:text-[#6a54e0] transition-colors"
                   >
                     {link.label}
                     <ExternalLink size={14} className="flex-shrink-0 text-slate-400" />

@@ -61,8 +61,8 @@ function TabBarButtons({
               compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
             } ${
               isActive
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                ? 'bg-[#8870FF] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-[#D9D3FB]/60 hover:text-slate-700'
             }`}
           >
             <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
@@ -95,7 +95,7 @@ function TabNavigation({
           className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
         >
           <div className="flex items-center gap-2.5">
-            {ActiveIcon && <ActiveIcon size={15} className="text-blue-600 flex-shrink-0" />}
+            {ActiveIcon && <ActiveIcon size={15} className="text-[#8870FF] flex-shrink-0" />}
             <span className="text-sm font-semibold text-slate-800">{activeSection?.label}</span>
           </div>
           <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -111,7 +111,7 @@ function TabNavigation({
                     key={id}
                     onClick={() => { onSelect(id); setOpen(false) }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-b border-slate-100 last:border-b-0 ${
-                      isActive ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                      isActive ? 'bg-[#8870FF] text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <Icon size={15} className={isActive ? 'text-white/70' : 'text-slate-400'} />
@@ -125,7 +125,7 @@ function TabNavigation({
         )}
       </div>
       {/* Desktop: scrollable button row */}
-      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
+      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-1.5 shadow-sm scrollbar-hide">
         <TabBarButtons activeId={activeId} onSelect={onSelect} />
       </nav>
     </div>
@@ -182,7 +182,7 @@ function Badge({ label, variant }: { label: string; variant: 'required' | 'optio
     optional:    'bg-slate-100 text-slate-600 border-slate-200',
     recommended: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     warning:     'bg-amber-50 text-amber-700 border-amber-200',
-    eu:          'bg-blue-50 text-blue-700 border-blue-200',
+    eu:          'bg-[#F0EDFF] text-[#6a54e0] border-[#D9D3FB]',
     'non-eu':    'bg-violet-50 text-violet-700 border-violet-200',
   }
   return (
@@ -316,11 +316,11 @@ export default function InsurancePage() {
           <>
             {/* EU/Non-EU personalised banner */}
             {isEuCitizen === true && (
-              <div className="col-span-full flex items-start gap-4 rounded-xl border border-blue-300 bg-blue-50 p-5 shadow-sm">
-                <Shield size={24} className="mt-0.5 flex-shrink-0 text-blue-500" />
+              <div className="col-span-full flex items-start gap-4 rounded-xl border border-[#a594ff] bg-[#F0EDFF] p-5 shadow-sm">
+                <Shield size={24} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                 <div>
-                  <p className="text-base font-semibold text-blue-800">Good news — as an EU/EEA citizen your healthcare is simpler</p>
-                  <p className="mt-1 text-sm text-blue-700">
+                  <p className="text-base font-semibold text-[#5b3fd4]">Good news — as an EU/EEA citizen your healthcare is simpler</p>
+                  <p className="mt-1 text-sm text-[#6a54e0]">
                     Your European Health Insurance Card (EHIC / TEAM card) gives you free access to medically necessary care in Italy on the same terms as Italian residents. You can optionally also enroll in the Italian SSN for broader coverage. Start with the{' '}
                     <button className="underline font-medium" onClick={() => handleTabSelect('ssn')}>SSN tab</button>.
                   </p>
@@ -352,8 +352,8 @@ export default function InsurancePage() {
                 {[
                   {
                     title: 'Public health (SSN)',
-                    color: 'border-blue-200 bg-blue-50',
-                    badge: 'border-blue-300 bg-blue-100 text-blue-800',
+                    color: 'border-[#D9D3FB] bg-[#F0EDFF]',
+                    badge: 'border-[#a594ff] bg-[#F0EDFF] text-[#5b3fd4]',
                     desc: 'GP visits, specialist care, ER, prescriptions, maternity. EU students use EHIC; non-EU students can enroll by paying ~€150/year.',
                   },
                   {
@@ -446,7 +446,7 @@ export default function InsurancePage() {
                     { t: 'Keep the card on you when you arrive', d: 'Show it at pharmacies, clinics, and hospitals to access subsidised care.' },
                   ].map((s, i) => <StepItem key={i} number={i + 1} title={s.t} detail={s.d} />)}
                 </ol>
-                <div className="mt-3 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
+                <div className="mt-3 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-xs text-[#5b3fd4]">
                   <Info size={14} className="mt-0.5 flex-shrink-0" />
                   EU students can also voluntarily enroll in the SSN at the local ATS free of charge — this gives you a permanent Italian GP and Tessera Sanitaria, helpful for stays longer than 6 months.
                 </div>
@@ -529,7 +529,7 @@ export default function InsurancePage() {
                   href="https://www.ats-milano.it"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1.5 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                  className="mt-1.5 inline-flex items-center gap-1 text-xs text-[#8870FF] hover:underline"
                 >
                   ats-milano.it <ExternalLink size={11} />
                 </a>
@@ -563,7 +563,7 @@ export default function InsurancePage() {
                       <p className="mb-2">AON has group agreements with multiple Italian universities. Coverage includes emergency and planned hospitalisation, specialist visits, diagnostic tests, repatriation, and civil liability.</p>
                       <p className="mb-1"><span className="font-semibold text-slate-700">Typical cost:</span> €200–350/year</p>
                       <a href="https://www.aon.com/italy/studenti" target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                        className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-xs">
                         aon.com/italy/studenti <ExternalLink size={11} />
                       </a>
                     </>
@@ -577,7 +577,7 @@ export default function InsurancePage() {
                       <p className="mb-2">Flexible international student plans. Cover can include outpatient care, mental health, dental emergency, and optical. Plans are renewable annually and widely accepted by Italian embassies.</p>
                       <p className="mb-1"><span className="font-semibold text-slate-700">Typical cost:</span> €300–550/year depending on coverage tier</p>
                       <a href="https://www.allianzcare.com" target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                        className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-xs">
                         allianzcare.com <ExternalLink size={11} />
                       </a>
                     </>
@@ -591,7 +591,7 @@ export default function InsurancePage() {
                       <p className="mb-2">Well-established international insurer with comprehensive student plans. Strong network in Italy. Popular among students from the US and Asia Pacific.</p>
                       <p className="mb-1"><span className="font-semibold text-slate-700">Typical cost:</span> €400–700/year</p>
                       <a href="https://www.cignahealthbenefits.com" target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                        className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-xs">
                         cignahealthbenefits.com <ExternalLink size={11} />
                       </a>
                     </>
@@ -604,7 +604,7 @@ export default function InsurancePage() {
                     <>
                       <p className="mb-2">Italy's largest insurer. Good for domestic health plans if you plan to stay long-term. Less suitable for visa applications from outside Italy, as cover may not satisfy pre-arrival embassy requirements.</p>
                       <a href="https://www.unipolsai.it" target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                        className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-xs">
                         unipolsai.it <ExternalLink size={11} />
                       </a>
                     </>
@@ -617,7 +617,7 @@ export default function InsurancePage() {
                     <>
                       <p className="mb-2">Facile.it is Italy's leading insurance comparison website. Once you are in Italy and want supplemental coverage on top of SSN, compare domestic options here.</p>
                       <a href="https://www.facile.it/assicurazione-salute/" target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                        className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-xs">
                         facile.it/assicurazione-salute <ExternalLink size={11} />
                       </a>
                     </>
@@ -694,7 +694,7 @@ export default function InsurancePage() {
                       <p className="mb-2">Topics: academic stress, anxiety, depression, relationship difficulties, integration challenges for international students.</p>
                       <a href="https://www.unibocconi.it/en/programs/current-students/services-and-activities/student-services/welfare-at-bocconi/healthcare-and-psychological-support"
                         target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                        className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-xs">
                         Bocconi welfare services <ExternalLink size={11} />
                       </a>
                     </>
@@ -772,7 +772,7 @@ export default function InsurancePage() {
                     { label: 'Generali', url: 'https://www.generali.it' },
                   ].map(l => (
                     <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 hover:border-blue-300 hover:text-blue-700 transition-colors">
+                      className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 hover:border-[#a594ff] hover:text-[#6a54e0] transition-colors">
                       {l.label} <ExternalLink size={10} />
                     </a>
                   ))}
@@ -789,13 +789,13 @@ export default function InsurancePage() {
                     'Annual multi-trip plans are more cost-effective than per-trip cover',
                   ].map((x, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
-                      <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                      <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                       {x}
                     </li>
                   ))}
                 </ul>
                 <a href="https://www.isic.org" target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                  className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-xs">
                   ISIC card benefits <ExternalLink size={11} />
                 </a>
               </ExpandableCard>
@@ -816,7 +816,7 @@ export default function InsurancePage() {
                   ))}
                 </ul>
                 <a href="https://www.comune.milano.it/servizi/registro-biciclette" target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                  className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-xs">
                   Milan Bike Registry <ExternalLink size={11} />
                 </a>
               </ExpandableCard>
@@ -878,7 +878,7 @@ export default function InsurancePage() {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-[#a594ff] hover:bg-[#F0EDFF] hover:text-[#6a54e0] transition-colors"
                 >
                   {link.label}
                   <ExternalLink size={14} className="flex-shrink-0 text-slate-400" />
@@ -917,7 +917,7 @@ export default function InsurancePage() {
                     href={c.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                    className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 hover:border-[#a594ff] hover:bg-[#F0EDFF] transition-colors"
                   >
                     <Building2 size={15} className="mt-0.5 flex-shrink-0 text-slate-400" />
                     <div>

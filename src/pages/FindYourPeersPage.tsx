@@ -175,7 +175,7 @@ const GROUP_CHATS: GroupChat[] = [
 
 const PLATFORM_COLORS: Record<Platform, string> = {
   whatsapp: 'bg-green-50 text-green-700 border-green-200',
-  telegram: 'bg-blue-50 text-blue-700 border-blue-200',
+  telegram: 'bg-[#F0EDFF] text-[#6a54e0] border-[#D9D3FB]',
   discord:  'bg-indigo-50 text-indigo-700 border-indigo-200',
 }
 

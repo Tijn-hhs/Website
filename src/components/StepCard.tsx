@@ -32,19 +32,19 @@ export default function StepCard({
   const navigate = useNavigate()
   const isClickable = Boolean(to) && !disabled
   const statusStyles = disabled
-    ? 'border-slate-200 bg-slate-50'
+    ? 'border-[#EDE9D8] bg-[#FAF9F6]'
     : isTool
       ? 'border-[#D9D3FB] bg-[#D9D3FB]/20'
       : completed
         ? 'border-teal-200 ring-1 ring-teal-100'
         : highlighted
-          ? 'border-blue-300 ring-1 ring-blue-200'
-          : 'border-slate-200'
+          ? 'border-[#8870FF]/40 ring-1 ring-[#D9D3FB]'
+          : 'border-[#EDE9D8]'
 
   return (
     <article
-      className={`rounded-xl sm:rounded-2xl border bg-[#F9F8FF] p-3 sm:p-6 shadow-sm transition-shadow duration-200 ${
-        disabled ? 'opacity-60' : 'hover:shadow-md'
+      className={`rounded-xl sm:rounded-2xl border bg-white p-3 sm:p-6 shadow-md transition-shadow duration-200 ${
+        disabled ? 'opacity-60' : 'hover:shadow-lg'
       } h-full flex flex-col ${statusStyles} ${
         isClickable ? 'cursor-pointer' : 'cursor-not-allowed'
       }`}
@@ -130,8 +130,8 @@ export default function StepCard({
           <label
             className={`inline-flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150 ${
               disabled
-                ? 'text-slate-400 cursor-not-allowed bg-slate-50'
-                : 'text-slate-700 cursor-pointer hover:bg-slate-50 group'
+                ? 'text-slate-400 cursor-not-allowed bg-[#FAF9F6]'
+                : 'text-slate-700 cursor-pointer hover:bg-[#FAF9F6] group'
             }`}
             onClick={(event) => event.stopPropagation()}
           >

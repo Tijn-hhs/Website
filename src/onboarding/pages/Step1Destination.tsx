@@ -62,8 +62,8 @@ export default function Step1Destination() {
       nextDisabled={!isValid}
     >
       {/* Restriction Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-[#F0EDFF] border border-[#D9D3FB] rounded-xl p-4">
+        <p className="text-sm text-[#5b3fd4]">
           📍 <strong>Note:</strong> For now, we are restricted to Milan. We're expanding to more cities soon!
         </p>
       </div>

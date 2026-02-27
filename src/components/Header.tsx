@@ -1,16 +1,37 @@
 /// <reference types="vite/client" />
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { signOut, getCurrentUser } from 'aws-amplify/auth'
+import { X, Menu, Home, LayoutDashboard, BookOpen, LogIn, LogOut, Gauge } from 'lucide-react'
 import logo from '../assets/Logo_LEAVS.png'
+
+const navItems = [
+  { label: 'Home', to: '/', icon: Home },
+  { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+  { label: 'Blog', to: '/blog', icon: BookOpen },
+]
 
 export default function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     checkAuthStatus()
   }, [])
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
 
   async function checkAuthStatus() {
     try {
@@ -35,11 +56,43 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full px-4 pt-4">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between bg-[#F5F1E4] shadow-lg border border-[#D9D3FB]/60 rounded-xl">
-        <div className="flex items-center">
+      <nav className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between bg-[#F9F7F1] shadow-lg border border-[#D9D3FB]/60 rounded-xl relative">
+
+        {/* Left — Menu button */}
+        <div className="flex items-center" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-[#8870FF] hover:bg-[#D9D3FB]/40 rounded-lg transition-colors duration-150 focus:outline-none"
+            aria-label="Open menu"
+          >
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            <span className="hidden sm:inline">Menu</span>
+          </button>
+
+          {/* Dropdown */}
+          {menuOpen && (
+            <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#EDE9D8] overflow-hidden z-50">
+              <div className="p-2">
+                {navItems.map(({ label, to, icon: Icon }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF] transition-colors duration-150"
+                  >
+                    <Icon size={17} className="text-[#8870FF]" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Center — Logo */}
+        <div className="absolute left-1/2 -translate-x-1/2">
           <Link to="/" aria-label="Go to homepage">
             <img
-              // Vite-imported asset avoids production path issues on AWS.
               src={logo}
               alt="Leavs"
               className="h-7 sm:h-8 w-auto"
@@ -50,54 +103,40 @@ export default function Header() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-[#8870FF] hover:bg-[#D9D3FB]/40 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-1"
-          >
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="3" y="3" width="8" height="8" rx="2" />
-              <rect x="13" y="3" width="8" height="8" rx="2" />
-              <rect x="3" y="13" width="8" height="8" rx="2" />
-              <rect x="13" y="13" width="8" height="8" rx="2" />
-            </svg>
-            Dashboard
-          </Link>
-
-          {!isLoading && isAuthenticated && (
-            <button
-              onClick={handleSignOut}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 ml-2"
-              aria-label="Sign out"
-            >
-              <svg
-                className="w-4 h-4 mr-1"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
+        {/* Right — Auth button */}
+        <div className="flex items-center">
+          {!isLoading && (
+            isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#8870FF] hover:bg-[#6a54e0] rounded-lg shadow-sm transition-colors duration-150 focus:outline-none"
+                >
+                  <Gauge size={16} />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-150 focus:outline-none"
+                >
+                  <LogOut size={16} />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate('/auth')}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#8870FF] hover:bg-[#6a54e0] rounded-lg shadow-sm transition-colors duration-150 focus:outline-none"
               >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              Sign Out
-            </button>
+                <LogIn size={16} />
+                <span className="hidden sm:inline">Log in</span>
+              </button>
+            )
           )}
         </div>
+
       </nav>
     </header>
   )
 }
+

@@ -108,12 +108,12 @@ export default function StepPageLayout({
       )}
 
       {/* Sticky Action Bar */}
-      <div className={`sticky z-10 rounded-xl px-3 md:px-5 py-2 md:py-3 ${useGradientBar ? 'top-14 md:top-4 bg-gradient-to-b from-white via-slate-50 to-slate-50 shadow-lg border border-slate-200/70' : 'top-14 md:top-0 bg-white shadow-md border border-slate-200'}`}>
+      <div className={`sticky z-10 rounded-xl px-3 md:px-5 py-2 md:py-3 ${useGradientBar ? 'top-14 md:top-4 bg-white shadow-md border border-[#EDE9D8]' : 'top-14 md:top-0 bg-white shadow-md border border-[#EDE9D8]'}`}>
         <div className="flex items-center gap-1.5 md:gap-3 overflow-x-auto scrollbar-hide">
           {/* Back to Dashboard */}
           <Link
             to="/dashboard"
-            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50 whitespace-nowrap flex-shrink-0"
+            className="inline-flex items-center justify-center rounded-full border border-[#EDE9D8] bg-white px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-[#F0EDFF] hover:text-[#8870FF] hover:border-[#D9D3FB] whitespace-nowrap flex-shrink-0"
           >
             <svg
               className="w-3 h-3 md:w-4 md:h-4 mr-1.5 md:mr-2"
@@ -137,7 +137,7 @@ export default function StepPageLayout({
               ref={checklistButtonRef}
               onClick={() => setIsChecklistOpen(!isChecklistOpen)}
               className={`inline-flex items-center justify-center rounded-full px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:opacity-90 whitespace-nowrap flex-shrink-0 ${
-                allCompleted ? 'bg-green-600' : 'bg-blue-600'
+                allCompleted ? 'bg-green-600' : 'bg-[#8870FF]'
               }`}
             >
               <svg
@@ -163,10 +163,10 @@ export default function StepPageLayout({
             {isChecklistOpen && (
               <div
                 ref={checklistRef}
-                className="absolute top-full left-0 mt-2 w-80 rounded-xl shadow-xl border border-slate-200 bg-white z-20 animate-in fade-in slide-in-from-top-2 duration-200"
+                className="absolute top-full left-0 mt-2 w-80 rounded-xl shadow-xl border border-[#EDE9D8] bg-white z-20 animate-in fade-in slide-in-from-top-2 duration-200"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-slate-200">
+                <div className="flex items-center justify-between p-4 border-b border-[#EDE9D8]">
                   <h3 className="text-sm font-semibold text-slate-900">Your checklist</h3>
                   <button
                     onClick={() => setIsChecklistOpen(false)}
@@ -186,9 +186,9 @@ export default function StepPageLayout({
 
                 {/* Progress Bar */}
                 <div className="px-4 pt-4 pb-2">
-                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-[#EDE9D8] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                      className="h-full bg-[#8870FF] transition-all duration-300 ease-out"
                       style={{ width: `${progressPercentage}%` }}
                     />
                   </div>
@@ -203,7 +203,7 @@ export default function StepPageLayout({
                   {checklistItems.map((item) => (
                     <label
                       key={item.id}
-                      className="flex items-start gap-3 cursor-pointer hover:bg-slate-50 px-3 py-2 rounded-lg transition-colors"
+                      className="flex items-start gap-3 cursor-pointer hover:bg-[#F0EDFF] px-3 py-2 rounded-lg transition-colors"
                     >
                       <div className="relative flex items-center justify-center mt-0.5">
                         <input
@@ -212,7 +212,7 @@ export default function StepPageLayout({
                           onChange={(e) => onChecklistItemToggle(item.id, e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-5 h-5 border-2 border-slate-300 rounded peer-checked:border-blue-600 peer-checked:bg-blue-600 transition-all duration-200 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-[#EDE9D8] rounded peer-checked:border-[#8870FF] peer-checked:bg-[#8870FF] transition-all duration-200 flex items-center justify-center">
                           {item.completed && (
                             <svg
                               className="w-3 h-3 text-white"
@@ -257,7 +257,7 @@ export default function StepPageLayout({
           {showScrollTop && (
             <button
               onClick={handleScrollToTop}
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50 whitespace-nowrap flex-shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-200"
+              className="inline-flex items-center justify-center rounded-full border border-[#EDE9D8] bg-white px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-[#F0EDFF] hover:text-[#8870FF] whitespace-nowrap flex-shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-200"
             >
               <svg
                 className="w-3 h-3 md:w-4 md:h-4 md:mr-2"
@@ -284,7 +284,7 @@ export default function StepPageLayout({
               </div>
               <div className="w-12 md:w-24 h-1.5 md:h-2 bg-slate-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-600 transition-all duration-300"
+                  className="h-full bg-[#8870FF] transition-all duration-300"
                   style={{ width: `${(stepNumber / totalSteps) * 100}%` }}
                 />
               </div>
@@ -306,7 +306,7 @@ export default function StepPageLayout({
             }}
             aria-hidden={!isTabMerged}
           >
-            <div className="border-t border-slate-200/60 pt-2">
+            <div className="border-t border-[#EDE9D8] pt-2">
               {mergedTabBar}
             </div>
           </div>

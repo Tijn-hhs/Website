@@ -24,28 +24,29 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="bg-[#F5F1E4]">
+    <div className="bg-[#F9F7F1]">
       <Header />
       
-      {/* Hero Section — full viewport height so everything is visible on load */}
-      <section className="bg-[#F5F1E4] h-[calc(100vh-72px)] min-h-[560px]">
-        <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-          <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-8">
-            {/* Left Content — lavender card */}
-            <div className="bg-[#D9D3FB] rounded-3xl p-7 sm:p-10 flex flex-col justify-between shadow-sm">
+      {/* Hero Section */}
+      <section className="bg-[#F9F7F1] pt-10 pb-0 lg:pt-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
+
+            {/* Left — compact lavender card, sits high */}
+            <div className="w-full lg:w-[45%] flex-shrink-0 bg-[#D9D3FB] rounded-3xl p-8 sm:p-10 flex flex-col gap-8 shadow-lg">
               <div className="space-y-4">
                 <p className="text-xs font-bold text-[#8870FF] tracking-widest uppercase">
                   Welcome to Leavs
                 </p>
-                <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 leading-[1.1]">
+                <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-[1.1]">
                   Your international student journey, simplified.
                 </h1>
-                <p className="text-base text-slate-700 leading-relaxed max-w-md">
+                <p className="text-base text-slate-700 leading-relaxed">
                   From visa to housing to banking — Leavs gives you a personalised step-by-step plan for moving to your new city.
                 </p>
               </div>
 
-              <div className="space-y-3 mt-6">
+              <div className="space-y-3">
                 <div className="flex flex-row gap-4 items-center">
                   <button
                     onClick={handleGetStarted}
@@ -60,14 +61,15 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Image — fills remaining height, cropped below sky */}
-            <div className="rounded-3xl overflow-hidden shadow-xl hidden lg:block">
+            {/* Right — image offset down so it starts below the card top and extends further below */}
+            <div className="rounded-3xl overflow-hidden shadow-xl hidden lg:flex flex-1 mt-12 h-[520px]">
               <img
                 src="/assets/new-hompage.jpg"
                 alt="Milan Duomo cathedral"
                 className="w-full h-full object-cover object-[50%_65%]"
               />
             </div>
+
           </div>
         </div>
       </section>

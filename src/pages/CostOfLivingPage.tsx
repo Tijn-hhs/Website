@@ -379,7 +379,7 @@ export default function CostOfLivingPage() {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
               <div className="bg-white rounded-xl p-8 max-w-md mx-4">
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mx-auto mb-4"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8870FF] mx-auto mb-4"></div>
                   <p className="text-slate-600">Loading your profile...</p>
                 </div>
               </div>
@@ -398,7 +398,7 @@ export default function CostOfLivingPage() {
           <div className="flex items-center gap-2">
             <span>Estimate expenses and build a realistic monthly budget.</span>
             {isSaving && (
-              <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
+              <span className="text-xs text-[#8870FF] font-medium flex items-center gap-1">
                 <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -423,13 +423,13 @@ export default function CostOfLivingPage() {
           <div className="col-span-full">
             <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8870FF]"></div>
               </div>
             </article>
           </div>
         ) : !city ? (
           <div className="col-span-full">
-            <article className="rounded-xl border border-blue-200/70 bg-blue-50/60 p-6 shadow-sm">
+            <article className="rounded-xl border border-[#D9D3FB]/70 bg-[#F0EDFF]/60 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-slate-900">No city selected</h2>
               <p className="mt-2 text-sm text-slate-700">
                 Please select a city in your profile first to view cost estimates.
@@ -438,7 +438,7 @@ export default function CostOfLivingPage() {
           </div>
         ) : !cityConfig ? (
           <div className="col-span-full">
-            <article className="rounded-xl border border-blue-200/70 bg-blue-50/60 p-6 shadow-sm">
+            <article className="rounded-xl border border-[#D9D3FB]/70 bg-[#F0EDFF]/60 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-slate-900">City not supported</h2>
               <p className="mt-2 text-sm text-slate-700">
                 We don't have cost data available for {city} yet.
@@ -463,7 +463,7 @@ export default function CostOfLivingPage() {
                     Monthly Fixed Costs
                   </h2>
                   <p className="mt-2 text-sm text-slate-600">
-                    These fixed costs are based on your chosen city: <span className="font-semibold text-blue-700">{city}</span>.
+                    These fixed costs are based on your chosen city: <span className="font-semibold text-[#6a54e0]">{city}</span>.
                     Adjust each cost item between low and high budget.
                   </p>
                 </article>
@@ -492,7 +492,7 @@ export default function CostOfLivingPage() {
                               flex items-start p-3 rounded-lg border-2 cursor-pointer transition-all
                               ${
                                 housingType === option.id
-                                  ? 'border-blue-500 bg-blue-50'
+                                  ? 'border-[#8870FF] bg-[#F0EDFF]'
                                   : 'border-slate-200 hover:border-slate-300 bg-white'
                               }
                             `}
@@ -503,7 +503,7 @@ export default function CostOfLivingPage() {
                               value={option.id}
                               checked={housingType === option.id}
                               onChange={(e) => setHousingType(e.target.value)}
-                              className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                              className="mt-0.5 h-4 w-4 text-[#8870FF] focus:ring-[#8870FF]"
                             />
                             <div className="ml-3 flex-1">
                               <div className="flex items-center justify-between">
@@ -525,7 +525,7 @@ export default function CostOfLivingPage() {
                       {/* Link to housing page */}
                       <Link
                         to="/dashboard/housing"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-[#8870FF] hover:text-[#6a54e0] transition-colors"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -678,7 +678,7 @@ export default function CostOfLivingPage() {
                             placeholder="e.g. Gym membership"
                             value={newExpenseLabel}
                             onChange={(e) => setNewExpenseLabel(e.target.value)}
-                            className="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8870FF]"
                           />
                           <div className="relative w-28 shrink-0">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">€</span>
@@ -689,7 +689,7 @@ export default function CostOfLivingPage() {
                               value={newExpenseAmount}
                               onChange={(e) => setNewExpenseAmount(e.target.value)}
                               onKeyDown={(e) => e.key === 'Enter' && addCustomExpense()}
-                              className="w-full rounded-lg border border-slate-300 pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full rounded-lg border border-slate-300 pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8870FF]"
                             />
                           </div>
                         </div>
@@ -697,7 +697,7 @@ export default function CostOfLivingPage() {
                           <button
                             onClick={addCustomExpense}
                             disabled={!newExpenseLabel.trim() || newExpenseAmount === ''}
-                            className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="flex-1 rounded-lg bg-[#8870FF] px-4 py-2 text-sm font-medium text-white hover:bg-[#6a54e0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
                             Add
                           </button>
@@ -712,7 +712,7 @@ export default function CostOfLivingPage() {
                     ) : (
                       <button
                         onClick={() => setShowAddExpense(true)}
-                        className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                        className="flex items-center gap-2 text-sm font-medium text-[#8870FF] hover:text-[#6a54e0] transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

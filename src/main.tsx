@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Amplify } from 'aws-amplify'
-import { ThemeProvider } from '@aws-amplify/ui-react'
+import { Authenticator, ThemeProvider } from '@aws-amplify/ui-react'
 import App from './App.tsx'
 import { amplifyTheme } from './amplifyTheme'
 import '@aws-amplify/ui-react/styles.css'
@@ -226,9 +226,11 @@ async function initializeApp() {
     // Render the app after successful configuration
     root.render(
       <React.StrictMode>
-        <ThemeProvider theme={amplifyTheme}>
-          <App />
-        </ThemeProvider>
+        <Authenticator.Provider>
+          <ThemeProvider theme={amplifyTheme}>
+            <App />
+          </ThemeProvider>
+        </Authenticator.Provider>
       </React.StrictMode>
     )
     console.log('[App] ✅ Application rendered successfully')

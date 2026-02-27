@@ -59,8 +59,8 @@ function TabBarButtons({
               compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
             } ${
               isActive
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                ? 'bg-[#8870FF] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-[#D9D3FB]/60 hover:text-slate-700'
             }`}
           >
             <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
@@ -93,7 +93,7 @@ function TabNavigation({
           className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
         >
           <div className="flex items-center gap-2.5">
-            {ActiveIcon && <ActiveIcon size={15} className="text-blue-600 flex-shrink-0" />}
+            {ActiveIcon && <ActiveIcon size={15} className="text-[#8870FF] flex-shrink-0" />}
             <span className="text-sm font-semibold text-slate-800">{activeSection?.label}</span>
           </div>
           <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -109,7 +109,7 @@ function TabNavigation({
                     key={id}
                     onClick={() => { onSelect(id); setOpen(false) }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-b border-slate-100 last:border-b-0 ${
-                      isActive ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                      isActive ? 'bg-[#8870FF] text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <Icon size={15} className={isActive ? 'text-white/70' : 'text-slate-400'} />
@@ -123,7 +123,7 @@ function TabNavigation({
         )}
       </div>
       {/* Desktop: scrollable button row */}
-      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
+      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-1.5 shadow-sm scrollbar-hide">
         <TabBarButtons activeId={activeId} onSelect={onSelect} />
       </nav>
     </div>
@@ -174,7 +174,7 @@ function Badge({
   const styles: Record<string, string> = {
     required: 'bg-red-50 text-red-700 border-red-200',
     optional: 'bg-slate-100 text-slate-600 border-slate-200',
-    note:     'bg-blue-50 text-blue-700 border-blue-200',
+    note:     'bg-[#F0EDFF] text-[#6a54e0] border-[#D9D3FB]',
     warning:  'bg-amber-50 text-amber-700 border-amber-200',
     eu:       'bg-indigo-50 text-indigo-700 border-indigo-200',
     noneu:    'bg-orange-50 text-orange-700 border-orange-200',
@@ -396,7 +396,7 @@ function DepartureOnboarding({
               <>
                 <RadioBtn field="hasEhic" value="yes" label="Yes, I have my EHIC / GHIC card ✅" />
                 <RadioBtn field="hasEhic" value="no"  label="Not yet — I need to apply for one" />
-                <div className="mt-2 flex items-start gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-blue-700">
+                <div className="mt-2 flex items-start gap-2 rounded-lg border border-[#EDE9D8] bg-[#F0EDFF] p-3 text-xs text-[#6a54e0]">
                   <Info size={13} className="mt-0.5 flex-shrink-0" />
                   UK students: apply for a GHIC (not EHIC) at nhsbsa.nhs.uk — it's free!
                 </div>
@@ -666,12 +666,12 @@ export default function BeforeDeparturePage() {
                 <strong className="font-semibold text-slate-700">
                   {isEU ? 'EU citizens' : 'non-EU citizens'}
                 </strong>{'. '}
-                Update in <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>.
+                Update in <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>.
               </>
             ) : (
               <>
                 Set your nationality in{' '}
-                <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>{' '}
+                <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>{' '}
                 to see personalised guidance.
               </>
             )
@@ -702,11 +702,11 @@ export default function BeforeDeparturePage() {
                 <div className={`col-span-full flex items-start gap-4 rounded-xl border p-5 shadow-sm ${
                   daysUntilDeparture <= 0 ? 'border-emerald-300 bg-emerald-50'
                   : daysUntilDeparture <= 14 ? 'border-amber-300 bg-amber-50'
-                  : 'border-blue-200 bg-blue-50'
+                  : 'border-[#D9D3FB] bg-[#F0EDFF]'
                 }`}>
                   <Clock size={24} className={`flex-shrink-0 mt-0.5 ${
                     daysUntilDeparture <= 0 ? 'text-emerald-500'
-                    : daysUntilDeparture <= 14 ? 'text-amber-500' : 'text-blue-500'
+                    : daysUntilDeparture <= 14 ? 'text-amber-500' : 'text-[#8870FF]'
                   }`} />
                   <div>
                     {daysUntilDeparture > 0 ? (
@@ -756,7 +756,7 @@ export default function BeforeDeparturePage() {
                     </div>
                   ))}
                 </div>
-                <button onClick={() => setShowOnboarding(true)} className="mt-4 flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:underline">
+                <button onClick={() => setShowOnboarding(true)} className="mt-4 flex items-center gap-1.5 text-xs font-medium text-[#8870FF] hover:underline">
                   Update your answers <ChevronRight size={13} />
                 </button>
               </SectionCard>
@@ -815,8 +815,8 @@ export default function BeforeDeparturePage() {
                 ))}
               </div>
 
-              <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50/60 px-4 py-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-blue-600">Pro tips</p>
+              <div className="mt-6 rounded-lg border border-[#EDE9D8] bg-[#F0EDFF]/60 px-4 py-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8870FF]">Pro tips</p>
                 <ul className="space-y-1 text-sm text-slate-600">
                   {[
                     'Make 5–6 colour photocopies of every important document — Italian offices always ask.',
@@ -825,7 +825,7 @@ export default function BeforeDeparturePage() {
                     'A USB drive with digital copies is a handy offline backup.',
                   ].map((tip) => (
                     <li key={tip} className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />{tip}
+                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />{tip}
                     </li>
                   ))}
                 </ul>
@@ -884,7 +884,7 @@ export default function BeforeDeparturePage() {
                             <span><Clock size={10} className="mr-0.5 inline" />{o.time}</span>
                             <span className="font-medium text-slate-700">{o.cost}</span>
                             {o.url && (
-                              <a href={o.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
+                              <a href={o.url} target="_blank" rel="noopener noreferrer" className="text-[#8870FF] hover:text-[#6a54e0]">
                                 <ExternalLink size={11} />
                               </a>
                             )}
@@ -924,7 +924,7 @@ export default function BeforeDeparturePage() {
                       { label: 'Getting around Milan', sub: 'ATM passes, metro, and city transport', href: '/dashboard/getting-around' },
                     ].map(({ label, sub, href }) => (
                       <a key={href} href={href}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2.5 hover:border-blue-200 hover:bg-blue-50 transition-colors">
+                        className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2.5 hover:border-[#D9D3FB] hover:bg-[#F0EDFF] transition-colors">
                         <div>
                           <p className="text-sm font-medium text-slate-800">{label}</p>
                           <p className="text-xs text-slate-500">{sub}</p>
@@ -987,7 +987,7 @@ export default function BeforeDeparturePage() {
                   { label: 'Italian Ministry of Foreign Affairs',           url: 'https://www.esteri.it/en/' },
                 ].map(({ label, url }) => (
                   <a key={url} href={url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-[#a594ff] hover:bg-[#F0EDFF] hover:text-[#6a54e0] transition-colors">
                     {label}
                     <ExternalLink size={14} className="flex-shrink-0 text-slate-400" />
                   </a>

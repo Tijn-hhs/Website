@@ -75,7 +75,7 @@ function TabBarButtons({
             className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg transition-all ${
               compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
             } ${
-              isActive ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+              isActive ? 'bg-[#8870FF] text-white shadow-sm' : 'text-slate-500 hover:bg-[#D9D3FB]/60 hover:text-slate-700'
             }`}
           >
             <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
@@ -90,7 +90,7 @@ function TabBarButtons({
 function TabNavigation({ activeId, onSelect, sections, isMerged = false }: { activeId: string; onSelect: (id: string) => void; sections: typeof ALL_SECTIONS; isMerged?: boolean }) {
   return (
     <nav
-      className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide"
+      className="flex items-center gap-1 overflow-x-auto rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-1.5 shadow-sm scrollbar-hide"
       style={{ visibility: isMerged ? 'hidden' : 'visible', transition: 'visibility 0ms' }}
     >
       <TabBarButtons sections={sections} activeId={activeId} onSelect={onSelect} />
@@ -122,7 +122,7 @@ function Badge({ label, variant }: { label: string; variant: 'required' | 'optio
   const styles: Record<string, string> = {
     required: 'bg-red-50 text-red-700 border-red-200',
     optional: 'bg-slate-100 text-slate-600 border-slate-200',
-    note:     'bg-blue-50 text-blue-700 border-blue-200',
+    note:     'bg-[#F0EDFF] text-[#6a54e0] border-[#D9D3FB]',
     warning:  'bg-amber-50 text-amber-700 border-amber-200',
     eu:       'bg-indigo-50 text-indigo-700 border-indigo-200',
     noneu:    'bg-orange-50 text-orange-700 border-orange-200',
@@ -353,12 +353,12 @@ export default function ImmigrationRegistrationPage() {
                   {isEU ? 'EU citizens' : 'non-EU citizens'}
                 </strong>
                 {'. '}Update in{' '}
-                <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>.
+                <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>.
               </>
             ) : (
               <>
                 Set your EU citizenship status in{' '}
-                <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>{' '}
+                <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>{' '}
                 to see personalised guidance.
               </>
             )
@@ -432,8 +432,8 @@ export default function ImmigrationRegistrationPage() {
                 <div className="mt-5">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Visa vs Permesso di Soggiorno</p>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <div className="rounded-lg border border-blue-100 bg-blue-50/40 p-3">
-                      <p className="text-xs font-semibold text-blue-800 mb-1">Student Visa (Type D)</p>
+                    <div className="rounded-lg border border-[#EDE9D8] bg-[#F0EDFF]/40 p-3">
+                      <p className="text-xs font-semibold text-[#5b3fd4] mb-1">Student Visa (Type D)</p>
                       <p className="text-xs text-slate-600">Issued by the Italian Embassy or Consulate in your home country. Lets you enter Italy and the Schengen area.</p>
                     </div>
                     <div className="rounded-lg border border-violet-100 bg-violet-50/40 p-3">
@@ -662,7 +662,7 @@ export default function ImmigrationRegistrationPage() {
                           <p className="text-xs text-slate-500">{o.hours}</p>
                         </div>
                       ))}
-                      <a href="https://www.comune.milano.it/servizi/iscrizione-allanagrafe-per-cittadini-ue" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline">
+                      <a href="https://www.comune.milano.it/servizi/iscrizione-allanagrafe-per-cittadini-ue" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#8870FF] hover:underline">
                         Full list & online booking <ExternalLink size={12} />
                       </a>
                     </div>
@@ -678,9 +678,9 @@ export default function ImmigrationRegistrationPage() {
           {activeSection === 'documents' && (
             <SectionCard title="Documents checklist" icon={<FileText size={18} />}>
               {!isEuCitizen && (
-                <div className="mb-4 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
-                  <Info size={16} className="mt-0.5 flex-shrink-0 text-blue-500" />
-                  <p className="text-sm text-blue-700">
+                <div className="mb-4 flex items-start gap-3 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3">
+                  <Info size={16} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
+                  <p className="text-sm text-[#6a54e0]">
                     Set your EU citizenship status in{' '}
                     <a href="/dashboard/my-situation" className="underline">My Situation</a>{' '}
                     to see personalised requirements. Currently showing non-EU student documents.
@@ -695,7 +695,7 @@ export default function ImmigrationRegistrationPage() {
                     <strong className="text-slate-800">{isEU ? 'EU citizens (Anagrafe registration)' : 'non-EU citizens (Permesso di Soggiorno)'}</strong>
                     {nationality && ` · ${nationality}`}.
                   </span>
-                  <a href="/dashboard/my-situation" className="ml-auto text-xs text-blue-500 hover:underline">Update</a>
+                  <a href="/dashboard/my-situation" className="ml-auto text-xs text-[#8870FF] hover:underline">Update</a>
                 </div>
               )}
 
@@ -804,7 +804,7 @@ export default function ImmigrationRegistrationPage() {
                     <li className="flex items-start gap-2"><span className="font-semibold text-slate-800 flex-shrink-0">5.</span> You receive a new receipt or updated document confirming the appointment was completed.</li>
                     <li className="flex items-start gap-2"><span className="font-semibold text-slate-800 flex-shrink-0">6.</span> You wait to be notified when the card is ready for collection (typically 1–6 months).</li>
                   </ol>
-                  <div className="mt-3 flex items-start gap-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                  <div className="mt-3 flex items-start gap-2 rounded-md border border-[#EDE9D8] bg-[#F0EDFF] px-3 py-2 text-xs text-[#6a54e0]">
                     <Info size={12} className="mt-0.5 flex-shrink-0" />
                     The interview is standard procedure for students — it typically takes 15–30 minutes. Be polite and cooperative.
                   </div>
@@ -826,7 +826,7 @@ export default function ImmigrationRegistrationPage() {
                     After your Questura appointment you can track the status of your application online using your fiscal code
                     or the receipt number.
                   </p>
-                  <a href="https://questure.poliziadistato.it/stranieri" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                  <a href="https://questure.poliziadistato.it/stranieri" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] px-3 py-2 text-sm font-medium text-[#6a54e0] hover:bg-[#F0EDFF] transition-colors">
                     Check status — Polizia di Stato <ExternalLink size={13} />
                   </a>
                 </ExpandableCard>
@@ -886,7 +886,7 @@ export default function ImmigrationRegistrationPage() {
                     You can track the status of your residence permit application (both initial and renewal) using the
                     official Polizia di Stato portal. You will need your fiscal code or receipt number.
                   </p>
-                  <a href="https://questure.poliziadistato.it/stranieri" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                  <a href="https://questure.poliziadistato.it/stranieri" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] px-3 py-2 text-sm font-medium text-[#6a54e0] hover:bg-[#F0EDFF] transition-colors">
                     Check status — Polizia di Stato <ExternalLink size={13} />
                   </a>
                 </ExpandableCard>
@@ -993,7 +993,7 @@ export default function ImmigrationRegistrationPage() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-[#a594ff] hover:bg-[#F0EDFF] hover:text-[#6a54e0] transition-colors"
                   >
                     {label}
                     <ExternalLink size={14} className="flex-shrink-0 text-slate-400" />

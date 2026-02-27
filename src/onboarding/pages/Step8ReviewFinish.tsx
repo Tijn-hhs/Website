@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Authenticator } from '@aws-amplify/ui-react'
 import OnboardingLayout from '../OnboardingLayout'
 import { cardBase } from '../ui'
 import { getPrevEnabledStepId, getStepConfig, stepIdToRoute } from '../steps'
@@ -9,7 +8,7 @@ import { fetchMe, saveProfile, sendWelcomeEmail, fetchContentModules } from '../
 import type { DashboardPlanItem } from '../../lib/api'
 import { UserProfile } from '../../types/user'
 import { isSignedIn } from '../../lib/auth'
-import { clearOnboardingDraft, syncOnboardingDraftToProfileIfPresent } from '../sync'
+import { clearOnboardingDraft } from '../sync'
 
 const formatValue = (value: string | boolean | undefined) => {
   if (value === undefined || value === '') return 'Not specified'
@@ -308,20 +307,13 @@ export default function Step8ReviewFinish() {
           <p className="text-sm text-slate-600 mb-4">
             Sign up or sign in to save your onboarding progress to your profile.
           </p>
-          <div className="rounded-lg border border-slate-200 p-4">
-            <Authenticator>
-              {() => {
-                // After successful authentication, sync the draft and update state
-                syncOnboardingDraftToProfileIfPresent()
-                  .catch(() => {
-                    // Sync failed, but user is signed in - proceed anyway
-                  })
-                
-                setUserSignedIn(true)
-                return <div className="text-sm text-green-600">Successfully signed in!</div>
-              }}
-            </Authenticator>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate(`/auth?returnTo=/onboarding/review`)}
+            className="w-full py-2.5 px-4 bg-[#8870FF] hover:bg-[#6a54e0] text-white font-semibold text-sm rounded-xl shadow-sm transition-all"
+          >
+            Sign in or create account
+          </button>
         </div>
       )}
 
@@ -331,7 +323,7 @@ export default function Step8ReviewFinish() {
         
         <div className="space-y-6">
           {/* Destination */}
-          <div className="border-l-4 border-blue-500 pl-4">
+          <div className="border-l-4 border-[#8870FF] pl-4">
             <h3 className="text-sm font-semibold text-slate-700 mb-2">📍 Destination</h3>
             <div className="space-y-1 text-sm text-slate-600">
               <p><span className="font-medium">Country:</span> {formatValue(draft.destinationCountry)}</p>
@@ -341,7 +333,7 @@ export default function Step8ReviewFinish() {
           </div>
 
           {/* Origin */}
-          <div className="border-l-4 border-green-500 pl-4">
+          <div className="border-l-4 border-[#8870FF] pl-4">
             <h3 className="text-sm font-semibold text-slate-700 mb-2">🏠 Your background</h3>
             <div className="space-y-1 text-sm text-slate-600">
               <p><span className="font-medium">Nationality:</span> {formatValue(draft.nationality)}</p>
@@ -351,7 +343,7 @@ export default function Step8ReviewFinish() {
           </div>
 
           {/* Program */}
-          <div className="border-l-4 border-purple-500 pl-4">
+          <div className="border-l-4 border-[#8870FF] pl-4">
             <h3 className="text-sm font-semibold text-slate-700 mb-2">🎓 Your program</h3>
             <div className="space-y-1 text-sm text-slate-600">
               <p><span className="font-medium">Degree type:</span> {formatValue(draft.degreeType)}</p>
@@ -366,7 +358,7 @@ export default function Step8ReviewFinish() {
 
           {/* Application requirements - only if not applied */}
           {draft.programApplied === 'no' && (
-            <div className="border-l-4 border-amber-500 pl-4">
+          <div className="border-l-4 border-[#8870FF] pl-4">
               <h3 className="text-sm font-semibold text-slate-700 mb-2">📝 Application requirements</h3>
               <div className="space-y-1 text-sm text-slate-600">
                 <p><span className="font-medium">GMAT/Entrance test:</span> {formatValue(draft.hasGmatOrEntranceTest)}</p>
@@ -388,7 +380,7 @@ export default function Step8ReviewFinish() {
 
           {/* Visa - only for non-EU */}
           {draft.isEuCitizen !== 'yes' && (
-            <div className="border-l-4 border-red-500 pl-4">
+          <div className="border-l-4 border-[#8870FF] pl-4">
               <h3 className="text-sm font-semibold text-slate-700 mb-2">🛂 Visa status</h3>
               <div className="space-y-1 text-sm text-slate-600">
                 <p><span className="font-medium">Has visa for {draft.destinationCountry}:</span> {formatValue(draft.hasVisa)}</p>
@@ -397,7 +389,7 @@ export default function Step8ReviewFinish() {
           )}
 
           {/* Current progress */}
-          <div className="border-l-4 border-teal-500 pl-4">
+          <div className="border-l-4 border-[#8870FF] pl-4">
             <h3 className="text-sm font-semibold text-slate-700 mb-2">✅ Current progress</h3>
             <div className="space-y-1 text-sm text-slate-600">
               <p><span className="font-medium">Codice Fiscale:</span> {formatValue(draft.hasCodiceFiscale)}</p>

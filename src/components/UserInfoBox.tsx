@@ -202,11 +202,11 @@ export default function UserInfoBox({ title, subtitle, fields }: UserInfoBoxProp
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
+      <div className="rounded-xl border border-[#EDE9D8] bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="animate-pulse">
-            <div className="mb-2 h-4 w-32 rounded bg-slate-200"></div>
-            <div className="h-3 w-48 rounded bg-slate-200"></div>
+            <div className="mb-2 h-4 w-32 rounded bg-[#EDE9D8]"></div>
+            <div className="h-3 w-48 rounded bg-[#EDE9D8]"></div>
           </div>
         </div>
       </div>
@@ -227,7 +227,7 @@ export default function UserInfoBox({ title, subtitle, fields }: UserInfoBoxProp
 
   return (
     <>
-      <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
+      <div className="rounded-xl border border-[#EDE9D8] bg-white p-5 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
@@ -265,7 +265,7 @@ export default function UserInfoBox({ title, subtitle, fields }: UserInfoBoxProp
           
           <button
             onClick={handleEdit}
-            className="flex-shrink-0 rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-all duration-150 hover:border-blue-300 hover:bg-blue-50 hover:shadow"
+            className="flex-shrink-0 rounded-lg border border-[#D9D3FB] bg-white px-4 py-2 text-sm font-semibold text-[#8870FF] shadow-sm transition-all duration-150 hover:border-[#8870FF] hover:bg-[#F0EDFF] hover:shadow"
           >
             Edit
           </button>
@@ -284,7 +284,7 @@ export default function UserInfoBox({ title, subtitle, fields }: UserInfoBoxProp
               {fields.map((field) => {
                 const config = getFieldConfig(field.key)
                 const baseInputClass =
-                  'w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50'
+                  'w-full rounded-lg border border-[#EDE9D8] bg-white px-4 py-2 text-sm text-slate-900 focus:border-[#8870FF] focus:outline-none focus:ring-2 focus:ring-[#8870FF]/20'
 
                 return (
                   <div key={field.key}>
@@ -348,7 +348,7 @@ export default function UserInfoBox({ title, subtitle, fields }: UserInfoBoxProp
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-lg bg-[#8870FF] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#6a54e0] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>

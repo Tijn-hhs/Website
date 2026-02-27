@@ -46,14 +46,14 @@ export default function OnboardingLayout({
   return (
     <>
       <Header />
-      <main className="bg-gradient-to-b from-blue-50 to-white pb-32 min-h-screen">
+      <main className="bg-[#F9F7F1] pb-32 min-h-screen">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24">
           <div className="flex items-center justify-between text-sm text-slate-500">
             <span>Step {stepId} of {totalOnboardingSteps}</span>
             <button
               onClick={handleSaveAndExit}
               disabled={isLoadingExit}
-              className="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+              className="text-[#8870FF] hover:text-[#6a54e0] font-medium disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isLoadingExit ? 'Loading...' : 'Save and exit'}
             </button>
@@ -61,16 +61,16 @@ export default function OnboardingLayout({
 
           <div className="mt-3 h-2 w-full rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-200"
+              className="h-full rounded-full bg-[#8870FF] transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
 
           <div className="mt-6">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">
               {title}
             </h1>
-            <p className="mt-2 text-sm text-gray-600">{subtitle}</p>
+            <p className="mt-2 text-sm text-slate-500">{subtitle}</p>
           </div>
 
           <div className="mt-12 space-y-6">
@@ -82,7 +82,7 @@ export default function OnboardingLayout({
               <button
                 type="button"
                 onClick={onBack}
-                className="inline-flex items-center justify-center rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-full border border-[#EDE9D8] px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-colors hover:bg-[#F0EDFF] hover:border-[#8870FF] hover:text-[#8870FF]"
               >
                 Back
               </button>
@@ -95,7 +95,7 @@ export default function OnboardingLayout({
                 type="button"
                 onClick={onNext}
                 disabled={nextDisabled}
-                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-full bg-[#8870FF] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#6a54e0] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {nextLabel || 'Next'}
               </button>

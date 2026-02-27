@@ -6,7 +6,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: #F5F1E4;
+  background: #F9F7F1;
 }
 
 /* ============================================================
@@ -94,7 +94,7 @@ body {
 .amplify-tabs__item[data-selected="true"],
 .amplify-tabs__trigger[aria-selected="true"] {
   color: #0f172a !important;
-  border-bottom-color: #3b82f6 !important; /* LiveCity blue - NO GREEN */
+  border-bottom-color: #8870FF !important;
   background: transparent !important;
 }
 
@@ -136,8 +136,8 @@ body {
 .amplify-textarea {
   width: 100% !important;
   padding: 0.75rem 1rem !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 0.75rem !important; /* rounded-xl */
+  border: 1px solid #EDE9D8 !important;
+  border-radius: 0.75rem !important;
   font-size: 1rem !important;
   font-family: system-ui, -apple-system, sans-serif !important;
   background: white !important;
@@ -156,8 +156,8 @@ body {
 .amplify-select:focus,
 .amplify-textarea:focus {
   outline: none !important;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+  border-color: #8870FF !important;
+  box-shadow: 0 0 0 3px rgba(136, 112, 255, 0.15) !important;
 }
 
 .amplify-input:disabled,
@@ -183,10 +183,10 @@ body {
   box-sizing: border-box !important;
 }
 
-/* Primary button - Leavs blue (matches bg-blue-700 used site-wide) */
+/* Primary button — purple */
 .amplify-button--primary,
 .amplify-button[type="submit"] {
-  background: #1d4ed8 !important;
+  background: #8870FF !important;
   color: white !important;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
 }
@@ -195,8 +195,8 @@ body {
 .amplify-button--primary:focus,
 .amplify-button[type="submit"]:hover,
 .amplify-button[type="submit"]:focus {
-  background: #1e40af !important;
-  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25) !important;
+  background: #6a54e0 !important;
+  box-shadow: 0 4px 12px rgba(136, 112, 255, 0.3) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -220,7 +220,7 @@ body {
 /* Link-style buttons — "Forgot password?", "Back to Sign In", "Resend code" */
 .amplify-button--link {
   background: transparent !important;
-  color: #1d4ed8 !important;
+  color: #8870FF !important;
   border: none !important;
   padding: 0.25rem 0 !important;
   width: auto !important;
@@ -232,7 +232,7 @@ body {
 
 .amplify-button--link:hover {
   background: transparent !important;
-  color: #1e40af !important;
+  color: #6a54e0 !important;
   text-decoration: underline !important;
   transform: none !important;
   box-shadow: none !important;
@@ -243,9 +243,9 @@ body {
   cursor: not-allowed !important;
 }
 
-/* 8. LINKS - LiveCity blue */
+/* 8. LINKS - purple */
 .amplify-link {
-  color: #3b82f6 !important;
+  color: #8870FF !important;
   text-decoration: none !important;
   font-weight: 500 !important;
   transition: color 0.2s ease !important;
@@ -253,20 +253,20 @@ body {
 }
 
 .amplify-link:hover {
-  color: #2563eb !important;
+  color: #6a54e0 !important;
   text-decoration: underline !important;
 }
 
-/* 9. CHECKBOXES/RADIOS - Blue accent */
+/* 9. CHECKBOXES/RADIOS - purple accent */
 .amplify-checkbox,
 .amplify-radio {
-  accent-color: #3b82f6 !important;
+  accent-color: #8870FF !important;
   cursor: pointer !important;
 }
 
 .amplify-checkbox:focus,
 .amplify-radio:focus {
-  outline: 2px solid rgba(59, 130, 246, 0.5) !important;
+  outline: 2px solid rgba(136, 112, 255, 0.5) !important;
   outline-offset: 2px !important;
 }
 

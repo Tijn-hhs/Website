@@ -60,8 +60,8 @@ function TabBarButtons({
               compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
             } ${
               isActive
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                ? 'bg-[#8870FF] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-[#D9D3FB]/60 hover:text-slate-700'
             }`}
           >
             <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
@@ -94,7 +94,7 @@ function TabNavigation({
           className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
         >
           <div className="flex items-center gap-2.5">
-            {ActiveIcon && <ActiveIcon size={15} className="text-blue-600 flex-shrink-0" />}
+            {ActiveIcon && <ActiveIcon size={15} className="text-[#8870FF] flex-shrink-0" />}
             <span className="text-sm font-semibold text-slate-800">{activeSection?.label}</span>
           </div>
           <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -110,7 +110,7 @@ function TabNavigation({
                     key={id}
                     onClick={() => { onSelect(id); setOpen(false) }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-b border-slate-100 last:border-b-0 ${
-                      isActive ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                      isActive ? 'bg-[#8870FF] text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <Icon size={15} className={isActive ? 'text-white/70' : 'text-slate-400'} />
@@ -124,7 +124,7 @@ function TabNavigation({
         )}
       </div>
       {/* Desktop: scrollable button row */}
-      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
+      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-1.5 shadow-sm scrollbar-hide">
         <TabBarButtons activeId={activeId} onSelect={onSelect} />
       </nav>
     </div>
@@ -157,7 +157,7 @@ function Badge({ label, variant }: { label: string; variant: 'required' | 'optio
     optional: 'bg-slate-100 text-slate-600 border-slate-200',
     tip:      'bg-emerald-50 text-emerald-700 border-emerald-200',
     warning:  'bg-amber-50 text-amber-700 border-amber-200',
-    info:     'bg-blue-50 text-blue-700 border-blue-200',
+    info:     'bg-[#F0EDFF] text-[#6a54e0] border-[#D9D3FB]',
   }
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${styles[variant]}`}>
@@ -314,7 +314,7 @@ export default function FundingScholarshipPage() {
                 {programLevel === 'bachelor' ? 'Bachelor of Science' : 'Master of Science'}
               </strong>
               {'. '}Update in{' '}
-              <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>.
+              <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>.
             </>
           }
           userInfoFields={[
@@ -351,11 +351,11 @@ export default function FundingScholarshipPage() {
                     <p className="mt-0.5 text-sm text-violet-700">Full tuition waiver + €11,000/yr living allowance</p>
                     <p className="mt-2 text-xs text-violet-500">Auto-considered at application</p>
                   </div>
-                  <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-500">Income-based</p>
-                    <p className="mt-1 text-lg font-bold text-blue-900">DSU Grant</p>
-                    <p className="mt-0.5 text-sm text-blue-700">Full tuition coverage + up to €7,500 living allowance</p>
-                    <p className="mt-2 text-xs text-blue-500">Apply via ISU Bocconi after enrollment</p>
+                  <div className="rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#8870FF]">Income-based</p>
+                    <p className="mt-1 text-lg font-bold text-[#1E1152]">DSU Grant</p>
+                    <p className="mt-0.5 text-sm text-[#6a54e0]">Full tuition coverage + up to €7,500 living allowance</p>
+                    <p className="mt-2 text-xs text-[#8870FF]">Apply via ISU Bocconi after enrollment</p>
                   </div>
                   <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-emerald-500">External</p>
@@ -417,8 +417,8 @@ export default function FundingScholarshipPage() {
           {/* ── Merit awards ── */}
           {activeSection === 'merit' && (
             <SectionCard title="Bocconi merit-based awards" icon={<Award size={18} />}>
-              <div className="mb-4 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
-                <Info size={16} className="mt-0.5 flex-shrink-0 text-blue-500" />
+              <div className="mb-4 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-sm text-[#5b3fd4]">
+                <Info size={16} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                 <span>
                   All merit awards are assessed <strong>automatically</strong> when you submit your Bocconi application — no separate scholarship form is needed. Higher application rounds may offer stronger scholarship chances as fewer spots are taken.
                 </span>
@@ -446,7 +446,7 @@ export default function FundingScholarshipPage() {
                       </li>
                     ))}
                   </ul>
-                  <a href="https://www.unibocconi.eu/en/programs/master-science/scholarships-and-financial-aid" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm">
+                  <a href="https://www.unibocconi.eu/en/programs/master-science/scholarships-and-financial-aid" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-sm">
                     Official scholarship page <ExternalLink size={12} />
                   </a>
                 </ExpandableCard>
@@ -466,7 +466,7 @@ export default function FundingScholarshipPage() {
                       'Renewable each year based on academic performance at Bocconi',
                     ].map((pt, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                        <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                         {pt}
                       </li>
                     ))}
@@ -488,7 +488,7 @@ export default function FundingScholarshipPage() {
                         'Bocconi Online Test score is also factored in',
                       ].map((pt, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                           {pt}
                         </li>
                       ))}
@@ -553,7 +553,7 @@ export default function FundingScholarshipPage() {
                       </li>
                     ))}
                   </ul>
-                  <a href="https://www.isu.unibocconi.it/en" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm">
+                  <a href="https://www.isu.unibocconi.it/en" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-sm">
                     ISU Bocconi financial aid <ExternalLink size={12} />
                   </a>
                 </ExpandableCard>
@@ -632,12 +632,12 @@ export default function FundingScholarshipPage() {
                       'Covers tuition and may include a monthly stipend',
                     ].map((pt, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                        <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                         {pt}
                       </li>
                     ))}
                   </ul>
-                  <a href="https://www.esteri.it/it/opportunita/borse-di-studio/per-stranieri/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm">
+                  <a href="https://www.esteri.it/it/opportunita/borse-di-studio/per-stranieri/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-sm">
                     MAECI scholarship portal <ExternalLink size={12} />
                   </a>
                 </ExpandableCard>
@@ -656,7 +656,7 @@ export default function FundingScholarshipPage() {
                       'Only applicable for exchange students, not full-degree enrolment',
                     ].map((pt, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                        <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                         {pt}
                       </li>
                     ))}
@@ -705,7 +705,7 @@ export default function FundingScholarshipPage() {
                       </li>
                     ))}
                   </ul>
-                  <a href="https://www.rotary.org/en/our-programs/scholarships" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm">
+                  <a href="https://www.rotary.org/en/our-programs/scholarships" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#8870FF] hover:underline text-sm">
                     Rotary Foundation scholarship page <ExternalLink size={12} />
                   </a>
                 </ExpandableCard>
@@ -738,8 +738,8 @@ export default function FundingScholarshipPage() {
           {/* ── Deadlines ── */}
           {activeSection === 'deadlines' && (
             <SectionCard title="Key scholarship deadlines" icon={<CalendarClock size={18} />}>
-              <div className="mb-4 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
-                <Info size={16} className="mt-0.5 flex-shrink-0 text-blue-500" />
+              <div className="mb-4 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-sm text-[#5b3fd4]">
+                <Info size={16} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                 <span>
                   Merit awards are automatic — the deadlines that matter most are <strong>your Bocconi application round</strong> (earlier = better scholarship chances) and the <strong>DSU application window</strong> (opens after admission).
                 </span>
@@ -760,9 +760,9 @@ export default function FundingScholarshipPage() {
                     label: 'Bocconi application Round 2',
                     detail: 'Merit awards still available, fewer Excellence Award spots remaining',
                     date: 'Jan–Feb (AY 2025–26: 6 Feb 2025)',
-                    color: 'border-blue-200 bg-blue-50',
-                    textColor: 'text-blue-800',
-                    badgeColor: 'bg-blue-100 text-blue-700',
+                    color: 'border-[#D9D3FB] bg-[#F0EDFF]',
+                    textColor: 'text-[#5b3fd4]',
+                    badgeColor: 'bg-[#F0EDFF] text-[#6a54e0]',
                     badgeLabel: 'Good chance',
                   },
                   {
@@ -913,7 +913,7 @@ export default function FundingScholarshipPage() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-[#a594ff] hover:bg-[#F0EDFF] hover:text-[#6a54e0] transition-colors"
                   >
                     {link.label}
                     <ExternalLink size={14} className="flex-shrink-0 text-slate-400" />

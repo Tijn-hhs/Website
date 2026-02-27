@@ -39,14 +39,14 @@ export default function NotFoundPage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link 
             to="/"
-            className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center px-6 py-3 bg-[#8870FF] text-white font-semibold rounded-xl shadow-lg hover:bg-[#6a54e0] hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-2"
           >
             Take Me Home
           </Link>
           
           <Link 
             to="/dashboard"
-            className="inline-flex items-center justify-center px-6 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center px-6 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-2"
           >
             Go to Dashboard
           </Link>
@@ -56,7 +56,7 @@ export default function NotFoundPage() {
         <div className="mt-12">
           <button 
             onClick={() => window.history.back()} 
-            className="text-blue-600 hover:text-blue-700 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            className="text-[#8870FF] hover:text-[#6a54e0] hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-2 rounded"
           >
             ← Go back to previous page
           </button>

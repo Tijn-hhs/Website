@@ -213,7 +213,7 @@ export default function Sidebar() {
   return (
     // Enhanced sidebar container with floating effect (margin, border-radius, shadow)
     <aside
-      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-white to-[#F5F1E4] shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${shouldAnimate ? 'animate-slide-in-left' : ''} ${
+      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-white to-[#F9F7F1] shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${shouldAnimate ? 'animate-slide-in-left' : ''} ${
         isCollapsed ? 'w-16' : 'w-60'
       }`}
       aria-label="Navigation sidebar"

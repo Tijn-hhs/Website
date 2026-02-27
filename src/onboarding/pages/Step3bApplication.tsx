@@ -59,8 +59,8 @@ export default function Step3bApplication() {
             onClick={() => updateField('hasGmatOrEntranceTest', 'yes')}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasGmatOrEntranceTest === 'yes'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             Yes
@@ -73,8 +73,8 @@ export default function Step3bApplication() {
             }}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasGmatOrEntranceTest === 'no'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             No
@@ -108,8 +108,8 @@ export default function Step3bApplication() {
             onClick={() => updateField('hasEnglishTest', 'yes')}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasEnglishTest === 'yes'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             Yes
@@ -123,8 +123,8 @@ export default function Step3bApplication() {
             }}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasEnglishTest === 'no'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             No
@@ -178,8 +178,8 @@ export default function Step3bApplication() {
             onClick={() => updateField('hasRecommendationLetters', 'yes')}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasRecommendationLetters === 'yes'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             Yes
@@ -189,8 +189,8 @@ export default function Step3bApplication() {
             onClick={() => updateField('hasRecommendationLetters', 'no')}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasRecommendationLetters === 'no'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             No
@@ -209,8 +209,8 @@ export default function Step3bApplication() {
             onClick={() => updateField('hasCv', 'yes')}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasCv === 'yes'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             Yes
@@ -220,8 +220,8 @@ export default function Step3bApplication() {
             onClick={() => updateField('hasCv', 'no')}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasCv === 'no'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             No

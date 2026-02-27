@@ -62,8 +62,8 @@ function TabBarButtons({
               compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
             } ${
               isActive
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                ? 'bg-[#8870FF] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-[#D9D3FB]/60 hover:text-slate-700'
             }`}
           >
             <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
@@ -96,7 +96,7 @@ function TabNavigation({
           className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
         >
           <div className="flex items-center gap-2.5">
-            {ActiveIcon && <ActiveIcon size={15} className="text-blue-600 flex-shrink-0" />}
+            {ActiveIcon && <ActiveIcon size={15} className="text-[#8870FF] flex-shrink-0" />}
             <span className="text-sm font-semibold text-slate-800">{activeSection?.label}</span>
           </div>
           <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -112,7 +112,7 @@ function TabNavigation({
                     key={id}
                     onClick={() => { onSelect(id); setOpen(false) }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-b border-slate-100 last:border-b-0 ${
-                      isActive ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                      isActive ? 'bg-[#8870FF] text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <Icon size={15} className={isActive ? 'text-white/70' : 'text-slate-400'} />
@@ -126,7 +126,7 @@ function TabNavigation({
         )}
       </div>
       {/* Desktop: scrollable button row */}
-      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
+      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-1.5 shadow-sm scrollbar-hide">
         <TabBarButtons activeId={activeId} onSelect={onSelect} />
       </nav>
     </div>
@@ -177,7 +177,7 @@ function Badge({
   const styles: Record<string, string> = {
     required: 'bg-red-50 text-red-700 border-red-200',
     optional: 'bg-slate-100 text-slate-600 border-slate-200',
-    note:     'bg-blue-50 text-blue-700 border-blue-200',
+    note:     'bg-[#F0EDFF] text-[#6a54e0] border-[#D9D3FB]',
     warning:  'bg-amber-50 text-amber-700 border-amber-200',
     eu:       'bg-indigo-50 text-indigo-700 border-indigo-200',
     noneu:    'bg-orange-50 text-orange-700 border-orange-200',
@@ -417,12 +417,12 @@ export default function CodiceFiscalePage() {
                   {isEU ? 'EU citizens' : 'non-EU citizens'}
                 </strong>
                 {'. '}Update in{' '}
-                <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>.
+                <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>.
               </>
             ) : (
               <>
                 Set your nationality in{' '}
-                <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>{' '}
+                <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>{' '}
                 to see personalised document requirements.
               </>
             )
@@ -487,11 +487,11 @@ export default function CodiceFiscalePage() {
                   ))}
                 </div>
 
-                <div className="mt-5 rounded-lg border border-blue-100 bg-blue-50/60 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mb-1">Fun fact</p>
+                <div className="mt-5 rounded-lg border border-[#EDE9D8] bg-[#F0EDFF]/60 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#8870FF] mb-1">Fun fact</p>
                   <p className="text-sm text-slate-600">
                     Your code is derived from: your surname (3 letters), first name (3 letters), year + month + day of birth
-                    (5 characters), place of birth (4 characters), and a checksum letter. <code className="rounded bg-blue-100 px-1 text-xs">MLNYSE17A41F205U</code>
+                    (5 characters), place of birth (4 characters), and a checksum letter. <code className="rounded bg-[#F0EDFF] px-1 text-xs">MLNYSE17A41F205U</code>
                   </p>
                 </div>
 
@@ -556,7 +556,7 @@ export default function CodiceFiscalePage() {
                       <StepItem number={3} title="Fill out form AA4/8" description="Pick up the form at the counter or download and pre-fill it from the Revenue Agency website." />
                       <StepItem number={4} title="Submit and receive code" description="Hand in the form with your ID. The code is usually issued immediately or within a few days." />
                     </ol>
-                    <div className="mt-4 flex items-start gap-2 rounded-md border border-blue-100 bg-blue-50 p-3 text-xs text-blue-700">
+                    <div className="mt-4 flex items-start gap-2 rounded-md border border-[#EDE9D8] bg-[#F0EDFF] p-3 text-xs text-[#6a54e0]">
                       <Info size={13} className="mt-0.5 flex-shrink-0" />
                       You will receive a small plastic card — keep it safe. You can also use the code immediately via a printed receipt.
                     </div>
@@ -596,7 +596,7 @@ export default function CodiceFiscalePage() {
                   </p>
                   <p className="mt-2 text-slate-500">
                     Bocconi international students: contact the International Affairs office at{' '}
-                    <a href="https://www.unibocconi.eu/en/programs/student-services" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    <a href="https://www.unibocconi.eu/en/programs/student-services" target="_blank" rel="noopener noreferrer" className="text-[#8870FF] hover:underline">
                       unibocconi.eu
                     </a>.
                   </p>
@@ -617,9 +617,9 @@ export default function CodiceFiscalePage() {
           {activeSection === 'documents' && (
             <SectionCard title="Documents checklist" icon={<FileText size={18} />}>
               {!isEuCitizen && (
-                <div className="mb-4 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
-                  <Info size={16} className="mt-0.5 flex-shrink-0 text-blue-500" />
-                  <p className="text-sm text-blue-700">
+                <div className="mb-4 flex items-start gap-3 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3">
+                  <Info size={16} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
+                  <p className="text-sm text-[#6a54e0]">
                     Set your EU citizenship status in{' '}
                     <a href="/dashboard/my-situation" className="underline">My Situation</a>{' '}
                     to see personalised requirements. Currently showing requirements for EU citizens.
@@ -635,7 +635,7 @@ export default function CodiceFiscalePage() {
                     <strong className="text-slate-800">{isEU ? 'EU citizens' : 'non-EU citizens'}</strong>
                     {nationality && ` (${nationality})`}.
                   </span>
-                  <a href="/dashboard/my-situation" className="ml-auto text-xs text-blue-500 hover:underline">Update</a>
+                  <a href="/dashboard/my-situation" className="ml-auto text-xs text-[#8870FF] hover:underline">Update</a>
                 </div>
               )}
 
@@ -763,7 +763,7 @@ export default function CodiceFiscalePage() {
                   href="https://prenot.agenziaentrate.gov.it/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                  className="flex items-center justify-center gap-2 rounded-lg border border-[#a594ff] bg-[#F0EDFF] px-4 py-2.5 text-sm font-medium text-[#6a54e0] hover:bg-[#F0EDFF] transition-colors"
                 >
                   Book an appointment online <ExternalLink size={13} />
                 </a>
@@ -792,7 +792,7 @@ export default function CodiceFiscalePage() {
                     href="https://telematici.agenziaentrate.gov.it/VerificaCF/Scegli.do?parameter=verificaCf"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] px-3 py-2 text-sm font-medium text-[#6a54e0] hover:bg-[#F0EDFF] transition-colors"
                   >
                     Verify codice fiscale online <ExternalLink size={13} />
                   </a>
@@ -821,7 +821,7 @@ export default function CodiceFiscalePage() {
                     <li className="flex items-start gap-2 text-sm">
                       <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
                       <span><strong>Online:</strong> Fill in the{' '}
-                        <a href="https://www.agenziaentrate.gov.it/portale/richiesta-del-duplicato-del-tesserino-del-codice-fiscale" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        <a href="https://www.agenziaentrate.gov.it/portale/richiesta-del-duplicato-del-tesserino-del-codice-fiscale" target="_blank" rel="noopener noreferrer" className="text-[#8870FF] hover:underline">
                           duplicate request form
                         </a>{' '}on the Revenue Agency website.
                       </span>
@@ -904,7 +904,7 @@ export default function CodiceFiscalePage() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:border-[#a594ff] hover:bg-[#F0EDFF] hover:text-[#6a54e0] transition-colors"
                   >
                     {label}
                     <ExternalLink size={14} className="flex-shrink-0 text-slate-400" />

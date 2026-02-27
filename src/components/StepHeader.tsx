@@ -13,7 +13,7 @@ export default function StepHeader({
 }: StepHeaderProps) {
   return (
     <header className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+      <p className="text-xs font-semibold uppercase tracking-widest text-[#8870FF]">
         {stepLabel}
       </p>
       <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">

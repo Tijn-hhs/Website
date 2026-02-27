@@ -124,9 +124,9 @@ function IdleView({
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
       {/* ── Left: explainer ── */}
       <div className="lg:col-span-2 space-y-4">
-        <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-5">
+        <div className="rounded-xl border border-[#D9D3FB] bg-gradient-to-br from-blue-50 to-indigo-50 p-5">
           <div className="flex items-center gap-2 mb-3">
-            <Users size={18} className="text-blue-600" />
+            <Users size={18} className="text-[#8870FF]" />
             <h3 className="font-semibold text-slate-800">How matching works</h3>
           </div>
           <ol className="space-y-3">
@@ -136,7 +136,7 @@ function IdleView({
               'Once matched, you see each other\'s contact details and can connect directly.',
             ].map((step, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#8870FF] text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
                 <span className="leading-relaxed">{step}</span>
               </li>
             ))}
@@ -246,11 +246,11 @@ function IdleView({
                     onClick={() => toggleLookingFor(opt.id)}
                     className={`flex items-start gap-2 rounded-lg border p-2.5 text-left transition-colors ${
                       selected
-                        ? 'border-blue-400 bg-blue-50 text-blue-800'
+                        ? 'border-[#a594ff] bg-[#F0EDFF] text-[#5b3fd4]'
                         : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
-                    <div className={`flex-shrink-0 mt-0.5 w-4 h-4 rounded border flex items-center justify-center ${selected ? 'bg-blue-600 border-blue-600' : 'border-slate-300'}`}>
+                    <div className={`flex-shrink-0 mt-0.5 w-4 h-4 rounded border flex items-center justify-center ${selected ? 'bg-[#8870FF] border-[#8870FF]' : 'border-slate-300'}`}>
                       {selected && <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 12 12" fill="currentColor"><path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                     </div>
                     <div>
@@ -280,7 +280,7 @@ function IdleView({
           <button
             onClick={handleSubmit}
             disabled={!canSubmit || submitting || loading}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 text-sm transition-colors"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#8870FF] hover:bg-[#6a54e0] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 text-sm transition-colors"
           >
             {submitting || loading ? (
               <>
@@ -338,7 +338,7 @@ function PendingView({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-[#8870FF] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
             {(profile.buddyDisplayName || profile.preferredName || '?').slice(0, 2).toUpperCase()}
           </div>
           <div>
@@ -363,7 +363,7 @@ function PendingView({
             <p className="text-xs text-slate-400 mb-2">Looking for</p>
             <div className="flex flex-wrap gap-1.5">
               {lookingForLabels.map((l) => (
-                <span key={l} className="rounded-full bg-blue-50 border border-blue-100 text-blue-700 px-2.5 py-1 text-xs font-medium">{l}</span>
+                <span key={l} className="rounded-full bg-[#F0EDFF] border border-[#EDE9D8] text-[#6a54e0] px-2.5 py-1 text-xs font-medium">{l}</span>
               ))}
             </div>
           </div>
@@ -388,7 +388,7 @@ function MatchedView({ profile, match, matchLoading }: { profile: UserProfile; m
   if (matchLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={28} className="text-blue-500 animate-spin" />
+        <Loader2 size={28} className="text-[#8870FF] animate-spin" />
       </div>
     )
   }
@@ -486,7 +486,7 @@ function MatchedView({ profile, match, matchLoading }: { profile: UserProfile; m
         <div className="lg:col-span-2 space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-5 space-y-3">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
-              <CheckCircle2 size={13} className="text-blue-500" />
+              <CheckCircle2 size={13} className="text-[#8870FF]" />
               Contact details — reach out directly
             </p>
             {match.phone && (
@@ -510,10 +510,10 @@ function MatchedView({ profile, match, matchLoading }: { profile: UserProfile; m
             {match.linkedin && (
               <ContactLink
                 href={`https://${match.linkedin}`}
-                icon={<Linkedin size={18} className="text-blue-600" />}
+                icon={<Linkedin size={18} className="text-[#8870FF]" />}
                 label="LinkedIn"
                 sublabel={match.linkedin}
-                color="border-blue-100 hover:bg-blue-50"
+                color="border-[#EDE9D8] hover:bg-[#F0EDFF]"
               />
             )}
           </div>
@@ -621,7 +621,7 @@ export default function BuddySystemPage() {
 
           {viewState === 'loading' && (
             <div className="flex items-center justify-center py-20">
-              <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-[#D9D3FB] border-t-blue-600 rounded-full animate-spin" />
             </div>
           )}
           {viewState === 'idle' && (

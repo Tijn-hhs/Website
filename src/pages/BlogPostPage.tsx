@@ -35,7 +35,7 @@ export default function BlogPostPage() {
   return (
     <>
       <FeedbackWidget />
-      <div className="bg-white min-h-screen">
+      <div className="bg-[#F9F7F1] min-h-screen">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <article className="max-w-4xl mx-auto space-y-8">
@@ -53,7 +53,7 @@ export default function BlogPostPage() {
           {/* Blog Header */}
           <header className="space-y-6">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#8870FF]">
                 Blog Post
               </p>
               <h1 className="text-4xl font-bold text-slate-900 sm:text-5xl leading-tight">
@@ -64,7 +64,7 @@ export default function BlogPostPage() {
             {/* Blog Meta Information */}
             <div className="flex flex-wrap gap-6 text-sm text-slate-600">
               <div className="flex items-center gap-2">
-                <Calendar size={18} className="text-blue-500" />
+                <Calendar size={18} className="text-[#8870FF]" />
                 <time dateTime={blogPost.date}>
                   {new Date(blogPost.date).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -74,26 +74,26 @@ export default function BlogPostPage() {
                 </time>
               </div>
               <div className="flex items-center gap-2">
-                <User size={18} className="text-blue-500" />
+                <User size={18} className="text-[#8870FF]" />
                 <span>{blogPost.author}</span>
               </div>
             </div>
           </header>
 
           {/* Divider */}
-          <hr className="border-slate-200" />
+          <hr className="border-[#EDE9D8]" />
 
           {/* Blog Content */}
           <div
-            className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-h2:text-2xl prose-h2:font-semibold prose-h2:mt-8 prose-h2:mb-4 prose-p:text-slate-700 prose-p:leading-relaxed prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline"
+            className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-h2:text-2xl prose-h2:font-semibold prose-h2:mt-8 prose-h2:mb-4 prose-p:text-slate-700 prose-p:leading-relaxed prose-a:text-[#8870FF] prose-a:no-underline hover:prose-a:underline"
             dangerouslySetInnerHTML={{ __html: blogPost.content }}
           />
 
           {/* Metadata Section */}
           {blogPost.metadata && (
-            <div className="mt-12 p-6 rounded-2xl bg-gradient-to-br from-blue-50 via-purple-50 to-slate-50 border border-slate-200/70 shadow-sm">
+            <div className="mt-12 p-6 rounded-2xl bg-[#F0EDFF] border border-[#D9D3FB] shadow-sm">
               <div className="flex items-start gap-3">
-                <Tag size={20} className="text-blue-500 flex-shrink-0 mt-1" />
+                <Tag size={20} className="text-[#8870FF] flex-shrink-0 mt-1" />
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">
                     Topics
@@ -110,14 +110,14 @@ export default function BlogPostPage() {
           <div className="pt-8 pb-12 flex gap-3">
             <Link
               to="/blog"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-150 hover:bg-slate-50 hover:shadow-md"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-[#EDE9D8] bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-150 hover:bg-[#F0EDFF] hover:border-[#8870FF]/40 hover:shadow-md"
             >
               <ArrowLeft size={16} />
               Back to Blog
             </Link>
             <Link
               to="/"
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-150 hover:bg-slate-50 hover:shadow-md"
+              className="inline-flex items-center justify-center rounded-full border border-[#EDE9D8] bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-150 hover:bg-[#F0EDFF] hover:border-[#8870FF]/40 hover:shadow-md"
             >
               Home
             </Link>

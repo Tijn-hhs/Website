@@ -31,7 +31,7 @@ export default function DashboardLayout() {
   }, [])
 
   return (
-    <div className="bg-[#F5F1E4] min-h-screen">
+    <div className="bg-[#F9F7F1] min-h-screen">
       <Sidebar />
       <MobileNav />
       {/* 

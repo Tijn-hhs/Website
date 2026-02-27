@@ -6,9 +6,9 @@ import type { OnboardingDraft } from '../onboarding/types'
 
 // Tailwind styles
 const inputBase =
-  'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-blue-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+  'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-[#EDE9D8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:border-[#8870FF]'
 const selectBase =
-  'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-blue-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+  'w-full px-3 py-2 text-sm text-gray-700 bg-white border border-[#EDE9D8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:border-[#8870FF]'
 
 // Helper to convert onboarding draft to profile format
 function convertDraftToProfile(draft: OnboardingDraft): Partial<UserProfile> {
@@ -391,7 +391,7 @@ export default function MySituationPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Student Profile</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -441,7 +441,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Citizenship & Visa Status</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -464,7 +464,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">University & Admission</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -727,7 +727,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Requirements</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -844,7 +844,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Visa & Legal Entry</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -905,7 +905,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasVisa', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasVisa">
                   I have my visa
@@ -914,7 +914,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Immigration Registration</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
@@ -927,7 +927,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasCodiceFiscale', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasCodiceFiscale">
                   I have my Codice Fiscale
@@ -943,7 +943,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasResidencePermit', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasResidencePermit">
                   I have my residence permit (Permesso di Soggiorno)
@@ -952,7 +952,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Budget & Funding</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -1016,7 +1016,7 @@ export default function MySituationPage() {
 
 
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Housing</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -1074,7 +1074,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasHousing', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasHousing">
                   I have arranged my housing
@@ -1090,7 +1090,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'housingSupportNeeded', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="housingSupportNeeded">
                   I need help finding housing
@@ -1099,7 +1099,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Banking & Phone</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
@@ -1112,7 +1112,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'needsBankAccount', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="needsBankAccount">
                   I need to open an Italian bank account
@@ -1128,7 +1128,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasBankAccount', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasBankAccount">
                   I have an Italian bank account
@@ -1144,7 +1144,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'needsPhoneNumber', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="needsPhoneNumber">
                   I need an Italian phone number
@@ -1160,7 +1160,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasPhoneNumber', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasPhoneNumber">
                   I have an Italian phone number
@@ -1169,7 +1169,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Insurance & Healthcare</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
@@ -1182,7 +1182,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasTravelInsurance', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasTravelInsurance">
                   I have travel insurance
@@ -1198,7 +1198,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasHealthInsurance', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasHealthInsurance">
                   I have health insurance for Italy
@@ -1207,7 +1207,7 @@ export default function MySituationPage() {
             </div>
           </section>
 
-          <section className="bg-white/80 border border-blue-100 rounded-2xl shadow-sm p-5">
+          <section className="bg-white/80 border border-[#EDE9D8] rounded-2xl shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Before Departure</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -1233,7 +1233,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'flightBooked', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="flightBooked">
                   My flight is booked
@@ -1249,7 +1249,7 @@ export default function MySituationPage() {
                     const value = e.target.checked ? 'yes' : 'no'
                     handleChange({ target: { name: 'hasEhic', value } } as any)
                   }}
-                  className="h-4 w-4 text-blue-600 border-blue-200 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-[#8870FF] border-[#D9D3FB] rounded focus:ring-[#8870FF]"
                 />
                 <label className="text-sm font-medium text-gray-700" htmlFor="hasEhic">
                   I have my EHIC card (EU health card)
@@ -1270,7 +1270,7 @@ export default function MySituationPage() {
             <button
                   type="submit"
                   disabled={isSaving || isLoading || !isDirty}
-                  className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white rounded-full bg-gradient-to-r from-blue-600 to-purple-600 shadow-md hover:shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white rounded-full bg-gradient-to-r from-blue-600 to-purple-600 shadow-md hover:shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? 'Saving...' : isDirty ? 'Save changes' : 'No changes'}
             </button>

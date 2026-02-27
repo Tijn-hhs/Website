@@ -59,8 +59,8 @@ function TabBarButtons({
               compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
             } ${
               isActive
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                ? 'bg-[#8870FF] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-[#D9D3FB]/60 hover:text-slate-700'
             }`}
           >
             <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
@@ -116,7 +116,7 @@ function TabNavigation({
         )}
       </div>
       {/* Desktop: scrollable row */}
-      <div className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white px-2 py-2 shadow-sm">
+      <div className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] px-2 py-2 shadow-sm">
         <TabBarButtons activeId={activeId} onSelect={onSelect} />
       </div>
     </div>
@@ -168,7 +168,7 @@ function ExpandableCard({ title, badge, children }: { title: string; badge?: Rea
 
 function Badge({ label, variant }: { label: string; variant: 'eu' | 'non-eu' | 'all' | 'bocconi' }) {
   const styles: Record<string, string> = {
-    eu:       'border-blue-300    bg-blue-100    text-blue-800',
+    eu:       'border-[#a594ff]    bg-[#F0EDFF]    text-[#5b3fd4]',
     'non-eu': 'border-violet-300  bg-violet-100  text-violet-800',
     all:      'border-slate-300   bg-slate-100   text-slate-700',
     bocconi:  'border-emerald-300 bg-emerald-100 text-emerald-800',
@@ -288,11 +288,11 @@ export default function HealthcarePage() {
         {activeSection === 'overview' && (
           <>
             {isEuCitizen === true && (
-              <div className="col-span-full flex items-start gap-4 rounded-xl border border-blue-300 bg-blue-50 p-5 shadow-sm">
-                <Stethoscope size={24} className="mt-0.5 flex-shrink-0 text-blue-500" />
+              <div className="col-span-full flex items-start gap-4 rounded-xl border border-[#a594ff] bg-[#F0EDFF] p-5 shadow-sm">
+                <Stethoscope size={24} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                 <div>
-                  <p className="text-base font-semibold text-blue-800">EU/EEA citizen — your EHIC covers most care</p>
-                  <p className="mt-1 text-sm text-blue-700">
+                  <p className="text-base font-semibold text-[#5b3fd4]">EU/EEA citizen — your EHIC covers most care</p>
+                  <p className="mt-1 text-sm text-[#6a54e0]">
                     Your EHIC card gives you access to state healthcare on the same terms as Italian residents.
                     Once in Milan, register with a <em>medico di base</em> (GP) for all non-emergency needs.
                     See the <button className="underline font-medium" onClick={() => handleTabSelect('gp')}>GP tab</button>.
@@ -364,8 +364,8 @@ export default function HealthcarePage() {
                   },
                   {
                     title: 'Specialists & tests',
-                    color: 'border-blue-200 bg-blue-50',
-                    badge: 'border-blue-300 bg-blue-100 text-blue-800',
+                    color: 'border-[#D9D3FB] bg-[#F0EDFF]',
+                    badge: 'border-[#a594ff] bg-[#F0EDFF] text-[#5b3fd4]',
                     desc: 'Access via GP referral on the public SSN (subsidised) or directly at private clinics (faster, higher cost). Many offer student rates.',
                   },
                 ].map(c => (
@@ -427,7 +427,7 @@ export default function HealthcarePage() {
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
+                <div className="flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-xs text-[#5b3fd4]">
                   <Info size={14} className="mt-0.5 flex-shrink-0" />
                   You will receive your Tessera Sanitaria (health card) by post within a few weeks. It is also your Codice Fiscale card — carry it everywhere.
                 </div>
@@ -452,7 +452,7 @@ export default function HealthcarePage() {
                     'Not a substitute for your regular GP for ongoing or chronic conditions',
                   ].map((x, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
-                      <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                      <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                       {x}
                     </li>
                   ))}
@@ -479,7 +479,7 @@ export default function HealthcarePage() {
                   ))}
                 </ul>
                 <a href="https://www.santagostino.it/en" target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                  className="inline-flex items-center gap-1 text-xs text-[#8870FF] hover:underline">
                   Centro Medico Santagostino <ExternalLink size={11} />
                 </a>
               </ExpandableCard>
@@ -546,7 +546,7 @@ export default function HealthcarePage() {
               <ExpandableCard title="Prescription medicines (ricette)">
                 <ul className="space-y-2 mb-3">
                   <li className="flex items-start gap-2 text-xs text-slate-600">
-                    <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                    <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                     <span><strong className="text-slate-700">Ricetta rossa (SSN prescription)</strong> — you pay the ticket (~€2–5 per drug). Exempt if under 18, over 65, or with certain conditions.</span>
                   </li>
                   <li className="flex items-start gap-2 text-xs text-slate-600">
@@ -593,7 +593,7 @@ export default function HealthcarePage() {
                 {[
                   { color: 'bg-red-500',    label: 'Rosso (Red)',      desc: 'Life-threatening — seen immediately' },
                   { color: 'bg-orange-400', label: 'Arancio (Orange)', desc: 'Urgent — within 15 minutes' },
-                  { color: 'bg-blue-500',   label: 'Azzurro (Blue)',   desc: 'Semi-urgent — within 60 minutes' },
+                  { color: 'bg-[#8870FF]',   label: 'Azzurro (Blue)',   desc: 'Semi-urgent — within 60 minutes' },
                   { color: 'bg-green-500',  label: 'Verde (Green)',    desc: 'Minor — wait 2+ hours' },
                 ].map(t => (
                   <div key={t.label} className="rounded-lg border border-slate-200 bg-white px-3 py-3">
@@ -665,7 +665,7 @@ export default function HealthcarePage() {
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
+                <div className="flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-xs text-[#5b3fd4]">
                   <Info size={14} className="mt-0.5 flex-shrink-0" />
                   Ask for the <em>lettera di dimissione</em> when discharged — a written summary your GP needs for follow-up. Use Google Translate camera to read Italian discharge papers.
                 </div>
@@ -730,7 +730,7 @@ export default function HealthcarePage() {
                 </ul>
                 <a href="https://www.unibocconi.it/en/programs/current-students/services-and-activities/student-services/welfare-at-bocconi/healthcare-and-psychological-support"
                   target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                  className="inline-flex items-center gap-1 text-xs text-[#8870FF] hover:underline">
                   Bocconi welfare &amp; counseling page <ExternalLink size={11} />
                 </a>
               </ExpandableCard>
@@ -826,12 +826,12 @@ export default function HealthcarePage() {
                     'Some dental care during pregnancy',
                   ].map((x, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
-                      <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                      <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                       {x}
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
+                <div className="flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-xs text-[#5b3fd4]">
                   <Info size={14} className="mt-0.5 flex-shrink-0" />
                   For emergency dental pain, go to the dental unit (<em>reparto odontoiatrico</em>) at Ospedale Policlinico or Ospedale San Paolo — both provide 24h emergency dental care, free for genuine emergencies.
                 </div>

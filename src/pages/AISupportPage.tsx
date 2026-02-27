@@ -105,9 +105,9 @@ function ContextPanel({
   return (
     <div className="flex flex-col gap-4">
       {/* What the AI knows */}
-      <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+      <div className="rounded-xl border border-[#EDE9D8] bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles size={14} className="text-blue-600" />
+          <Sparkles size={14} className="text-[#8870FF]" />
           <p className="text-xs font-semibold text-slate-700">What the AI will know</p>
         </div>
         <p className="text-xs text-slate-500 leading-relaxed">
@@ -163,7 +163,7 @@ function ContextPanel({
         {!stepsOpen && (
           <div className="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full bg-[#8870FF] rounded-full transition-all"
               style={{ width: `${(completedCount / PROCESS_STEPS.length) * 100}%` }}
             />
           </div>
@@ -189,7 +189,7 @@ function MessageBubble({ msg }: { msg: Message }) {
     <div className={`flex items-end gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       {/* Avatar */}
       <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${
-        isUser ? 'bg-blue-600' : 'bg-gradient-to-br from-indigo-500 to-purple-600'
+        isUser ? 'bg-[#8870FF]' : 'bg-gradient-to-br from-indigo-500 to-purple-600'
       }`}>
         {isUser ? <User size={13} /> : <Sparkles size={13} />}
       </div>
@@ -198,7 +198,7 @@ function MessageBubble({ msg }: { msg: Message }) {
       <div className={`max-w-[75%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
         <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
           isUser
-            ? 'bg-blue-600 text-white rounded-br-sm'
+            ? 'bg-[#8870FF] text-white rounded-br-sm'
             : 'bg-white border border-slate-200 text-slate-800 rounded-bl-sm shadow-sm'
         }`}>
           {isUser ? msg.content : (
@@ -214,7 +214,7 @@ function MessageBubble({ msg }: { msg: Message }) {
                 h1: ({ children }) => <h1 className="font-bold text-base mb-1">{children}</h1>,
                 h2: ({ children }) => <h2 className="font-bold mb-1">{children}</h2>,
                 h3: ({ children }) => <h3 className="font-semibold mb-1">{children}</h3>,
-                a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">{children}</a>,
+                a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#8870FF] underline hover:text-[#5b3fd4]">{children}</a>,
               }}
             >
               {msg.content}
@@ -364,7 +364,7 @@ export default function AISupportPage() {
             <div className="hidden lg:block w-64 flex-shrink-0">
               {dataLoaded
                 ? <ContextPanel profile={profile} progress={progress} />
-                : <div className="rounded-xl border border-slate-200 bg-white p-6 flex items-center justify-center"><div className="w-5 h-5 border-2 border-blue-200 border-t-blue-500 rounded-full animate-spin" /></div>
+                : <div className="rounded-xl border border-slate-200 bg-white p-6 flex items-center justify-center"><div className="w-5 h-5 border-2 border-[#D9D3FB] border-t-blue-500 rounded-full animate-spin" /></div>
               }
             </div>
 
@@ -403,7 +403,7 @@ export default function AISupportPage() {
                       <button
                         key={s}
                         onClick={() => sendMessage(s)}
-                        className="rounded-full border border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 text-slate-600 text-xs px-3 py-1 transition-colors"
+                        className="rounded-full border border-slate-200 bg-white hover:border-[#a594ff] hover:bg-[#F0EDFF] hover:text-[#6a54e0] text-slate-600 text-xs px-3 py-1 transition-colors"
                       >
                         {s}
                       </button>
@@ -414,7 +414,7 @@ export default function AISupportPage() {
 
               {/* Input bar */}
               <div className="px-4 py-3 border-t border-slate-200 bg-white">
-                <div className="flex items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 transition-all px-3 py-2">
+                <div className="flex items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 focus-within:border-[#a594ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all px-3 py-2">
                   <textarea
                     ref={inputRef}
                     value={input}
@@ -431,7 +431,7 @@ export default function AISupportPage() {
                   <button
                     onClick={() => sendMessage(input)}
                     disabled={!input.trim() || isTyping}
-                    className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                    className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#8870FF] hover:bg-[#6a54e0] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
                   >
                     <Send size={14} className="text-white" />
                   </button>

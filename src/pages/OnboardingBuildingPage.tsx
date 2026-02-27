@@ -144,8 +144,8 @@ export default function OnboardingBuildingPage() {
             >
               {/* Mock top bar */}
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-200 opacity-80" />
-                <div className="h-1.5 rounded-full bg-blue-300 flex-1" />
+                <div className="w-2 h-2 rounded-full bg-[#EDE9D8] opacity-80" />
+                <div className="h-1.5 rounded-full bg-[#D9D3FB] flex-1" />
               </div>
               {/* Mock step rows */}
               <div className="p-3 flex flex-col gap-2">
@@ -172,7 +172,7 @@ export default function OnboardingBuildingPage() {
               </div>
               {/* Percentage badge */}
               <div className="px-3 pb-3 text-right">
-                <span className="text-xs font-semibold text-blue-600">{pctDisplay}%</span>
+                <span className="text-xs font-semibold text-[#8870FF]">{pctDisplay}%</span>
               </div>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function OnboardingBuildingPage() {
           {/* Stage message */}
           <p
             key={stage.message}
-            className="text-sm font-medium text-blue-600 text-center min-h-[1.5rem]"
+            className="text-sm font-medium text-[#8870FF] text-center min-h-[1.5rem]"
             style={{ animation: 'fadeSlideUp 0.4s ease forwards' }}
           >
             {stage.message}

@@ -100,7 +100,7 @@ export default function HousingPage() {
           <div className="col-span-full">
             <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8870FF]"></div>
               </div>
             </article>
           </div>

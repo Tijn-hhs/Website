@@ -1,19 +1,23 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  GraduationCap, Award, FileText, Hash, Plane,
+  ClipboardList, Home, CreditCard, Shield, Heart,
+} from 'lucide-react'
 import { isSignedIn } from '../lib/auth'
 import BlogGallery from './BlogGallery'
 
 const journeySteps = [
-  { num: '01', label: 'University Application', icon: '🎓' },
-  { num: '02', label: 'Funding & Scholarships', icon: '💰' },
-  { num: '03', label: 'Student Visa', icon: '🛂' },
-  { num: '04', label: 'Codice Fiscale', icon: '🪪' },
-  { num: '05', label: 'Before Departure', icon: '🧳' },
-  { num: '06', label: 'Residence Permit', icon: '📋' },
-  { num: '07', label: 'Housing', icon: '🏠' },
-  { num: '08', label: 'Banking', icon: '🏦' },
-  { num: '09', label: 'Insurance', icon: '🩺' },
-  { num: '10', label: 'Healthcare', icon: '❤️' },
+  { num: '01', label: 'University Application', icon: <GraduationCap size={22} /> },
+  { num: '02', label: 'Funding & Scholarships', icon: <Award size={22} /> },
+  { num: '03', label: 'Student Visa', icon: <FileText size={22} /> },
+  { num: '04', label: 'Codice Fiscale', icon: <Hash size={22} /> },
+  { num: '05', label: 'Before Departure', icon: <Plane size={22} /> },
+  { num: '06', label: 'Residence Permit', icon: <ClipboardList size={22} /> },
+  { num: '07', label: 'Housing', icon: <Home size={22} /> },
+  { num: '08', label: 'Banking', icon: <CreditCard size={22} /> },
+  { num: '09', label: 'Insurance', icon: <Shield size={22} /> },
+  { num: '10', label: 'Healthcare', icon: <Heart size={22} /> },
 ]
 
 const features = [
@@ -77,7 +81,7 @@ export default function LandingSections() {
   return (
     <>
       {/* ── Section 1: Feature highlights ────────────────────────────── */}
-      <section className="py-16 sm:py-20 bg-[#FAF9F6]">
+      <section className="py-16 sm:py-20 bg-[#F9F7F1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <p className="text-xs font-bold text-[#8870FF] tracking-widest uppercase mb-3">What you get</p>
@@ -100,7 +104,7 @@ export default function LandingSections() {
       </section>
 
       {/* ── Section 2: Journey at a glance ───────────────────────────── */}
-      <section className="py-16 sm:py-20 bg-[#F5F1E4]">
+      <section className="py-16 sm:py-20 bg-[#F9F7F1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <p className="text-xs font-bold text-[#8870FF] tracking-widest uppercase mb-3">Your roadmap</p>
@@ -115,7 +119,7 @@ export default function LandingSections() {
             {journeySteps.map((step) => (
               <div key={step.num} className="relative bg-white rounded-2xl p-4 border border-[#E8E4F8] flex flex-col items-start gap-3 hover:border-[#8870FF]/50 hover:shadow-sm transition-all duration-200">
                 <span className="text-xs font-bold text-[#8870FF]/60 tracking-widest">{step.num}</span>
-                <span className="text-2xl">{step.icon}</span>
+                <span className="text-[#8870FF]">{step.icon}</span>
                 <span className="text-sm font-medium text-slate-800 leading-snug">{step.label}</span>
               </div>
             ))}
@@ -133,7 +137,7 @@ export default function LandingSections() {
       </section>
 
       {/* ── Section 3: Who is it for? ─────────────────────────────────── */}
-      <section className="py-16 sm:py-20 bg-[#FAF9F6]">
+      <section className="py-16 sm:py-20 bg-[#F9F7F1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <p className="text-xs font-bold text-[#8870FF] tracking-widest uppercase mb-3">Made for you</p>
@@ -224,7 +228,7 @@ export default function LandingSections() {
       </section>
 
       {/* ── Section 5: Solution / dashboard image ────────────────────── */}
-      <section className="py-16 sm:py-20 bg-[#FAF9F6]">
+      <section className="py-16 sm:py-20 bg-[#F9F7F1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="space-y-6">
@@ -270,7 +274,7 @@ export default function LandingSections() {
       <BlogGallery />
 
       {/* ── Final CTA ─────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-[#F5F1E4]">
+      <section className="py-16 sm:py-20 lg:py-24 bg-[#F9F7F1]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-xs font-bold text-[#8870FF] tracking-widest uppercase mb-4">Get started</p>
           <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4 leading-tight">

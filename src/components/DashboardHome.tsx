@@ -288,7 +288,7 @@ function ProgramTimeline({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-[#F9F8FF] shadow-sm">
+    <div className="rounded-2xl border border-[#EDE9D8] bg-white shadow-md">
       {/* Header */}
       <div className="px-4 md:px-5 py-3 bg-[#8870FF] flex flex-wrap items-center justify-between gap-y-1.5 rounded-t-2xl">
         <div>
@@ -403,8 +403,8 @@ function ProgramTimeline({
                       m.id === nextUpId
                         ? 'bg-amber-50 border-amber-200'
                         : m.isMock
-                        ? 'bg-slate-50 border-dashed border-slate-200'
-                        : '!bg-[#F9F8FF] border-slate-200'
+                        ? 'bg-slate-50 border-dashed border-[#EDE9D8]'
+                        : '!bg-white border-[#EDE9D8]'
                     }`}>
                       <p className={`text-[11px] leading-tight ${labelCls[style]}`}>{m.label}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">
@@ -651,12 +651,12 @@ export default function DashboardHome() {
       <div className="hidden sm:block">
       {/* Phase 1: data not yet loaded — fixed-height skeleton */}
       {(isLoading || !profile?.programStartMonth) ? (
-        <div className="rounded-2xl border border-slate-200 bg-white/60 animate-pulse" style={{ height: 400 }} />
+        <div className="rounded-2xl border border-[#EDE9D8] bg-[#EDE9D8]/50 animate-pulse" style={{ height: 400 }} />
       ) : !timelineReady ? (
         /* Phase 2: data ready but wait-timer still running — render the real timeline
            invisibly so it occupies exactly the right height; pulse overlay on top */
         <div className="relative">
-          <div className="rounded-2xl border border-slate-200 bg-white/60 animate-pulse absolute inset-0 z-10 pointer-events-none" />
+          <div className="rounded-2xl border border-[#EDE9D8] bg-[#EDE9D8]/50 animate-pulse absolute inset-0 z-10 pointer-events-none" />
           <div className="opacity-0 pointer-events-none">
             <ProgramTimeline
               programStartMonth={profile.programStartMonth}
@@ -691,7 +691,7 @@ export default function DashboardHome() {
       />
 
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-[#F9F8FF] p-6 shadow-sm flex flex-col">
+        <div className="rounded-2xl border border-[#EDE9D8] bg-white p-6 shadow-md flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -744,7 +744,7 @@ export default function DashboardHome() {
                 return (
                   <div
                     key={d.deadlineId}
-                    className="group flex items-start gap-3 rounded-xl border border-slate-100 bg-[#F0EDFF]/40 px-3.5 py-3 hover:bg-[#F9F8FF] hover:shadow-sm transition-all"
+                    className="group flex items-start gap-3 rounded-xl border border-[#EDE9D8]/70 bg-[#F0EDFF]/40 px-3.5 py-3 hover:bg-[#FAF9F6] hover:shadow-sm transition-all"
                   >
                     {/* Urgency dot */}
                     <div className="mt-1 flex-shrink-0">
@@ -769,7 +769,7 @@ export default function DashboardHome() {
                           setEditingDeadline(d)
                           setIsDeadlineModalOpen(true)
                         }}
-                        className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="p-1 rounded-md text-slate-400 hover:text-[#8870FF] hover:bg-[#D9D3FB]/30 transition-colors"
                         title="Edit"
                       >
                         <ChevronRight size={14} />
@@ -789,7 +789,7 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-[#F9F8FF] p-6 shadow-sm">
+        <div className="rounded-2xl border border-[#EDE9D8] bg-white p-6 shadow-md">
           <h2 className="text-lg font-semibold text-slate-900 mb-3">
             Your journey
           </h2>
@@ -833,7 +833,7 @@ export default function DashboardHome() {
                       className={`flex-1 mb-2 rounded-xl px-3.5 py-2.5 ${
                         isCurrent
                           ? 'bg-[#8870FF] shadow-md'
-                          : 'bg-slate-50'
+                          : 'bg-[#FAF9F6]'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -892,7 +892,7 @@ export default function DashboardHome() {
         {isLoading ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="h-20 sm:h-36 rounded-xl sm:rounded-2xl border border-slate-200 bg-white/60 animate-pulse" />
+              <div key={i} className="h-20 sm:h-36 rounded-xl sm:rounded-2xl border border-[#EDE9D8] bg-[#EDE9D8]/50 animate-pulse" />
             ))}
           </div>
         ) : (
@@ -929,7 +929,7 @@ export default function DashboardHome() {
         {isLoading ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-20 sm:h-36 rounded-xl sm:rounded-2xl border border-slate-200 bg-white/60 animate-pulse" />
+              <div key={i} className="h-20 sm:h-36 rounded-xl sm:rounded-2xl border border-[#EDE9D8] bg-[#EDE9D8]/50 animate-pulse" />
             ))}
           </div>
         ) : (

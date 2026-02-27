@@ -8,13 +8,13 @@ export default function BlogOverviewPage() {
   return (
     <>
       <FeedbackWidget />
-      <div className="bg-white min-h-screen">
+      <div className="bg-[#F9F7F1] min-h-screen">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <section className="space-y-8">
           {/* Header */}
           <header className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#8870FF]">
               Our Blog
             </p>
             <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
@@ -29,7 +29,7 @@ export default function BlogOverviewPage() {
           <div>
             <Link
               to="/"
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-full border border-[#EDE9D8] bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:bg-[#F0EDFF] hover:border-[#8870FF]/40"
             >
               Back to Home
             </Link>
@@ -41,7 +41,7 @@ export default function BlogOverviewPage() {
               <Link
                 key={post.id}
                 to={`/blog/${post.id}`}
-                className="group rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-200 overflow-hidden block"
+                className="group rounded-2xl border border-[#EDE9D8] bg-white shadow-md transition-all duration-200 hover:shadow-lg hover:border-[#8870FF]/40 overflow-hidden block"
               >
                 {/* Hero Image */}
                 {post.imageUrl && (
@@ -56,14 +56,14 @@ export default function BlogOverviewPage() {
                 
                 {/* Post Content */}
                 <div className="p-6 space-y-3">
-                  <h2 className="text-xl font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                  <h2 className="text-xl font-semibold text-slate-900 group-hover:text-[#8870FF] transition-colors">
                     {post.title}
                   </h2>
 
                   {/* Meta Information */}
                   <div className="flex flex-wrap gap-4 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
-                      <Calendar size={14} className="text-blue-500" />
+                      <Calendar size={14} className="text-[#8870FF]" />
                       <time dateTime={post.date}>
                         {new Date(post.date).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -73,7 +73,7 @@ export default function BlogOverviewPage() {
                       </time>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <User size={14} className="text-blue-500" />
+                      <User size={14} className="text-[#8870FF]" />
                       <span>{post.author}</span>
                     </div>
                   </div>
@@ -84,7 +84,7 @@ export default function BlogOverviewPage() {
                   </p>
 
                   {/* Read More Link */}
-                  <div className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 group-hover:text-blue-700 transition-colors group-hover:gap-3 duration-200">
+                  <div className="inline-flex items-center gap-2 text-sm font-semibold text-[#8870FF] group-hover:text-[#6a54e0] transition-colors group-hover:gap-3 duration-200">
                     Read Article
                     <ArrowRight size={16} />
                   </div>

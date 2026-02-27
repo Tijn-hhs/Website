@@ -63,8 +63,8 @@ function TabBarButtons({
               compact ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3 py-2 text-sm font-medium'
             } ${
               isActive
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                ? 'bg-[#8870FF] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-[#D9D3FB]/60 hover:text-slate-700'
             }`}
           >
             <Icon size={compact ? 12 : 14} className={isActive ? 'text-white/80' : 'text-slate-400'} />
@@ -97,7 +97,7 @@ function TabNavigation({
           className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
         >
           <div className="flex items-center gap-2.5">
-            {ActiveIcon && <ActiveIcon size={15} className="text-blue-600 flex-shrink-0" />}
+            {ActiveIcon && <ActiveIcon size={15} className="text-[#8870FF] flex-shrink-0" />}
             <span className="text-sm font-semibold text-slate-800">{activeSection?.label}</span>
           </div>
           <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -113,7 +113,7 @@ function TabNavigation({
                     key={id}
                     onClick={() => { onSelect(id); setOpen(false) }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-b border-slate-100 last:border-b-0 ${
-                      isActive ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                      isActive ? 'bg-[#8870FF] text-white font-semibold' : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <Icon size={15} className={isActive ? 'text-white/70' : 'text-slate-400'} />
@@ -127,7 +127,7 @@ function TabNavigation({
         )}
       </div>
       {/* Desktop: scrollable button row */}
-      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm scrollbar-hide">
+      <nav className="hidden sm:flex items-center gap-1 overflow-x-auto rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-1.5 shadow-sm scrollbar-hide">
         <TabBarButtons activeId={activeId} onSelect={onSelect} />
       </nav>
     </div>
@@ -160,7 +160,7 @@ function Badge({ label, variant }: { label: string; variant: 'required' | 'optio
     optional: 'bg-slate-100 text-slate-600 border-slate-200',
     warning: 'bg-amber-50 text-amber-700 border-amber-200',
     tip: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    info: 'bg-blue-50 text-blue-700 border-blue-200',
+    info: 'bg-[#F0EDFF] text-[#6a54e0] border-[#D9D3FB]',
   }
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${styles[variant]}`}>
@@ -239,7 +239,7 @@ function DocChecklistItem({
           {tips && (
             <button
               onClick={() => setOpen((o) => !o)}
-              className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors"
+              className="inline-flex items-center gap-1 rounded-md border border-[#D9D3FB] bg-[#F0EDFF] px-2 py-1 text-xs font-medium text-[#8870FF] hover:bg-[#F0EDFF] transition-colors"
               aria-expanded={open}
             >
               <Lightbulb size={12} />
@@ -250,12 +250,12 @@ function DocChecklistItem({
         </div>
       </div>
       {tips && open && (
-        <div className="border-t border-blue-100 bg-blue-50/40 px-4 pb-4 pt-3">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-blue-600">{tips.heading}</p>
+        <div className="border-t border-[#EDE9D8] bg-[#F0EDFF]/40 px-4 pb-4 pt-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8870FF]">{tips.heading}</p>
           <ul className="space-y-1.5">
             {tips.points.map((point, i) => (
               <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
-                <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
+                <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#a594ff]" />
                 {point}
               </li>
             ))}
@@ -282,7 +282,7 @@ function TimelineStep({
   const colors: Record<string, { dot: string; border: string; bg: string; badge: string; text: string }> = {
     default:   { dot: 'bg-slate-800',  border: 'border-slate-200', bg: 'bg-white',       badge: 'bg-slate-100 text-slate-600',  text: 'text-slate-600' },
     warning:   { dot: 'bg-amber-500',  border: 'border-amber-200', bg: 'bg-amber-50/40', badge: 'bg-amber-100 text-amber-700',  text: 'text-amber-700' },
-    important: { dot: 'bg-blue-600',   border: 'border-blue-200',  bg: 'bg-blue-50/40',  badge: 'bg-blue-100 text-blue-700',    text: 'text-blue-700' },
+    important: { dot: 'bg-[#8870FF]',   border: 'border-[#D9D3FB]',  bg: 'bg-[#F0EDFF]/40',  badge: 'bg-[#F0EDFF] text-[#6a54e0]',    text: 'text-[#6a54e0]' },
   }
   const c = colors[variant]
   return (
@@ -637,9 +637,9 @@ export default function StudentVisaPage() {
           userInfoTitle="Your visa details"
           userInfoSubtitle={
             nationality ? (
-              <>Showing guidance for <strong className="text-slate-700">{nationality}</strong> nationals. Update in{' '}<a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a>.</>
+              <>Showing guidance for <strong className="text-slate-700">{nationality}</strong> nationals. Update in{' '}<a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a>.</>
             ) : (
-              <>Set your nationality in <a href="/dashboard/my-situation" className="text-blue-600 hover:underline">My Situation</a> for personalised guidance.</>
+              <>Set your nationality in <a href="/dashboard/my-situation" className="text-[#8870FF] hover:underline">My Situation</a> for personalised guidance.</>
             )
           }
           userInfoFields={[
@@ -663,11 +663,11 @@ export default function StudentVisaPage() {
           {/* OVERVIEW */}
           {activeSection === 'overview' && (
             <>
-              <div className="col-span-full flex items-start gap-4 rounded-xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
-                <Plane size={24} className="flex-shrink-0 text-blue-500 mt-0.5" />
+              <div className="col-span-full flex items-start gap-4 rounded-xl border border-[#D9D3FB] bg-[#F0EDFF] p-5 shadow-sm">
+                <Plane size={24} className="flex-shrink-0 text-[#8870FF] mt-0.5" />
                 <div>
-                  <p className="text-base font-semibold text-blue-800">You need a national long-stay visa (Visto D)</p>
-                  <p className="mt-1 text-sm text-blue-700">
+                  <p className="text-base font-semibold text-[#5b3fd4]">You need a national long-stay visa (Visto D)</p>
+                  <p className="mt-1 text-sm text-[#6a54e0]">
                     Non-EU students staying in Italy for more than 90 days must obtain a <strong>Type D national student visa</strong> before travelling.
                     This is issued by the Italian consulate in your home country and allows entry for study purposes.
                   </p>
@@ -766,7 +766,7 @@ export default function StudentVisaPage() {
                   description="Within 8 working days of arriving in Italy, submit your Permesso di Soggiorno application at the post office (kit available at any post office). This is covered in Step 6."
                   variant="warning" />
               </div>
-              <div className="mt-5 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+              <div className="mt-5 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-sm text-[#5b3fd4]">
                 <Info size={16} className="mt-0.5 flex-shrink-0" />
                 <span>
                   <strong>Peak season delays:</strong> Consulates processing student visas are busiest in May–July (for September starts)
@@ -878,7 +878,7 @@ export default function StudentVisaPage() {
                   <p className="text-sm font-semibold text-emerald-800">All documents ready — you're set for your appointment!</p>
                 </div>
               )}
-              <div className="mb-3 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-700">
+              <div className="mb-3 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-xs text-[#6a54e0]">
                 <Info size={14} className="mt-0.5 flex-shrink-0" />
                 <span>
                   Requirements vary by consulate. Always verify the exact list on your Italian consulate's official website before your appointment.
@@ -949,10 +949,10 @@ export default function StudentVisaPage() {
                     <p className="mt-1 text-lg font-bold text-slate-800">€269.60</p>
                     <p className="text-xs text-slate-500 mt-0.5">Half of the monthly INPS social allowance</p>
                   </div>
-                  <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
-                    <p className="text-xs font-medium text-blue-400 uppercase tracking-wide">Minimum (per month beyond 1)</p>
-                    <p className="mt-1 text-lg font-bold text-blue-800">~€539 / month</p>
-                    <p className="text-xs text-blue-600 mt-0.5">Full INPS monthly social allowance (2025)</p>
+                  <div className="rounded-lg border border-[#EDE9D8] bg-[#F0EDFF] p-3">
+                    <p className="text-xs font-medium text-[#a594ff] uppercase tracking-wide">Minimum (per month beyond 1)</p>
+                    <p className="mt-1 text-lg font-bold text-[#5b3fd4]">~€539 / month</p>
+                    <p className="text-xs text-[#8870FF] mt-0.5">Full INPS monthly social allowance (2025)</p>
                   </div>
                   <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-3">
                     <p className="text-xs font-medium text-emerald-400 uppercase tracking-wide">Recommended (full academic year)</p>
@@ -1045,10 +1045,10 @@ export default function StudentVisaPage() {
                   <p>The Permesso di Soggiorno for study is issued annually and must be renewed each year before it expires. Start the renewal process at least 60 days before expiry.</p>
                 </ExpandableCard>
               </div>
-              <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+              <div className="mt-4 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-sm text-[#5b3fd4]">
                 <p className="font-semibold mb-1">Milan Questura — Ufficio Immigrazione</p>
-                <p className="text-xs text-blue-700">Via Montebello 26, 20121 Milan. Appointments are arranged through the post office kit system — you cannot walk in without one.</p>
-                <a href="https://questure.poliziadistato.it/it/Milano" target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                <p className="text-xs text-[#6a54e0]">Via Montebello 26, 20121 Milan. Appointments are arranged through the post office kit system — you cannot walk in without one.</p>
+                <a href="https://questure.poliziadistato.it/it/Milano" target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-[#8870FF] hover:underline">
                   Milan Questura website <ExternalLink size={11} />
                 </a>
               </div>
@@ -1116,8 +1116,8 @@ export default function StudentVisaPage() {
                     <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"
                       className="group flex flex-col gap-1 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md hover:border-slate-300">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-semibold text-slate-800 group-hover:text-blue-700 transition-colors">{link.title}</p>
-                        <ExternalLink size={14} className="mt-0.5 flex-shrink-0 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                        <p className="text-sm font-semibold text-slate-800 group-hover:text-[#6a54e0] transition-colors">{link.title}</p>
+                        <ExternalLink size={14} className="mt-0.5 flex-shrink-0 text-slate-400 group-hover:text-[#8870FF] transition-colors" />
                       </div>
                       <p className="text-xs text-slate-500 leading-relaxed">{link.description}</p>
                       <div className="mt-1">

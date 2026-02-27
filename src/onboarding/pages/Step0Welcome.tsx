@@ -74,7 +74,7 @@ export default function Step0Welcome() {
           <div className="text-5xl mb-4">📋</div>
         </div>
 
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-8 shadow-lg">
+        <div className="bg-[#F0EDFF] border border-[#D9D3FB] rounded-2xl p-8">
           <h3 className="text-2xl font-bold text-slate-800 mb-4 text-center">
             Before we begin...
           </h3>
@@ -82,7 +82,7 @@ export default function Step0Welcome() {
             To know how we can help you, we need to know what your situation is. 
             We're going to ask a couple of questions. Please fill these out as carefully as possible.
           </p>
-          <div className="bg-white/70 rounded-lg p-4 border border-blue-100">
+          <div className="bg-white rounded-xl p-4 border border-[#EDE9D8]">
             <p className="text-sm text-slate-600 flex items-start gap-2">
               <span className="text-lg">💡</span>
               <span>
@@ -127,7 +127,7 @@ export default function Step0Welcome() {
           onChange={(e) => handleNameChange(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Enter your first name..."
-          className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-base text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
+          className="w-full rounded-xl border border-[#EDE9D8] bg-white px-4 py-3 text-base text-slate-800 placeholder:text-slate-400 focus:border-[#8870FF] focus:outline-none focus:ring-2 focus:ring-[#8870FF]/20 transition-all"
           autoFocus
         />
         <p className="mt-2 text-xs text-slate-500">
@@ -138,7 +138,7 @@ export default function Step0Welcome() {
       {/* Welcome Message - Animated */}
       {showWelcome && draft.preferredName.trim() && (
         <div 
-          className="animate-fade-in-up bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-6 shadow-lg"
+          className="animate-fade-in-up bg-[#F0EDFF] border border-[#D9D3FB] rounded-2xl p-6"
         >
           <div className="text-center">
             <div className="text-4xl mb-3">🎉</div>

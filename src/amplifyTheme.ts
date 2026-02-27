@@ -6,22 +6,22 @@ export const amplifyTheme = createTheme({
     colors: {
       brand: {
         primary: {
-          10: '#f0f4ff',
-          20: '#e0e9ff',
-          40: '#bfdbfe',
-          60: '#3b82f6',
-          80: '#1d4ed8',
-          90: '#1e40af',
-          100: '#1e3a8a',
+          10: '#F0EDFF',
+          20: '#D9D3FB',
+          40: '#b3a8f7',
+          60: '#8870FF',
+          80: '#6a54e0',
+          90: '#5540c9',
+          100: '#3d2eb0',
         },
       },
       background: {
         primary: '#ffffff',
-        secondary: '#f8fafc',
+        secondary: '#F9F7F1',
       },
       border: {
-        primary: '#e2e8f0',
-        secondary: '#cbd5e1',
+        primary: '#EDE9D8',
+        secondary: '#D9D3FB',
       },
       text: {
         primary: '#0f172a',

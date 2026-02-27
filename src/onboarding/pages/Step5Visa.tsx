@@ -100,8 +100,8 @@ export default function Step5Visa() {
             onClick={() => updateField('hasVisa', 'yes')}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasVisa === 'yes'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             Yes
@@ -111,8 +111,8 @@ export default function Step5Visa() {
             onClick={() => updateField('hasVisa', 'no')}
             className={`flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
               draft.hasVisa === 'no'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-[#8870FF] text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-[#F0EDFF] hover:text-[#8870FF]'
             }`}
           >
             No
