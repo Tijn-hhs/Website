@@ -276,7 +276,7 @@ function ProgramTimeline({
     urgent:  'bg-red-500   border-2 border-red-400   ring-4 ring-red-100',
     soon:    'bg-amber-400 border-2 border-amber-400 ring-4 ring-amber-100',
     future:  'bg-[#8870FF] border-2 border-[#8870FF] ring-4 ring-[#D9D3FB]',
-    end:     'bg-gradient-to-br from-[#FF5402] to-[#8870FF] border-2 border-[#8870FF] ring-4 ring-[#D9D3FB]',
+    end:     'bg-[#8870FF] border-2 border-[#8870FF] ring-4 ring-[#D9D3FB]',
   }
 
   const labelCls: Record<string, string> = {
@@ -290,7 +290,7 @@ function ProgramTimeline({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}
-      <div className="px-4 md:px-6 py-4 md:py-5 bg-gradient-to-r from-[#FF5402] to-[#8870FF] flex flex-wrap items-start justify-between gap-y-2 rounded-t-2xl">
+      <div className="px-4 md:px-6 py-4 md:py-5 bg-[#FF5402] flex flex-wrap items-start justify-between gap-y-2 rounded-t-2xl">
         <div>
           <h2 className="text-lg font-semibold text-white">Journey Timeline</h2>
           <p className="mt-0.5 text-sm text-blue-200">
@@ -832,7 +832,7 @@ export default function DashboardHome() {
                     <div
                       className={`flex-1 mb-2 rounded-xl px-3.5 py-2.5 ${
                         isCurrent
-                          ? 'bg-gradient-to-r from-[#8870FF] to-[#FF5402] shadow-md'
+                          ? 'bg-[#FF5402] shadow-md'
                           : 'bg-slate-50'
                       }`}
                     >
