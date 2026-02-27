@@ -102,6 +102,7 @@ export interface UserProfile {
   buddyMatchedWithId?: string
   // Personalised dashboard
   dashboardPlan?: string          // JSON string of DashboardPlanItem[]
+  onboardingCompletedAt?: string
 }
 
 export interface StepProgress {

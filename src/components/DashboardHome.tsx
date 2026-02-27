@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import StepCard from './StepCard'
 import DeadlineModal from './DeadlineModal'
-import { fetchMe, saveStepProgress, fetchDeadlines, createDeadline, updateDeadline, deleteDeadline, fetchContentModules } from '../lib/api'
+import { fetchMe, saveProfile, saveStepProgress, fetchDeadlines, createDeadline, updateDeadline, deleteDeadline, fetchContentModules } from '../lib/api'
 import type { Deadline, DashboardPlanItem } from '../lib/api'
 import { StepProgress, UserProfile } from '../types/user'
 import {
@@ -479,6 +479,24 @@ export default function DashboardHome() {
   })
   const [timelineReady, setTimelineReady] = useState(false)
   const [dashboardPlan, setDashboardPlan] = useState<DashboardPlanItem[]>([])
+  const [startDateInput, setStartDateInput] = useState('')
+  const [startDateSaving, setStartDateSaving] = useState(false)
+  const [startDateError, setStartDateError] = useState('')
+
+  async function handleSaveStartDate() {
+    if (!startDateInput || !profile) return
+    // Expect YYYY-MM format from <input type="month">
+    setStartDateError('')
+    setStartDateSaving(true)
+    const updated: typeof profile = { ...profile, programStartMonth: startDateInput }
+    const ok = await saveProfile(updated)
+    if (ok) {
+      setProfile(updated)
+    } else {
+      setStartDateError('Failed to save — please try again.')
+    }
+    setStartDateSaving(false)
+  }
 
   // Derive the stable progress tracking key from a plan item's route
   // e.g. /dashboard/immigration-registration → 'immigration-registration'
@@ -649,9 +667,36 @@ export default function DashboardHome() {
       <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
 
       <div className="hidden sm:block">
-      {/* Phase 1: data not yet loaded — fixed-height skeleton */}
-      {(isLoading || !profile?.programStartMonth) ? (
+      {/* Phase 1a: data still loading — skeleton */}
+      {isLoading ? (
         <div className="rounded-2xl border border-[#EDE9D8] bg-[#EDE9D8]/50 animate-pulse" style={{ height: 400 }} />
+      ) : !profile?.programStartMonth ? (
+        /* Phase 1b: loaded but no start date — prompt */
+        <div className="rounded-2xl border border-[#D9D3FB] bg-[#F0EDFF] px-6 py-8 flex flex-col items-center text-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-[#8870FF]/10 flex items-center justify-center">
+            <CalendarDays size={24} className="text-[#8870FF]" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-slate-800">When does your program start?</p>
+            <p className="text-sm text-slate-500 mt-1">Add your start month so we can build your personalised timeline.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-sm">
+            <input
+              type="month"
+              value={startDateInput}
+              onChange={e => { setStartDateInput(e.target.value); setStartDateError('') }}
+              className="flex-1 w-full rounded-lg border border-[#EDE9D8] bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8870FF]/30 focus:border-[#8870FF]"
+            />
+            <button
+              onClick={handleSaveStartDate}
+              disabled={!startDateInput || startDateSaving}
+              className="w-full sm:w-auto flex-shrink-0 rounded-lg bg-[#8870FF] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#6a54e0] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {startDateSaving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+          {startDateError && <p className="text-xs text-red-500">{startDateError}</p>}
+        </div>
       ) : !timelineReady ? (
         /* Phase 2: data ready but wait-timer still running — render the real timeline
            invisibly so it occupies exactly the right height; pulse overlay on top */

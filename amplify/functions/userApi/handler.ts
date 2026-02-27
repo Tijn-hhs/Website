@@ -100,7 +100,60 @@ interface UserProfile {
   buddyMatchedWithId?: string
   // Personalised dashboard
   dashboardPlan?: string   // JSON string of DashboardPlanItem[]
+  onboardingCompletedAt?: string
 }
+
+const ONBOARDING_LOCKED_FIELDS: Array<keyof UserProfile> = [
+  'preferredName',
+  'nationality',
+  'residenceCountry',
+  'destinationCountry',
+  'destinationCity',
+  'destinationUniversity',
+  'destinationUnknownCountry',
+  'destinationUnknownCity',
+  'destinationUnknownUniversity',
+  'degreeType',
+  'fieldOfStudy',
+  'fieldOfStudyUnknown',
+  'programStartMonth',
+  'programStartMonthUnknown',
+  'programApplied',
+  'programAccepted',
+  'admissionStatus',
+  'deadlinesKnown',
+  'hasGmatOrEntranceTest',
+  'gmatScore',
+  'hasEnglishTest',
+  'englishTestType',
+  'englishTestScore',
+  'hasRecommendationLetters',
+  'hasCv',
+  'isEuCitizen',
+  'hasVisa',
+  'visaType',
+  'passportExpiry',
+  'visaAppointmentNeeded',
+  'hasCodiceFiscale',
+  'hasResidencePermit',
+  'hasHousing',
+  'housingPreference',
+  'housingBudget',
+  'moveInWindow',
+  'housingSupportNeeded',
+  'needsBankAccount',
+  'hasBankAccount',
+  'needsPhoneNumber',
+  'hasPhoneNumber',
+  'hasTravelInsurance',
+  'hasHealthInsurance',
+  'monthlyBudgetRange',
+  'scholarshipNeed',
+  'fundingSource',
+  'lastCompletedStep',
+  'checklistItems',
+  'dashboardPlan',
+]
 
 interface StepProgress {
   stepKey: string
@@ -637,7 +690,21 @@ async function saveUserProfile(userId: string, updates: UserProfile): Promise<vo
 
   // Merge with existing profile so partial updates don't erase other fields
   const existing = await getUserProfile(userId)
-  const merged = { ...existing, ...updates }
+  const onboardingAlreadyCompleted =
+    (typeof existing?.onboardingCompletedAt === 'string' && existing.onboardingCompletedAt.length > 0) ||
+    (typeof existing?.lastCompletedStep === 'number' && existing.lastCompletedStep >= 8) ||
+    (typeof existing?.dashboardPlan === 'string' && existing.dashboardPlan.trim().length > 0 && existing.dashboardPlan.trim() !== '[]')
+
+  const updatesToApply: Record<string, unknown> = { ...updates }
+
+  if (onboardingAlreadyCompleted) {
+    for (const field of ONBOARDING_LOCKED_FIELDS) {
+      delete updatesToApply[field]
+    }
+    delete updatesToApply.onboardingCompletedAt
+  }
+
+  const merged = { ...existing, ...updatesToApply }
 
   // Remove empty-string / null / undefined values (keep false and 0)
   const cleaned: Record<string, unknown> = {}

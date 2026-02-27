@@ -31,7 +31,7 @@ export default function BlogGallery() {
   }
 
   return (
-    <section className="py-16 sm:py-20 lg:py-24 bg-slate-50">
+    <section className="py-16 sm:py-20 lg:py-24 bg-[#F9F7F1]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -86,7 +86,7 @@ export default function BlogGallery() {
             <Link
               key={post.id}
               to={`/blog/${post.id}`}
-              className="group flex-shrink-0 w-[350px] md:w-[400px] rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-200 overflow-hidden snap-start"
+              className="group flex-shrink-0 w-[350px] md:w-[400px] rounded-2xl border border-[#EDE9D8] bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-[#D9D3FB] overflow-hidden snap-start"
             >
               {/* Hero Image */}
               {post.imageUrl && (
@@ -101,14 +101,14 @@ export default function BlogGallery() {
               
               {/* Post Content */}
               <div className="p-6 space-y-3">
-                <h3 className="text-xl font-semibold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                <h3 className="text-xl font-semibold text-slate-900 group-hover:text-[#8870FF] transition-colors line-clamp-2">
                   {post.title}
                 </h3>
 
                 {/* Meta Information */}
                 <div className="flex flex-wrap gap-4 text-xs text-slate-500">
                   <div className="flex items-center gap-1.5">
-                    <Calendar size={14} className="text-blue-500" />
+                    <Calendar size={14} className="text-[#8870FF]" />
                     <time dateTime={post.date}>
                       {new Date(post.date).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -118,7 +118,7 @@ export default function BlogGallery() {
                     </time>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <User size={14} className="text-blue-500" />
+                    <User size={14} className="text-[#8870FF]" />
                     <span>{post.author}</span>
                   </div>
                 </div>
@@ -129,7 +129,7 @@ export default function BlogGallery() {
                 </p>
 
                 {/* Read More Link */}
-                <div className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 group-hover:text-blue-700 transition-colors group-hover:gap-3 duration-200">
+                <div className="inline-flex items-center gap-2 text-sm font-semibold text-[#8870FF] group-hover:text-[#6a54e0] transition-colors group-hover:gap-3 duration-200">
                   Read Article
                   <ArrowRight size={16} />
                 </div>
@@ -149,7 +149,7 @@ export default function BlogGallery() {
         <div className="mt-8 text-center">
           <Link
             to="/blog"
-            className="inline-flex items-center justify-center px-6 py-3 bg-white text-blue-700 font-semibold rounded-xl border-2 border-blue-200 hover:bg-blue-50 transition-all duration-200"
+            className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#8870FF] font-semibold rounded-xl border-2 border-[#D9D3FB] hover:bg-[#F0EDFF] transition-all duration-200"
           >
             View All Blog Posts
           </Link>

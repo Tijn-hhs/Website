@@ -38,6 +38,7 @@ import Step6Budget from './onboarding/pages/Step6Budget'
 import Step8ReviewFinish from './onboarding/pages/Step8ReviewFinish'
 import OnboardingBuildingPage from './pages/OnboardingBuildingPage'
 import ModuleGate from './components/ModuleGate'
+import OnboardingGate from './components/OnboardingGate'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -91,16 +92,16 @@ export default function App() {
           }
         />
 
-        <Route path="/onboarding" element={<OnboardingStart />} />
-        <Route path="/onboarding/0" element={<Step0Welcome />} />
-        <Route path="/onboarding/1" element={<Step1Destination />} />
-        <Route path="/onboarding/2" element={<Step2Origin />} />
-        <Route path="/onboarding/3" element={<Step3Program />} />
-        <Route path="/onboarding/3b" element={<Step3bApplication />} />
-        <Route path="/onboarding/5" element={<Step5Visa />} />
-        <Route path="/onboarding/6" element={<Step6Budget />} />
-        <Route path="/onboarding/8" element={<Step8ReviewFinish />} />
-        <Route path="/onboarding/building" element={<OnboardingBuildingPage />} />
+        <Route path="/onboarding" element={<OnboardingGate><OnboardingStart /></OnboardingGate>} />
+        <Route path="/onboarding/0" element={<OnboardingGate><Step0Welcome /></OnboardingGate>} />
+        <Route path="/onboarding/1" element={<OnboardingGate><Step1Destination /></OnboardingGate>} />
+        <Route path="/onboarding/2" element={<OnboardingGate><Step2Origin /></OnboardingGate>} />
+        <Route path="/onboarding/3" element={<OnboardingGate><Step3Program /></OnboardingGate>} />
+        <Route path="/onboarding/3b" element={<OnboardingGate><Step3bApplication /></OnboardingGate>} />
+        <Route path="/onboarding/5" element={<OnboardingGate><Step5Visa /></OnboardingGate>} />
+        <Route path="/onboarding/6" element={<OnboardingGate><Step6Budget /></OnboardingGate>} />
+        <Route path="/onboarding/8" element={<OnboardingGate><Step8ReviewFinish /></OnboardingGate>} />
+        <Route path="/onboarding/building" element={<OnboardingGate><OnboardingBuildingPage /></OnboardingGate>} />
         <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AppLayout>

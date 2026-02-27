@@ -9,6 +9,7 @@ import type { DashboardPlanItem } from '../../lib/api'
 import { UserProfile } from '../../types/user'
 import { isSignedIn } from '../../lib/auth'
 import { clearOnboardingDraft } from '../sync'
+import { isOnboardingCompleted } from '../isOnboardingCompleted'
 
 const formatValue = (value: string | boolean | undefined) => {
   if (value === undefined || value === '') return 'Not specified'
@@ -24,6 +25,7 @@ export default function Step8ReviewFinish() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [userSignedIn, setUserSignedIn] = useState(false)
+  const [isAlreadyCompleted, setIsAlreadyCompleted] = useState(false)
   const hasCheckedAuthRef = useRef(false)
 
   const prevStepId = useMemo(() => getPrevEnabledStepId(8, draft), [draft])
@@ -32,9 +34,25 @@ export default function Step8ReviewFinish() {
   useEffect(() => {
     if (!hasCheckedAuthRef.current) {
       hasCheckedAuthRef.current = true
-      isSignedIn().then(setUserSignedIn)
+      ;(async () => {
+        try {
+          const signedIn = await isSignedIn()
+          setUserSignedIn(signedIn)
+
+          if (signedIn) {
+            const me = await fetchMe()
+            const completed = isOnboardingCompleted(me.profile)
+            if (completed) {
+              setIsAlreadyCompleted(true)
+              navigate('/dashboard', { replace: true })
+            }
+          }
+        } catch {
+          setUserSignedIn(false)
+        }
+      })()
     }
-  }, [])
+  }, [navigate])
 
   const handleBack = () => {
     const routePath = stepIdToRoute(prevStepId)
@@ -72,6 +90,11 @@ export default function Step8ReviewFinish() {
       console.log('[Onboarding] Fetching current profile...')
       const data = await fetchMe()
       const profile = data.profile || {}
+
+      if (isOnboardingCompleted(profile)) {
+        navigate('/dashboard', { replace: true })
+        return
+      }
       
       console.log('[Onboarding] Current backend profile keys:', Object.keys(profile).length)
 
@@ -168,6 +191,21 @@ export default function Step8ReviewFinish() {
 
       const cleanedProfile = profileToSave as UserProfile
 
+      const modules = await fetchContentModules(cleanedProfile)
+      const plan: DashboardPlanItem[] = modules.map(m => ({
+        moduleId: m.moduleId,
+        label: m.label,
+        icon: m.icon,
+        description: m.description,
+        stepNumber: m.stepNumber,
+        route: m.route,
+        stepType: m.stepType,
+      }))
+
+      cleanedProfile.dashboardPlan = JSON.stringify(plan)
+      cleanedProfile.onboardingCompletedAt = new Date().toISOString()
+      cleanedProfile.lastCompletedStep = 8
+
       console.log('[Onboarding] Profile to save:', {
         destinationCountry: cleanedProfile.destinationCountry,
         destinationCity: cleanedProfile.destinationCity,
@@ -233,22 +271,6 @@ export default function Step8ReviewFinish() {
       clearLocalDraft()
       clearOnboardingDraft()
 
-      // Generate + save personalised dashboard plan (fire and forget)
-      fetchContentModules(cleanedProfile as UserProfile)
-        .then(modules => {
-          const plan: DashboardPlanItem[] = modules.map(m => ({
-            moduleId:    m.moduleId,
-            label:       m.label,
-            icon:        m.icon,
-            description: m.description,
-            stepNumber:  m.stepNumber,
-            route:       m.route,
-            stepType:    m.stepType,
-          }))
-          return saveProfile({ dashboardPlan: JSON.stringify(plan) } as UserProfile)
-        })
-        .catch(err => console.warn('[Onboarding] Dashboard plan save failed (non-blocking):', err))
-
       // Send welcome email — fire and forget, do not block navigation
       sendWelcomeEmail({
         preferredName: draft.preferredName,
@@ -299,7 +321,7 @@ export default function Step8ReviewFinish() {
       onBack={handleBack}
       onNext={userSignedIn ? handleFinish : undefined}
       nextLabel={isSaving ? 'Saving...' : 'Finish onboarding'}
-      nextDisabled={isSaving || !userSignedIn}
+      nextDisabled={isSaving || !userSignedIn || isAlreadyCompleted}
     >
       {!userSignedIn && (
         <div className={cardBase}>

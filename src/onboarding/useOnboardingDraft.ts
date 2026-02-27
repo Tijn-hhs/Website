@@ -4,6 +4,7 @@ import { fetchMe, saveProfile } from '../lib/api'
 import { UserProfile } from '../types/user'
 import { createDefaultDraft } from './defaultDraft'
 import { OnboardingDraft } from './types'
+import { isOnboardingCompleted } from './isOnboardingCompleted'
 
 const LOCAL_KEY = 'leavs:onboardingDraft'
 const SAVE_DEBOUNCE_MS = 600
@@ -55,6 +56,7 @@ export function useOnboardingDraft() {
   const [draft, setDraft] = useState<OnboardingDraft>(() => createDefaultDraft())
   const [isLoading, setIsLoading] = useState(true)
   const profileRef = useRef<UserProfile | null>(null)
+  const onboardingLockedRef = useRef(false)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const persistDraft = useCallback((nextDraft: OnboardingDraft) => {
@@ -72,6 +74,10 @@ export function useOnboardingDraft() {
       const isAuthenticated = await isUserAuthenticated()
       
       if (isAuthenticated) {
+        if (onboardingLockedRef.current) {
+          return
+        }
+
         // Save each onboarding field individually to the profile
         await saveProfile({
           preferredName: nextDraft.preferredName,
@@ -143,6 +149,11 @@ export function useOnboardingDraft() {
           const data = await fetchMe()
           const profile = data.profile || {}
           profileRef.current = profile
+          onboardingLockedRef.current = isOnboardingCompleted(profile)
+
+          if (onboardingLockedRef.current && typeof window !== 'undefined') {
+            window.localStorage.removeItem(LOCAL_KEY)
+          }
 
           // Build draft from individual profile fields
           const profileDraft: OnboardingDraft = {
@@ -261,6 +272,10 @@ export function useOnboardingDraft() {
   )
 
   const getResumePath = useCallback(() => {
+    if (onboardingLockedRef.current) {
+      return '/dashboard'
+    }
+
     if (!draft.lastCompletedStep || draft.lastCompletedStep < 1) {
       return '/onboarding/0'
     }
