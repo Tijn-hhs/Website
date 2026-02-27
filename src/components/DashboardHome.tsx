@@ -275,8 +275,8 @@ function ProgramTimeline({
     past:    'bg-slate-300 border-2 border-slate-300',
     urgent:  'bg-red-500   border-2 border-red-400   ring-4 ring-red-100',
     soon:    'bg-amber-400 border-2 border-amber-400 ring-4 ring-amber-100',
-    future:  'bg-blue-500  border-2 border-blue-400  ring-4 ring-blue-100',
-    end:     'bg-gradient-to-br from-blue-600 to-purple-600 border-2 border-purple-500 ring-4 ring-purple-100',
+    future:  'bg-[#8870FF] border-2 border-[#8870FF] ring-4 ring-[#D9D3FB]',
+    end:     'bg-gradient-to-br from-[#FF5402] to-[#8870FF] border-2 border-[#8870FF] ring-4 ring-[#D9D3FB]',
   }
 
   const labelCls: Record<string, string> = {
@@ -284,13 +284,13 @@ function ProgramTimeline({
     urgent: 'text-red-600 font-semibold',
     soon:   'text-amber-600 font-semibold',
     future: 'text-slate-700 font-medium',
-    end:    'text-purple-700 font-bold',
+    end:    'text-[#8870FF] font-bold',
   }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}
-      <div className="px-4 md:px-6 py-4 md:py-5 bg-gradient-to-r from-[#1e1b4b] to-[#1e3a5f] flex flex-wrap items-start justify-between gap-y-2 rounded-t-2xl">
+      <div className="px-4 md:px-6 py-4 md:py-5 bg-gradient-to-r from-[#FF5402] to-[#8870FF] flex flex-wrap items-start justify-between gap-y-2 rounded-t-2xl">
         <div>
           <h2 className="text-lg font-semibold text-white">Journey Timeline</h2>
           <p className="mt-0.5 text-sm text-blue-200">
@@ -302,7 +302,7 @@ function ProgramTimeline({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-blue-200 bg-white/10 rounded-full px-3 py-1">
+            <span className="text-xs font-medium text-[#D9D3FB] bg-white/10 rounded-full px-3 py-1">
             {confirmedCount} / {totalMilestoneCount} milestones set
           </span>
           <button
@@ -630,7 +630,7 @@ export default function DashboardHome() {
   return (
     <section className="space-y-5">
       <div className="animate-fade-in-up">
-        <p className="text-sm font-semibold text-blue-600">Leavs</p>
+        <p className="text-sm font-semibold text-[#FF5402]">Leavs</p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">Dashboard</h1>
         <p className="mt-2 text-base text-slate-600">
           {preferredName && (
@@ -700,13 +700,13 @@ export default function DashboardHome() {
               {(() => {
                 const count = deadlines.filter((d) => !dismissedNotifs.includes(d.deadlineId)).length
                 return count > 0 ? (
-                  <span className="rounded-full bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 leading-none">{count}</span>
+                  <span className="rounded-full bg-[#FF5402] text-white text-[10px] font-bold px-1.5 py-0.5 leading-none">{count}</span>
                 ) : null
               })()}
             </div>
             <button
               onClick={() => setIsDeadlineModalOpen(true)}
-              className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-[#FF5402] hover:text-[#e64a00] transition-colors"
             >
               <Plus size={13} /> Add
             </button>
@@ -735,7 +735,7 @@ export default function DashboardHome() {
                 overdue: { dot: 'bg-red-500', badge: 'bg-red-50 text-red-600', icon: <AlertCircle size={11} className="inline mr-0.5" /> },
                 urgent:  { dot: 'bg-orange-400', badge: 'bg-orange-50 text-orange-600', icon: null },
                 soon:    { dot: 'bg-amber-400', badge: 'bg-amber-50 text-amber-600', icon: null },
-                upcoming:{ dot: 'bg-blue-400', badge: 'bg-blue-50 text-blue-600', icon: null },
+                upcoming:{ dot: 'bg-[#8870FF]', badge: 'bg-[#D9D3FB] text-[#8870FF]', icon: null },
               }
 
               return visible.map((d) => {
@@ -819,7 +819,7 @@ export default function DashboardHome() {
                       <div
                         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                           isCurrent
-                            ? 'bg-blue-600 ring-[3px] ring-blue-100'
+                            ? 'bg-[#8870FF] ring-[3px] ring-[#D9D3FB]'
                             : 'bg-slate-300'
                         }`}
                       />
@@ -832,7 +832,7 @@ export default function DashboardHome() {
                     <div
                       className={`flex-1 mb-2 rounded-xl px-3.5 py-2.5 ${
                         isCurrent
-                          ? 'bg-gradient-to-r from-[#1e1b4b] to-[#1e3a5f] shadow-md'
+                          ? 'bg-gradient-to-r from-[#8870FF] to-[#FF5402] shadow-md'
                           : 'bg-slate-50'
                       }`}
                     >
@@ -840,7 +840,7 @@ export default function DashboardHome() {
                         <div className="flex items-center gap-2.5 min-w-0">
                           <span
                             className={`flex-shrink-0 ${
-                              isCurrent ? 'text-blue-300' : 'text-slate-400'
+                              isCurrent ? 'text-[#D9D3FB]' : 'text-slate-400'
                             }`}
                           >
                             {icon}
@@ -848,7 +848,7 @@ export default function DashboardHome() {
                           <div className="min-w-0">
                             <p
                               className={`text-[11px] font-medium mb-0.5 ${
-                                isCurrent ? 'text-blue-300' : 'text-slate-400'
+                                isCurrent ? 'text-[#D9D3FB]' : 'text-slate-400'
                               }`}
                             >
                               Step {idx + 1}

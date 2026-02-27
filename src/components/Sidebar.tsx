@@ -213,7 +213,7 @@ export default function Sidebar() {
   return (
     // Enhanced sidebar container with floating effect (margin, border-radius, shadow)
     <aside
-      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${shouldAnimate ? 'animate-slide-in-left' : ''} ${
+      className={`fixed left-4 top-4 h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-b from-white to-[#F5F1E4] shadow-lg hidden md:flex flex-col border border-slate-200/70 transition-all duration-75 ease-in-out ${shouldAnimate ? 'animate-slide-in-left' : ''} ${
         isCollapsed ? 'w-16' : 'w-60'
       }`}
       aria-label="Navigation sidebar"
@@ -236,7 +236,7 @@ export default function Sidebar() {
         {/* Toggle Button - Circular with chevron icon, always visible */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100/60 hover:bg-blue-200/60 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all duration-75 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          className="flex-shrink-0 w-10 h-10 rounded-full bg-[#D9D3FB]/60 hover:bg-[#D9D3FB] text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all duration-75 focus:outline-none focus:ring-2 focus:ring-[#8870FF]"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-expanded={!isCollapsed}
         >
@@ -252,7 +252,7 @@ export default function Sidebar() {
       <div className="px-2 pb-2">
         <button
           onClick={openSearch}
-          className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 focus:ring-blue-300 text-slate-500 hover:text-slate-800 bg-white/70 hover:bg-white border border-slate-200/80 shadow-sm ${
+          className={`flex items-center w-full h-10 text-sm rounded-lg transition-all duration-75 focus:outline-none focus:ring-2 focus:ring-[#8870FF] text-slate-500 hover:text-slate-800 bg-white/70 hover:bg-white border border-slate-200/80 shadow-sm ${
             isCollapsed ? 'px-0 justify-center' : 'px-3 gap-2'
           }`}
           aria-label="Search (⌘K)"
@@ -291,8 +291,8 @@ export default function Sidebar() {
               isStudentVisaDisabled
                 ? 'text-slate-300 cursor-not-allowed opacity-60'
                 : isActive
-                  ? 'bg-blue-100/60 text-slate-900 font-semibold border-blue-400 shadow-sm focus:ring-blue-300'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
+                  ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold border-[#8870FF] shadow-sm focus:ring-[#8870FF]'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
             }`
 
             return (
@@ -364,8 +364,8 @@ export default function Sidebar() {
               isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
             } ${
               isActive
-                ? 'bg-blue-100/60 text-slate-900 font-semibold border-blue-400 shadow-sm focus:ring-blue-300'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
+                ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold border-[#8870FF] shadow-sm focus:ring-[#8870FF]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
             }`
 
             return (
@@ -390,7 +390,7 @@ export default function Sidebar() {
             )
           })}
 
-          {/* Blog Section Header */}
+          {/* Blog Section Header */
           {!isCollapsed && (
             <li className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wide mt-6">
               Blog
@@ -405,8 +405,8 @@ export default function Sidebar() {
               isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
             } ${
               isActive
-                ? 'bg-blue-100/60 text-slate-900 font-semibold border-blue-400 shadow-sm focus:ring-blue-300'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
+                ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold border-[#8870FF] shadow-sm focus:ring-[#8870FF]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
             }`
 
             return (
@@ -442,8 +442,8 @@ export default function Sidebar() {
             isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
           } ${
             isMySituationActive
-              ? 'bg-blue-100/60 text-slate-900 font-semibold focus:ring-blue-300'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
+              ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold focus:ring-[#8870FF]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
           }`}
           aria-label="My Situation"
           aria-current={isMySituationActive ? 'page' : undefined}
@@ -470,8 +470,8 @@ export default function Sidebar() {
             isCollapsed ? 'px-0 justify-center text-center' : 'px-3 text-left'
           } ${
             isHomeActive
-              ? 'bg-blue-100/60 text-slate-900 font-semibold focus:ring-blue-300'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-blue-200'
+              ? 'bg-[#D9D3FB]/60 text-slate-900 font-semibold focus:ring-[#8870FF]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70 focus:ring-[#D9D3FB]'
           }`}
           aria-label="Home"
           aria-current={isHomeActive ? 'page' : undefined}
