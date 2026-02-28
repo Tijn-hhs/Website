@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { signIn, signUp, confirmSignUp, resendSignUpCode } from 'aws-amplify/auth'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import OnboardingLayout from '../OnboardingLayout'
 import { cardBase } from '../ui'
 import { getPrevEnabledStepId, getStepConfig, stepIdToRoute } from '../steps'
@@ -28,6 +30,17 @@ export default function Step8ReviewFinish() {
   const [isAlreadyCompleted, setIsAlreadyCompleted] = useState(false)
   const hasCheckedAuthRef = useRef(false)
 
+  // Inline auth state
+  type AuthScreen = 'signup' | 'signin' | 'confirm'
+  const [authScreen, setAuthScreen] = useState<AuthScreen>('signup')
+  const [authEmail, setAuthEmail] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
+  const [authConfirmPassword, setAuthConfirmPassword] = useState('')
+  const [authCode, setAuthCode] = useState('')
+  const [authError, setAuthError] = useState('')
+  const [authLoading, setAuthLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+
   const prevStepId = useMemo(() => getPrevEnabledStepId(8, draft), [draft])
 
   // Check auth status on mount
@@ -53,6 +66,84 @@ export default function Step8ReviewFinish() {
       })()
     }
   }, [navigate])
+
+  function authFriendlyError(err: unknown): string {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('UserNotFoundException') || msg.includes('Incorrect username or password'))
+      return 'Incorrect email or password.'
+    if (msg.includes('UserNotConfirmedException'))
+      return 'Please confirm your account first. Check your email for a verification code.'
+    if (msg.includes('UsernameExistsException'))
+      return 'An account with this email already exists.'
+    if (msg.includes('InvalidPasswordException'))
+      return 'Password must be at least 8 characters and include a number.'
+    if (msg.includes('CodeMismatchException'))
+      return 'Incorrect code. Please try again.'
+    if (msg.includes('ExpiredCodeException'))
+      return 'Code has expired. Please request a new one.'
+    if (msg.includes('LimitExceededException'))
+      return 'Too many attempts. Please wait a moment and try again.'
+    if (msg.includes('NotAuthorizedException'))
+      return 'Incorrect email or password.'
+    return msg
+  }
+
+  async function handleInlineSignUp(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthError('')
+    if (authPassword !== authConfirmPassword) { setAuthError('Passwords do not match.'); return }
+    setAuthLoading(true)
+    try {
+      await signUp({ username: authEmail.trim().toLowerCase(), password: authPassword })
+      setAuthScreen('confirm')
+    } catch (err) {
+      setAuthError(authFriendlyError(err))
+    } finally { setAuthLoading(false) }
+  }
+
+  async function handleInlineConfirm(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthError('')
+    setAuthLoading(true)
+    try {
+      await confirmSignUp({ username: authEmail.trim().toLowerCase(), confirmationCode: authCode.trim() })
+      await signIn({ username: authEmail.trim().toLowerCase(), password: authPassword })
+      setUserSignedIn(true)
+      // Auto-continue: save profile and navigate to building screen
+      await handleFinish()
+    } catch (err) {
+      setAuthError(authFriendlyError(err))
+      setAuthLoading(false)
+    }
+  }
+
+  async function handleInlineSignIn(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthError('')
+    setAuthLoading(true)
+    try {
+      await signIn({ username: authEmail.trim().toLowerCase(), password: authPassword })
+      setUserSignedIn(true)
+      await handleFinish()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('UserNotConfirmedException')) {
+        await resendSignUpCode({ username: authEmail.trim().toLowerCase() }).catch(() => {})
+        setAuthScreen('confirm')
+      }
+      setAuthError(authFriendlyError(err))
+      setAuthLoading(false)
+    }
+  }
+
+  async function handleResendCode() {
+    setAuthError('')
+    setAuthLoading(true)
+    try {
+      await resendSignUpCode({ username: authEmail.trim().toLowerCase() })
+    } catch (err) { setAuthError(authFriendlyError(err)) }
+    finally { setAuthLoading(false) }
+  }
 
   const handleBack = () => {
     const routePath = stepIdToRoute(prevStepId)
@@ -325,17 +416,148 @@ export default function Step8ReviewFinish() {
     >
       {!userSignedIn && (
         <div className={cardBase}>
-          <h2 className="text-sm font-semibold text-slate-800 mb-3">Create an account to save your progress</h2>
-          <p className="text-sm text-slate-600 mb-4">
-            Sign up or sign in to save your onboarding progress to your profile.
+          <h2 className="text-base font-semibold text-slate-900 mb-1">Almost there — create your account</h2>
+          <p className="text-sm text-slate-500 mb-5">
+            Create a free account to save your dashboard and continue where you left off.
           </p>
-          <button
-            type="button"
-            onClick={() => navigate(`/auth?returnTo=/onboarding/review`)}
-            className="w-full py-2.5 px-4 bg-[#8870FF] hover:bg-[#6a54e0] text-white font-semibold text-sm rounded-xl shadow-sm transition-all"
-          >
-            Sign in or create account
-          </button>
+
+          {/* Tab row */}
+          {(authScreen === 'signup' || authScreen === 'signin') && (
+            <div className="flex border-b border-[#EDE9D8] mb-5">
+              {(['signup', 'signin'] as const).map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => { setAuthScreen(s); setAuthError('') }}
+                  className={`flex-1 pb-2.5 text-sm font-semibold transition-colors ${
+                    authScreen === s
+                      ? 'text-slate-900 border-b-2 border-[#8870FF] -mb-px'
+                      : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  {s === 'signup' ? 'Create account' : 'Sign in'}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Sign up */}
+          {authScreen === 'signup' && (
+            <form onSubmit={handleInlineSignUp} className="space-y-3">
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-slate-700">Email</label>
+                <input
+                  type="email" required value={authEmail}
+                  onChange={e => setAuthEmail(e.target.value)}
+                  placeholder="you@example.com" autoComplete="email"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#EDE9D8] bg-white text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#8870FF] focus:ring-2 focus:ring-[#8870FF]/20 transition-all"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-slate-700">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'} required value={authPassword}
+                    onChange={e => setAuthPassword(e.target.value)}
+                    placeholder="At least 8 characters" autoComplete="new-password"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#EDE9D8] bg-white text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#8870FF] focus:ring-2 focus:ring-[#8870FF]/20 transition-all"
+                  />
+                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-slate-700">Confirm password</label>
+                <input
+                  type="password" required value={authConfirmPassword}
+                  onChange={e => setAuthConfirmPassword(e.target.value)}
+                  placeholder="Repeat your password" autoComplete="new-password"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#EDE9D8] bg-white text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#8870FF] focus:ring-2 focus:ring-[#8870FF]/20 transition-all"
+                />
+              </div>
+              {authError && <p className="text-sm text-red-500">{authError}</p>}
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full py-2.5 px-4 bg-[#8870FF] hover:bg-[#6a54e0] disabled:opacity-60 text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+              >
+                {authLoading && <Loader2 size={15} className="animate-spin" />}
+                Create account & finish
+              </button>
+            </form>
+          )}
+
+          {/* Sign in */}
+          {authScreen === 'signin' && (
+            <form onSubmit={handleInlineSignIn} className="space-y-3">
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-slate-700">Email</label>
+                <input
+                  type="email" required value={authEmail}
+                  onChange={e => setAuthEmail(e.target.value)}
+                  placeholder="you@example.com" autoComplete="email"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#EDE9D8] bg-white text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#8870FF] focus:ring-2 focus:ring-[#8870FF]/20 transition-all"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-slate-700">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'} required value={authPassword}
+                    onChange={e => setAuthPassword(e.target.value)}
+                    placeholder="Your password" autoComplete="current-password"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#EDE9D8] bg-white text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#8870FF] focus:ring-2 focus:ring-[#8870FF]/20 transition-all"
+                  />
+                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+              {authError && <p className="text-sm text-red-500">{authError}</p>}
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full py-2.5 px-4 bg-[#8870FF] hover:bg-[#6a54e0] disabled:opacity-60 text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+              >
+                {authLoading && <Loader2 size={15} className="animate-spin" />}
+                Sign in & finish
+              </button>
+            </form>
+          )}
+
+          {/* Confirm email */}
+          {authScreen === 'confirm' && (
+            <form onSubmit={handleInlineConfirm} className="space-y-3">
+              <div className="text-center mb-1">
+                <p className="text-sm font-semibold text-slate-900">Check your email</p>
+                <p className="text-sm text-slate-500 mt-1">We sent a 6-digit code to <strong>{authEmail}</strong></p>
+              </div>
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-slate-700">Verification code</label>
+                <input
+                  type="text" required value={authCode}
+                  onChange={e => setAuthCode(e.target.value)}
+                  placeholder="123456" autoComplete="one-time-code"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#EDE9D8] bg-white text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#8870FF] focus:ring-2 focus:ring-[#8870FF]/20 transition-all"
+                />
+              </div>
+              {authError && <p className="text-sm text-red-500">{authError}</p>}
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full py-2.5 px-4 bg-[#8870FF] hover:bg-[#6a54e0] disabled:opacity-60 text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+              >
+                {authLoading && <Loader2 size={15} className="animate-spin" />}
+                Verify & finish setup
+              </button>
+              <div className="text-center">
+                <button type="button" onClick={handleResendCode} disabled={authLoading} className="text-sm text-[#8870FF] hover:text-[#6a54e0] font-medium">
+                  Resend code
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       )}
 
