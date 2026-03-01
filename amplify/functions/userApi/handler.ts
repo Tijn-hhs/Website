@@ -1601,12 +1601,12 @@ const DEADLINE_SCRAPE_SOURCES = [
   {
     id: 'bocconi-admissions',
     university: 'Bocconi',
-    url: 'https://www.unibocconi.eu/en/programs/master-science/admissions/key-dates',
+    url: 'https://www.unibocconi.it/en/applying-bocconi/master-science-and-ma-programs/timeline',
   },
   {
     id: 'polimi-admissions',
     university: 'Politecnico di Milano',
-    url: 'https://www.polimi.it/en/prospective-students/how-to-apply/admission-to-laurea-magistrale/foreign-qualification',
+    url: 'https://www.polimi.it/en/prospective-students/how-to-apply/admission-to-laurea-magistrale/foreign-qualification/deadlines',
   },
 ]
 
@@ -1653,13 +1653,13 @@ async function handlePostAdminScrapeDeadlines(event: any): Promise<ApiResponse> 
           url: source.url,
           formats: ['extract'],
           extract: {
-            prompt: `Extract all application deadlines, enrollment deadlines, and important dates from this page.
-Return a JSON array of objects, each with fields:
-- title (string): short name for the deadline, e.g. "Early application deadline"
-- date (string): ISO 8601 date, e.g. "2025-03-15"
-- description (string, optional): 1–2 sentence explanation
-- type (string): one of "application", "enrollment", "visa", "scholarship", "other"
-Only include items that have a specific date. Skip vague or relative dates.`,
+            prompt: `Extract ALL dates and deadlines from this page — include every entry that has a specific date or date range.
+Return a JSON array of objects, each with these fields:
+- title (string): descriptive name, e.g. "1st semester application period (Engineering)" or "Early bird deadline (Architecture)"
+- date (string): the date or date range exactly as shown on the page, e.g. "1st October 2025 - 1st December 2025" or "29th January 2026"
+- description (string, optional): any extra context from the page (e.g. fee amount, who it applies to)
+- type (string): one of "application", "enrollment", "outcome", "event", "other"
+Include ALL entries regardless of whether they are past or future. Do not skip anything with a date.`,
           },
         }),
       })
