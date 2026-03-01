@@ -1601,12 +1601,12 @@ const DEADLINE_SCRAPE_SOURCES = [
   {
     id: 'bocconi-admissions',
     university: 'Bocconi',
-    url: 'https://www.unibocconi.eu/wps/wcm/connect/bocconi/sitopubblico_en/navigation+tree/home/programs/master+of+science/admissions',
+    url: 'https://www.unibocconi.eu/en/programs/master-science/admissions/key-dates',
   },
   {
     id: 'polimi-admissions',
     university: 'Politecnico di Milano',
-    url: 'https://www.polimi.it/en/programmes/laurea-magistrale-equivalent-to-master-of-science/how-to-apply',
+    url: 'https://www.polimi.it/en/prospective-students/how-to-apply/admission-to-laurea-magistrale/foreign-qualification',
   },
 ]
 

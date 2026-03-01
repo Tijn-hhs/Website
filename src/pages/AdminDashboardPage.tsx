@@ -2784,10 +2784,10 @@ function ScrapersTab() {
             <h3 className="text-sm font-semibold text-white">University Deadline Scraper</h3>
             <p className="text-xs text-gray-500 mt-0.5 leading-snug">Scrapes Bocconi and Politecnico di Milano admissions pages and extracts upcoming deadlines using Firecrawl AI extraction.</p>
             <div className="flex gap-3 mt-0.5">
-              <a href="https://www.unibocconi.eu/wps/wcm/connect/bocconi/sitopubblico_en/navigation+tree/home/programs/master+of+science/admissions" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+              <a href="https://www.unibocconi.eu/en/programs/master-science/admissions/key-dates" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
                 <ExternalLink className="w-3 h-3" /> Bocconi
               </a>
-              <a href="https://www.polimi.it/en/programmes/laurea-magistrale-equivalent-to-master-of-science/how-to-apply" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+              <a href="https://www.polimi.it/en/prospective-students/how-to-apply/admission-to-laurea-magistrale/foreign-qualification" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
                 <ExternalLink className="w-3 h-3" /> Politecnico
               </a>
             </div>
