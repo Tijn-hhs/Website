@@ -1601,7 +1601,7 @@ const DEADLINE_SCRAPE_SOURCES = [
   {
     id: 'bocconi-admissions',
     university: 'Bocconi',
-    url: 'https://www.unibocconi.it/en/applying-bocconi/master-science-and-ma-programs/timeline',
+    url: 'https://www.unibocconi.it/en/applying-bocconi/master-science-and-ma-programs/application-and-admissions/admissions',
   },
   {
     id: 'polimi-admissions',
