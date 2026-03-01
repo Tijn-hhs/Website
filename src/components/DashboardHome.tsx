@@ -290,7 +290,7 @@ function ProgramTimeline({
   return (
     <div className="rounded-2xl border border-[#EDE9D8] bg-white shadow-md">
       {/* Header */}
-      <div className="px-4 md:px-5 py-3 bg-[#8870FF] flex flex-wrap items-center justify-between gap-y-1.5 rounded-t-2xl">
+      <div className="px-4 md:px-5 py-3 bg-[#4D35C4] flex flex-wrap items-center justify-between gap-y-1.5 rounded-t-2xl">
         <div>
           <h2 className="text-sm font-semibold text-white">Journey Timeline</h2>
           <p className="mt-0 text-xs text-[#D9D3FB]/80">
@@ -493,7 +493,7 @@ export default function DashboardHome() {
     if (ok) {
       setProfile(updated)
     } else {
-      setStartDateError('Failed to save — please try again.')
+      setStartDateError('Failed to save. Please try again.')
     }
     setStartDateSaving(false)
   }

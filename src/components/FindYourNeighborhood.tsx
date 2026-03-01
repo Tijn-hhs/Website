@@ -372,7 +372,7 @@ export default function FindYourNeighborhood({ profile }: FindYourNeighborhoodPr
 
           <div className="p-6">
             <p className="text-sm text-slate-700 leading-relaxed">
-              Where you live in {city} will shape your entire experience abroad — your commute, your social life,
+              Where you live in {city} will shape your entire experience abroad: your commute, your social life,
               your daily rhythm, and your budget. This guide covers {neighborhoods.length} neighbourhoods in detail:
               not just the statistics, but what it actually <em>feels like</em> to wake up there, do your grocery
               shopping, and build a life for a semester or a year.
@@ -484,7 +484,7 @@ export default function FindYourNeighborhood({ profile }: FindYourNeighborhoodPr
         ) : (
           <article className="col-span-full rounded-xl border border-amber-200/70 bg-amber-50/60 p-6 shadow-sm">
             <p className="text-sm text-slate-600">
-              Map unavailable — please ensure you have selected a city and university in your profile.
+              Map unavailable. Please ensure you have selected a city and university in your profile.
             </p>
           </article>
         )
@@ -498,7 +498,7 @@ export default function FindYourNeighborhood({ profile }: FindYourNeighborhoodPr
               Explore all {neighborhoods.length} neighbourhoods
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Full guides — photos, transport times, key places, and honest pros and cons for each area.
+              Full guides: photos, transport times, key places, and honest pros and cons for each area.
             </p>
           </div>
           {neighborhoods.map((n) => (
@@ -526,7 +526,7 @@ export default function FindYourNeighborhood({ profile }: FindYourNeighborhoodPr
             <div className="space-y-3">
               <p className="text-sm font-semibold text-slate-800">What's your monthly budget for rent?</p>
               {[
-                { value: '0-500' as const,   label: 'Under €500',      sub: 'Very budget-conscious — shared rooms' },
+                { value: '0-500' as const,   label: 'Under €500',      sub: 'Very budget-conscious, shared rooms' },
                 { value: '500-800' as const,  label: '€500 – €800',     sub: 'Standard student budget for Milan' },
                 { value: '800-1100' as const, label: '€800 – €1,100',   sub: 'Comfortable private room or small studio' },
                 { value: '1100+' as const,    label: '€1,100+',         sub: 'Studio or 1-bed flat, best areas' },
@@ -550,7 +550,7 @@ export default function FindYourNeighborhood({ profile }: FindYourNeighborhoodPr
             <div className="space-y-3">
               <p className="text-sm font-semibold text-slate-800">How do you prefer to get to university?</p>
               {[
-                { value: true,  label: 'Walk or bike',       sub: 'I want everything nearby — no transit needed' },
+                { value: true,  label: 'Walk or bike',       sub: 'I want everything nearby, no transit needed' },
                 { value: false, label: 'Metro / tram is fine', sub: "Happy with 20–30 min on public transport" },
               ].map((option) => (
                 <label key={String(option.value)}

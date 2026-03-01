@@ -141,7 +141,7 @@ export default function FeedbackWidget() {
                 <div className="space-y-4">
                   <p className="text-sm text-slate-700 leading-relaxed">
                     {isAutoPrompt
-                      ? 'Is there anything you want to know right now? We\'re here to help — just ask!'
+                      ? 'Is there anything you want to know right now? We\'re here to help, just ask!'
                       : 'Is there any information you want to know right now? Ask it to us. We can help you and make our platform better at the same time.'}
                   </p>
                   

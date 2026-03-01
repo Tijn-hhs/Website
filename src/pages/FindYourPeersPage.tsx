@@ -459,7 +459,7 @@ export default function FindYourPeersPage() {
                 <li className="flex items-start gap-2">
                   <span className="flex-shrink-0 mt-0.5 font-bold text-slate-800">1.</span>
                   <span>
-                    <strong>Submit your group link</strong> — send it to{' '}
+                    <strong>Submit your group link</strong>: send it to{' '}
                     <a
                       href="mailto:hello@leavs.io?subject=Group%20chat%20submission"
                       className="text-green-700 underline underline-offset-2 hover:text-green-800"
@@ -472,7 +472,7 @@ export default function FindYourPeersPage() {
                 <li className="flex items-start gap-2">
                   <span className="flex-shrink-0 mt-0.5 font-bold text-slate-800">2.</span>
                   <span>
-                    <strong>Create one yourself</strong> — start a WhatsApp or Telegram group and invite your future classmates. Share the link with us and we'll verify and list it here.
+                    <strong>Create one yourself</strong>: start a WhatsApp or Telegram group and invite your future classmates. Share the link with us and we'll verify and list it here.
                   </span>
                 </li>
               </ul>

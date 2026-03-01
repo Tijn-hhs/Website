@@ -19,7 +19,7 @@ export default function InformationCentrePage() {
     {
       question: 'What is a codice fiscale and how do I get one?',
       answer:
-        'The codice fiscale is your Italian tax identification number — you need it for almost everything: opening a bank account, signing a lease, and accessing health services. You can get it at the Agenzia delle Entrate office with your passport. It takes about 15–30 minutes and is free.',
+        'The codice fiscale is your Italian tax identification number. You need it for almost everything: opening a bank account, signing a lease, and accessing health services. You can get it at the Agenzia delle Entrate office with your passport. It takes about 15–30 minutes and is free.',
     },
     {
       question: 'How do I apply for a residence permit (permesso di soggiorno)?',
@@ -34,7 +34,7 @@ export default function InformationCentrePage() {
     {
       question: 'How do I open a bank account in Italy?',
       answer:
-        'You will need your passport, codice fiscale, and proof of address. Digital banks like N26, Revolut, and Wise are the easiest to open as an international student — no Italian address required. For a traditional Italian account, try Unicredit or Intesa Sanpaolo with your university enrollment certificate.',
+        'You will need your passport, codice fiscale, and proof of address. Digital banks like N26, Revolut, and Wise are the easiest to open as an international student (no Italian address required). For a traditional Italian account, try Unicredit or Intesa Sanpaolo with your university enrollment certificate.',
     },
     {
       question: 'What health coverage do I have as a student?',
@@ -54,12 +54,12 @@ export default function InformationCentrePage() {
     {
       question: 'Where can I find affordable food in Milan?',
       answer:
-        'University canteens (mense) offer subsidised meals for enrolled students — typically €3–5 for a full meal. Other budget options include local markets (Mercato Metropolitano), supermarkets like Esselunga and Lidl, and neighbourhood trattorias with a fixed lunch menu (menù fisso).',
+        'University canteens (mense) offer subsidised meals for enrolled students, typically €3–5 for a full meal. Other budget options include local markets (Mercato Metropolitano), supermarkets like Esselunga and Lidl, and neighbourhood trattorias with a fixed lunch menu (menù fisso).',
     },
     {
       question: 'What should I do if I have a mental health concern?',
       answer:
-        'Bocconi offers free psychological counselling for enrolled students — ask at the Student Services desk or check the university portal. You can also call Telefono Amico (02 2327 2327) anonymously, or contact your local ASL for referrals to public mental health services (CPS).',
+        'Bocconi offers free psychological counselling for enrolled students. Ask at the Student Services desk or check the university portal. You can also call Telefono Amico (02 2327 2327) anonymously, or contact your local ASL for referrals to public mental health services (CPS).',
     },
     {
       question: 'How do I find housing in Milan?',
@@ -69,7 +69,7 @@ export default function InformationCentrePage() {
     {
       question: 'What is SPID and do I need it?',
       answer:
-        'SPID (Sistema Pubblico di Identità Digitale) is Italy\'s digital identity system used to log in to government portals — including the Questura appointment system, tax office, and social security. Get it through PosteID (at a post office with your passport) or other authorised providers. It is highly recommended.',
+        'SPID (Sistema Pubblico di Identità Digitale) is Italy\'s digital identity system used to log in to government portals, including the Questura appointment system, tax office, and social security. Get it through PosteID (at a post office with your passport) or other authorised providers. It is highly recommended.',
     },
     {
       question: 'Is it safe to live and study in Milan?',

@@ -10,7 +10,7 @@ const STAGES = [
   { pct: 32,  message: 'Configuring your dashboard' },
   { pct: 48,  message: 'Personalising your step-by-step guide' },
   { pct: 64,  message: 'Adding your deadlines & milestones' },
-  { pct: 82,  message: 'Almost there — putting the finishing touches' },
+  { pct: 82,  message: 'Almost there, putting the finishing touches' },
   { pct: 100, message: 'Your dashboard is ready! 🎉' },
 ]
 

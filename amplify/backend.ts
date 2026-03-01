@@ -246,6 +246,10 @@ backend.userApi.resources.lambda.addEnvironment(
   'Gemini_API_Key'
 )
 backend.userApi.resources.lambda.addEnvironment(
+  'FIRECRAWL_SECRET_NAME',
+  'firecrawl_api_key'
+)
+backend.userApi.resources.lambda.addEnvironment(
   'CHAT_MESSAGES_TABLE_NAME',
   chatMessagesTable.tableName
 )
@@ -284,6 +288,14 @@ backend.userApi.resources.lambda.addToRolePolicy(
     effect: iam.Effect.ALLOW,
     actions: ['secretsmanager:GetSecretValue'],
     resources: ['arn:aws:secretsmanager:*:*:secret:Gemini_API_Key*'],
+  })
+)
+// Grant Lambda permission to read the Firecrawl API key from Secrets Manager
+backend.userApi.resources.lambda.addToRolePolicy(
+  new iam.PolicyStatement({
+    effect: iam.Effect.ALLOW,
+    actions: ['secretsmanager:GetSecretValue'],
+    resources: ['arn:aws:secretsmanager:*:*:secret:firecrawl_api_key*'],
   })
 )
 

@@ -41,7 +41,7 @@ const LOOKING_FOR_OPTIONS = [
 function formatProgram(profile: UserProfile): string {
   const parts = [profile.degreeType, profile.fieldOfStudy].filter(Boolean)
   if (parts.length === 0) return 'Program not set'
-  return parts.join(' — ')
+  return parts.join(', ')
 }
 
 function formatArrival(profile: UserProfile): string {
@@ -269,7 +269,7 @@ function IdleView({
               Message to your match <span className="text-slate-400 font-normal">(optional)</span>
             </label>
             <textarea
-              placeholder="A sentence or two about yourself — background, what you're excited about, what kind of buddy you're hoping for…"
+              placeholder="A sentence or two about yourself, your background, what you're excited about, what kind of buddy you're hoping for…"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
@@ -411,7 +411,7 @@ function MatchedView({ profile, match, matchLoading }: { profile: UserProfile; m
     .map((o) => o.label)
 
   const initials = (match.displayName || '?').slice(0, 2).toUpperCase()
-  const program = [match.degreeType, match.fieldOfStudy].filter(Boolean).join(' — ') || 'Program not set'
+  const program = [match.degreeType, match.fieldOfStudy].filter(Boolean).join(', ') || 'Program not set'
 
   return (
     <div className="space-y-6">
@@ -487,7 +487,7 @@ function MatchedView({ profile, match, matchLoading }: { profile: UserProfile; m
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-5 space-y-3">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
               <CheckCircle2 size={13} className="text-[#8870FF]" />
-              Contact details — reach out directly
+              Contact details: reach out directly
             </p>
             {match.phone && (
               <ContactLink
@@ -596,7 +596,7 @@ export default function BuddySystemPage() {
     viewState === 'matched'
       ? "You've been matched! Reach out to your buddy directly using the contact details below."
       : viewState === 'pending'
-      ? "You're in the pool — we're working on finding your best match."
+      ? "You're in the pool. We're working on finding your best match."
       : 'Tell us what you need and we\'ll pair you with a compatible fellow student.'
 
   return (

@@ -83,7 +83,7 @@ function StepTypeBadge({ type }: { type?: StepType }) {
   const m = STEP_TYPE_META[type]
   return <span className={`text-xs px-1.5 py-0.5 rounded border ${m.color}`}>{m.label}</span>
 }
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, recalculateDashboardPlans, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, scrapeDeadlines, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, recalculateDashboardPlans, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -666,7 +666,7 @@ function UserRow({ user }: { user: AdminUserRecord }) {
   const [open, setOpen] = useState(false)
 
   const name = user.preferredName || 'Unknown'
-  const program = [user.degreeType, user.fieldOfStudy].filter(Boolean).join(' — ') || null
+  const program = [user.degreeType, user.fieldOfStudy].filter(Boolean).join(' · ') || null
   const arrival = user.programStartMonth
     ? new Date(`${user.programStartMonth}-01`).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     : null
@@ -959,7 +959,7 @@ function UsersTab() {
       </div>
 
       <p className="text-xs text-gray-600">
-        {filtered.length} user{filtered.length !== 1 ? 's' : ''}{filtered.length !== users.length ? ` of ${users.length}` : ''} — click a row to expand
+        {filtered.length} user{filtered.length !== 1 ? 's' : ''}{filtered.length !== users.length ? ` of ${users.length}` : ''}: click a row to expand
       </p>
 
       {filtered.length === 0 ? (
@@ -998,7 +998,7 @@ function parseLookingFor(raw?: string): string[] {
 
 function formatProgram(u: BuddyPoolUser): string {
   const parts = [u.degreeType, u.fieldOfStudy].filter(Boolean)
-  return parts.length ? parts.join(' — ') : 'Unknown program'
+  return parts.length ? parts.join(' · ') : 'Unknown program'
 }
 
 function BuddyTab() {
@@ -1093,7 +1093,7 @@ function BuddyTab() {
       {pending.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500">Pending — Select 2 to Match</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500">Pending: Select 2 to Match</h2>
             <div className="flex items-center gap-3">
               <button onClick={() => load(true)} disabled={refreshing} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors disabled:opacity-50">
                 <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
@@ -1188,7 +1188,7 @@ const TEMPLATE_VARS: Record<string, { name: string; description: string }[]> = {
   welcome: [
     { name: '{{preferredName}}',  description: "User's preferred name" },
     { name: '{{universityLine}}', description: 'Destination university (or "your destination")' },
-    { name: '{{locationSuffix}}', description: 'e.g. " in Milan, Italy" — empty if location unknown' },
+    { name: '{{locationSuffix}}', description: 'e.g. " in Milan, Italy": empty if location unknown' },
     { name: '{{year}}',           description: 'Current calendar year' },
   ],
   deadline_reminder: [
@@ -1196,7 +1196,7 @@ const TEMPLATE_VARS: Record<string, { name: string; description: string }[]> = {
     { name: '{{deadlineTitle}}',   description: 'Title of the deadline' },
     { name: '{{dueDate}}',         description: 'Formatted due date, e.g. "Friday, 1 March 2026"' },
     { name: '{{daysUntil}}',       description: 'Number of days until the deadline (default 5)' },
-    { name: '{{noteSection}}',     description: 'HTML block with deadline note — empty string if no note set' },
+    { name: '{{noteSection}}',     description: 'HTML block with deadline note: empty string if no note set' },
     { name: '{{year}}',            description: 'Current calendar year' },
   ],
 }
@@ -1298,7 +1298,7 @@ function EmailsTab() {
     setReminderMsg(null)
     try {
       const result = await sendDeadlineReminders(5)
-      setReminderMsg(`Done — sent ${result.sent}, skipped ${result.skipped}, failed ${result.failed} (target date: ${result.targetDate})`)
+      setReminderMsg(`Done: sent ${result.sent}, skipped ${result.skipped}, failed ${result.failed} (target date: ${result.targetDate})`)
     } catch (e: unknown) {
       setReminderMsg(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`)
     } finally {
@@ -1393,7 +1393,7 @@ function EmailsTab() {
                 <Bell className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-amber-300">Send reminders now</p>
-                  <p className="text-xs text-amber-500/80 mt-0.5 leading-snug">Emails all users with a deadline 5 days from today and <code className="text-amber-300">sendReminder: true</code>. This is safe to run multiple times — only deadlines due exactly 5 days out are matched.</p>
+                  <p className="text-xs text-amber-500/80 mt-0.5 leading-snug">Emails all users with a deadline 5 days from today and <code className="text-amber-300">sendReminder: true</code>. This is safe to run multiple times: only deadlines due exactly 5 days out are matched.</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -2134,16 +2134,16 @@ function ContentTab() {
                   <label className="text-xs text-gray-500 mb-1 block">Route</label>
                   <input placeholder="/dashboard/banking-italy" value={moduleForm.route || ''} onChange={e => setModuleForm(v => ({ ...v, route: e.target.value || undefined }))}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 font-mono focus:outline-none focus:border-indigo-600" />
-                  <p className="text-xs text-gray-600 mt-1">Dashboard path this module links to — enables page preview in Visualizer.</p>
+                  <p className="text-xs text-gray-600 mt-1">Dashboard path this module links to: enables page preview in Visualizer.</p>
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Step Type</label>
                   <select value={moduleForm.stepType ?? ''} onChange={e => setModuleForm(v => ({ ...v, stepType: (e.target.value as StepType) || undefined }))}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-600">
-                    <option value="">— unset —</option>
-                    <option value="journey">Journey — numbered step in student journey</option>
-                    <option value="info">Info — reference / resource page</option>
-                    <option value="tool">Tool — interactive tool (calculator, map…)</option>
+                    <option value="">unset</option>
+                    <option value="journey">Journey: numbered step in student journey</option>
+                    <option value="info">Info: reference / resource page</option>
+                    <option value="tool">Tool: interactive tool (calculator, map…)</option>
                   </select>
                   {moduleForm.stepType && (
                     <p className="text-xs text-gray-600 mt-1">{STEP_TYPE_META[moduleForm.stepType].desc}</p>
@@ -2454,14 +2454,14 @@ function ContentTab() {
 
           {/* Legend */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">How modules work — 3 layers</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">How modules work: 3 layers</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="bg-gray-800/60 rounded-lg p-3 border border-gray-700">
-                <p className="font-semibold text-white mb-1">Layer 1 — Visibility Rules</p>
+                <p className="font-semibold text-white mb-1">Layer 1: Visibility Rules</p>
                 <p className="text-gray-400">Decides <strong>whether</strong> a module appears for this user at all. Filters by destination, origin, EU status, degree type.</p>
               </div>
               <div className="bg-gray-800/60 rounded-lg p-3 border border-gray-700">
-                <p className="font-semibold text-white mb-1">Layer 2 — Step Type</p>
+                <p className="font-semibold text-white mb-1">Layer 2: Step Type</p>
                 <div className="space-y-1 mt-1.5">
                   {(Object.keys(STEP_TYPE_META) as StepType[]).map(t => (
                     <div key={t} className="flex items-center gap-1.5">
@@ -2472,7 +2472,7 @@ function ContentTab() {
                 </div>
               </div>
               <div className="bg-gray-800/60 rounded-lg p-3 border border-gray-700">
-                <p className="font-semibold text-white mb-1">Layer 3 — Content Variants</p>
+                <p className="font-semibold text-white mb-1">Layer 3: Content Variants</p>
                 <p className="text-gray-400">The first matching variant determines <strong>what content</strong> is shown inside the step. Unset fields act as wildcards.</p>
               </div>
             </div>
@@ -2630,8 +2630,8 @@ function ContentTab() {
                                       ? 'bg-indigo-950/50 border-indigo-700/50 text-indigo-300'
                                       : 'bg-gray-800/60 border-gray-700 text-gray-500'}`}>
                                       {activeVariant
-                                        ? <><span className="font-semibold">Variant active:</span> {activeVariant.label} — {activeVariant.contentNote}</>
-                                        : <>Default content — {variantCount} variant{variantCount !== 1 ? 's' : ''} not triggered</>}
+                                        ? <><span className="font-semibold">Variant active:</span> {activeVariant.label}: {activeVariant.contentNote}</>
+                                        : <>Default content ({variantCount} variant{variantCount !== 1 ? 's' : ''} not triggered)</>}
                                     </div>
                                   )}
                                   {m.route && (
@@ -2667,8 +2667,8 @@ function ContentTab() {
                                       ? 'bg-indigo-950/50 border-indigo-700/50 text-indigo-300'
                                       : 'bg-gray-800/60 border-gray-700 text-gray-500'}`}>
                                       {activeVariant
-                                        ? <><span className="font-semibold">Variant active:</span> {activeVariant.label} — {activeVariant.contentNote}</>
-                                        : <>Default content — {variantCount} variant{variantCount !== 1 ? 's' : ''} not triggered</>}
+                                        ? <><span className="font-semibold">Variant active:</span> {activeVariant.label}: {activeVariant.contentNote}</>
+                                        : <>Default content ({variantCount} variant{variantCount !== 1 ? 's' : ''} not triggered)</>}
                                     </div>
                                   )}
                                   {m.route && (
@@ -2746,7 +2746,124 @@ function ContentTab() {
 // Main Admin Dashboard Page
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails' | 'content'
+// ─── Scrapers Tab ────────────────────────────────────────────────────────────
+
+function ScrapersTab() {
+  const [scrapeLoading, setScrapeLoading] = useState(false)
+  const [scrapeResults, setScrapeResults] = useState<Awaited<ReturnType<typeof scrapeDeadlines>>['results'] | null>(null)
+  const [scrapeError, setScrapeError] = useState<string | null>(null)
+
+  async function runScrapeDeadlines() {
+    setScrapeLoading(true)
+    setScrapeResults(null)
+    setScrapeError(null)
+    try {
+      const data = await scrapeDeadlines()
+      setScrapeResults(data.results)
+    } catch (e: unknown) {
+      setScrapeError(e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setScrapeLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-lg font-semibold text-white">Web Scrapers</h2>
+        <p className="text-sm text-gray-500 mt-0.5">Fetch live data from official sources via Firecrawl. Results are for review only — nothing is saved automatically.</p>
+      </div>
+
+      {/* Deadline scraper */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-green-950 border border-green-800 flex items-center justify-center flex-shrink-0">
+            <Globe className="w-4 h-4 text-green-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white">University Deadline Scraper</h3>
+            <p className="text-xs text-gray-500 mt-0.5 leading-snug">Scrapes Bocconi and Politecnico di Milano admissions pages and extracts upcoming deadlines using Firecrawl AI extraction.</p>
+            <div className="flex gap-3 mt-0.5">
+              <a href="https://www.unibocconi.eu/wps/wcm/connect/bocconi/sitopubblico_en/navigation+tree/home/programs/master+of+science/admissions" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+                <ExternalLink className="w-3 h-3" /> Bocconi
+              </a>
+              <a href="https://www.polimi.it/en/programmes/laurea-magistrale-equivalent-to-master-of-science/how-to-apply" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+                <ExternalLink className="w-3 h-3" /> Politecnico
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={runScrapeDeadlines}
+          disabled={scrapeLoading}
+          className="flex items-center gap-1.5 text-xs bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${scrapeLoading ? 'animate-spin' : ''}`} />
+          {scrapeLoading ? 'Scraping…' : 'Run scrape'}
+        </button>
+
+        {scrapeError && (
+          <div className="flex items-start gap-2 bg-red-950/40 border border-red-800 rounded-lg p-3">
+            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-red-400">{scrapeError}</p>
+          </div>
+        )}
+
+        {scrapeResults && (
+          <div className="space-y-3">
+            {scrapeResults.map((r, i) => (
+              <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${r.status === 'ok' ? 'bg-green-400' : 'bg-red-400'}`} />
+                  <span className="text-sm font-semibold text-white">{r.university}</span>
+                  <a href={r.source} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 ml-auto">
+                    <ExternalLink className="w-3 h-3" /> Source
+                  </a>
+                </div>
+                {r.status === 'error' ? (
+                  <p className="text-xs text-red-400">{r.error}</p>
+                ) : r.deadlines && r.deadlines.length > 0 ? (
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-gray-500 border-b border-gray-700">
+                        <th className="text-left pb-1.5 pr-4 font-medium w-28">Date</th>
+                        <th className="text-left pb-1.5 pr-4 font-medium">Title</th>
+                        <th className="text-left pb-1.5 font-medium hidden lg:table-cell">Description</th>
+                        <th className="text-left pb-1.5 font-medium w-24 hidden md:table-cell">Type</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {r.deadlines.map((d, j) => (
+                        <tr key={j}>
+                          <td className="py-1.5 pr-4 text-gray-400 tabular-nums">{d.date}</td>
+                          <td className="py-1.5 pr-4 text-white font-medium">{d.title}</td>
+                          <td className="py-1.5 pr-4 text-gray-500 hidden lg:table-cell">{d.description ?? '—'}</td>
+                          <td className="py-1.5 hidden md:table-cell"><span className="px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 capitalize">{d.type ?? 'other'}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="text-xs text-gray-500">No deadlines extracted.</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Placeholder for future scrapers */}
+      <div className="border border-dashed border-gray-800 rounded-xl p-6 text-center">
+        <Globe className="w-6 h-6 text-gray-700 mx-auto mb-2" />
+        <p className="text-sm text-gray-600">More scrapers coming soon</p>
+        <p className="text-xs text-gray-700 mt-0.5">Add new Firecrawl sources here (housing, visa requirements, scholarships…)</p>
+      </div>
+    </div>
+  )
+}
+
+type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails' | 'content' | 'scrapers'
 
 const ADMIN_TAB_KEY = 'adminDashboardTab'
 
@@ -2791,6 +2908,7 @@ export default function AdminDashboardPage() {
     { id: 'buddy',     label: 'Buddy System',      icon: <Heart className="w-3.5 h-3.5" /> },
     { id: 'emails',    label: 'Email Templates',   icon: <Mail className="w-3.5 h-3.5" /> },
     { id: 'content',   label: 'Content',            icon: <Database className="w-3.5 h-3.5" /> },
+    { id: 'scrapers',  label: 'Scrapers',           icon: <Globe className="w-3.5 h-3.5" /> },
   ]
 
   return (
@@ -2850,6 +2968,7 @@ export default function AdminDashboardPage() {
         {activeTab === 'buddy' && <BuddyTab />}
         {activeTab === 'emails' && <EmailsTab />}
         {activeTab === 'content' && <ContentTab />}
+        {activeTab === 'scrapers' && <ScrapersTab />}
       </main>
     </div>
   )

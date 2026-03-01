@@ -963,6 +963,41 @@ export async function updateAdminEmailTemplate(
   return res.json()
 }
 
+/** Admin: scrape official university pages via Firecrawl and return extracted deadlines for review. */
+export async function scrapeDeadlines(): Promise<{
+  results: Array<{
+    source: string
+    university: string
+    status: 'ok' | 'error'
+    deadlines?: Array<{ title: string; date: string; description?: string; type?: string }>
+    error?: string
+  }>
+}> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/scrape-deadlines'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/scrape-deadlines`
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  return res.json()
+}
+
 
 
 export interface ChatMessage {

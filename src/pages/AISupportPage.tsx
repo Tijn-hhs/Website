@@ -64,7 +64,7 @@ const SUGGESTIONS = [
 
 function formatProgram(p: UserProfile): string {
   const parts = [p.degreeType, p.fieldOfStudy].filter(Boolean)
-  return parts.join(' — ') || 'Not set'
+  return parts.join(', ') || 'Not set'
 }
 
 function formatArrival(p: UserProfile): string {
@@ -111,7 +111,7 @@ function ContextPanel({
           <p className="text-xs font-semibold text-slate-700">What the AI will know</p>
         </div>
         <p className="text-xs text-slate-500 leading-relaxed">
-          The AI will have access to your public profile data below so it can give personalised advice — no private contact details are ever shared.
+          The AI will have access to your public profile data below so it can give personalised advice. No private contact details are ever shared.
         </p>
       </div>
 
@@ -255,7 +255,7 @@ export default function AISupportPage() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Hi! I'm your Leavs AI assistant. I can help you navigate every step of moving to Italy — from your university application to opening a bank account. What would you like to know?",
+      content: "Hi! I'm your Leavs AI assistant. I can help you navigate every step of moving to Italy, from your university application to opening a bank account. What would you like to know?",
       timestamp: new Date(),
     },
   ])
@@ -352,7 +352,7 @@ export default function AISupportPage() {
           totalSteps={0}
           stepLabel="TOOL"
           title="AI Support"
-          subtitle="Personalised guidance for your move to Italy — powered by AI."
+          subtitle="Personalised guidance for your move to Italy, powered by AI."
           useGradientBar
           fullWidth
           showChecklist={false}

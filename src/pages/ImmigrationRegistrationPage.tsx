@@ -297,16 +297,16 @@ export default function ImmigrationRegistrationPage() {
   const isNonEU = isEuCitizen === 'no'
 
   const nonEuDocs = [
-    { key: 'application-form', label: 'Completed application form (from kit giallo)', required: true, note: 'Sign and date at the Post Office — do NOT sign before arriving' },
-    { key: 'passport-copy', label: 'Photocopy of passport — personal data + visa page', required: true, note: 'Also bring the original to the Post Office' },
+    { key: 'application-form', label: 'Completed application form (from kit giallo)', required: true, note: 'Sign and date at the Post Office. Do NOT sign before arriving' },
+    { key: 'passport-copy', label: 'Photocopy of passport: personal data + visa page', required: true, note: 'Also bring the original to the Post Office' },
     { key: 'visa-copy', label: 'Photocopy of student visa (national "D" visa)', required: true, note: 'Must be valid for Italy / Schengen area' },
     { key: 'admission-letter', label: 'Photocopy of admission letter (endorsed by Italian Embassy in your home country)', required: true, note: 'The letter stamped by the Italian Embassy/Consulate during your visa application' },
-    { key: 'enrollment-cert', label: 'Photocopy of university enrollment certification', required: true, note: 'Issued by your university — confirms you are officially enrolled' },
+    { key: 'enrollment-cert', label: 'Photocopy of university enrollment certification', required: true, note: 'Issued by your university, confirms you are officially enrolled' },
     { key: 'health-insurance', label: 'Photocopy of health insurance policy or payment receipt', required: true, note: 'Must be valid in Italy for the full duration of your permit; private insurance OR NHS registration' },
-    { key: 'financial-proof', label: 'Photocopy of financial statement (≈ €6,600/year)', required: true, note: 'Recent bank statement or letter of financial good standing — must clearly show your name' },
-    { key: 'proof-of-address', label: 'Photocopy of proof of address (housing contract / university declaration)', required: false, note: 'Optional — only attach if you are sure it will be your address at the time of the Questura appointment' },
+    { key: 'financial-proof', label: 'Photocopy of financial statement (≈ €6,600/year)', required: true, note: 'Recent bank statement or letter of financial good standing, must clearly show your name' },
+    { key: 'proof-of-address', label: 'Photocopy of proof of address (housing contract / university declaration)', required: false, note: 'Optional: only attach if you are sure it will be your address at the time of the Questura appointment' },
     { key: 'marca-da-bollo', label: '€16.00 revenue stamp (marca da bollo)', required: true, note: 'Buy at any tobacco shop (tabacchi) before going to the Post Office' },
-    { key: 'postal-payment', label: 'Proof of payment of €70.46 postal fee', required: true, note: 'Paid at the Post Office during submission — for permits up to 1 year (€80.46 for 1–2 years)' },
+    { key: 'postal-payment', label: 'Proof of payment of €70.46 postal fee', required: true, note: 'Paid at the Post Office during submission, for permits up to 1 year (€80.46 for 1–2 years)' },
     { key: 'application-fee', label: '€30 application fee', required: true, note: 'Paid at the Post Office during submission' },
     { key: 'passport-photos', label: '4 passport-size photographs', required: true, note: 'Standard photo booth photos; bring extra just in case' },
   ]
@@ -315,7 +315,7 @@ export default function ImmigrationRegistrationPage() {
     { key: 'valid-id', label: 'Valid national ID card or passport', required: true, note: 'Any EU/EEA member state document is accepted' },
     { key: 'enrollment-proof', label: 'University enrollment certificate', required: true, note: 'Proof that you are a registered student' },
     { key: 'address-proof', label: 'Proof of address in Italy', required: true, note: 'Rental contract, university dorm confirmation, or Italian host\'s declaration' },
-    { key: 'financial-means', label: 'Proof of sufficient financial means', required: false, note: 'May be requested at the Anagrafe — bank statement or family support letter' },
+    { key: 'financial-means', label: 'Proof of sufficient financial means', required: false, note: 'May be requested at the Anagrafe: bank statement or family support letter' },
     { key: 'health-insurance', label: 'Health insurance or European Health Insurance Card (EHIC)', required: false, note: 'Required if you cannot access the Italian NHS yet' },
   ]
 
@@ -342,7 +342,7 @@ export default function ImmigrationRegistrationPage() {
           totalSteps={totalSteps}
           stepLabel={`STEP ${stepNumber}`}
           title="Residence Permit"
-          subtitle="Legalise your stay in Italy — required for non-EU citizens within 8 working days of arrival."
+          subtitle="Legalise your stay in Italy. Required for non-EU citizens within 8 working days of arrival."
           useGradientBar={true}
           userInfoTitle="This page is personalised based on your profile"
           userInfoSubtitle={
@@ -393,7 +393,7 @@ export default function ImmigrationRegistrationPage() {
                   <div>
                     <p className="text-base font-semibold text-emerald-800">You already have your Residence Permit ✓</p>
                     <p className="mt-1 text-sm text-emerald-700">
-                      Great work. Check the renewal section to make sure you renew in time when it expires — typically 60–90 days before the expiry date.
+                      Great work. Check the renewal section to make sure you renew in time when it expires, typically 60–90 days before the expiry date.
                     </p>
                     <button onClick={() => handleTabSelect('renewal')} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors">
                       Renewal guide →
@@ -415,7 +415,7 @@ export default function ImmigrationRegistrationPage() {
                 {/* Key facts */}
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
-                    { icon: <Timer size={16} />, label: 'Deadline', value: '8 working days', sub: 'From arrival in Italy — do not delay' },
+                    { icon: <Timer size={16} />, label: 'Deadline', value: '8 working days', sub: 'From arrival in Italy. Do not delay' },
                     { icon: <Banknote size={16} />, label: 'Total fees', value: '≈ €116', sub: '€16 stamp + €70.46 postal + €30 app fee' },
                     { icon: <MapPin size={16} />, label: 'Where to apply', value: 'Post Office', sub: 'Enabled Poste Italiane only (lista sportelli amici)' },
                   ].map(({ icon, label, value, sub }) => (
@@ -454,14 +454,14 @@ export default function ImmigrationRegistrationPage() {
                     <div className="flex items-start gap-3 rounded-lg border border-orange-100 bg-orange-50/40 p-3">
                       <AlertTriangle size={15} className="mt-0.5 flex-shrink-0 text-orange-400" />
                       <div>
-                        <p className="text-xs font-semibold text-orange-800">Non-EU citizens — Required</p>
+                        <p className="text-xs font-semibold text-orange-800">Non-EU citizens: Required</p>
                         <p className="text-xs text-slate-600 mt-0.5">If you are a non-EU national staying longer than 90 days, a permesso is mandatory.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3 rounded-lg border border-indigo-100 bg-indigo-50/40 p-3">
                       <CheckCircle2 size={15} className="mt-0.5 flex-shrink-0 text-indigo-400" />
                       <div>
-                        <p className="text-xs font-semibold text-indigo-800">EU citizens — Not required</p>
+                        <p className="text-xs font-semibold text-indigo-800">EU citizens: Not required</p>
                         <p className="text-xs text-slate-600 mt-0.5">EU/EEA citizens are free to live and study in Italy without a residence permit. A municipal registration is recommended for stays {'>'} 3 months.</p>
                       </div>
                     </div>
@@ -499,8 +499,8 @@ export default function ImmigrationRegistrationPage() {
                   number={2}
                   title="Fill out the application form"
                   description="Complete the application form inside the kit. The International Student Office will help you fill it out correctly. Write in block capitals."
-                  warning="Do NOT sign or date the form at home — you will sign and date it at the Post Office in front of the clerk."
-                  tip="Write an Italian mobile number if you have one — you'll receive SMS updates about your application status. Your codice fiscale is NOT mandatory at this stage."
+                  warning="Do NOT sign or date the form at home. You will sign and date it at the Post Office in front of the clerk."
+                  tip="Write an Italian mobile number if you have one. You'll receive SMS updates about your application status. Your codice fiscale is NOT mandatory at this stage."
                 />
                 <StepItem
                   number={3}
@@ -510,8 +510,8 @@ export default function ImmigrationRegistrationPage() {
                 />
                 <StepItem
                   number={4}
-                  title="Go to an enabled Post Office (Poste Italiane — Sportello Amico)"
-                  description="Submit your application at one of the enabled Post Offices. Not all branches accept residence permit applications — check the official list."
+                  title="Go to an enabled Post Office (Poste Italiane, Sportello Amico)"
+                  description="Submit your application at one of the enabled Post Offices. Not all branches accept residence permit applications: check the official list."
                   warning="Queue early. These offices can have very long waiting times, especially at the start of the academic year (September–October)."
                 />
                 <StepItem
@@ -531,13 +531,13 @@ export default function ImmigrationRegistrationPage() {
                   number={7}
                   title="Attend the police interview at the Questura"
                   description="Go to the Questura (Immigration Office) on the date and time specified in your letter. Bring all your original documents, copies, and the receipt. You will be fingerprinted."
-                  tip="Arrive early. Dress neatly. The interview is routine for students — you will be asked to confirm your personal data and study purpose."
+                  tip="Arrive early. Dress neatly. The interview is routine for students; you will be asked to confirm your personal data and study purpose."
                 />
                 <StepItem
                   number={8}
                   title="Collect your Permesso di Soggiorno card"
                   description="You will be notified via SMS or mail when your card is ready. Go to the designated location (stated in the notification) and bring: your valid passport + original Ricevuta mod. 22A."
-                  tip="Processing times vary — typically 1 to 6 months. Your receipt remains valid throughout this period."
+                  tip="Processing times vary, typically 1 to 6 months. Your receipt remains valid throughout this period."
                 />
               </ol>
 
@@ -546,7 +546,7 @@ export default function ImmigrationRegistrationPage() {
                 <ExpandableCard title="Converting a different type of permit (e.g., tourist → student)" badge={<Badge label="Conversion" variant="note" />}>
                   <p className="mb-2">
                     If you entered Italy on a different visa type (e.g., tourist/Schengen visa) and were later admitted to a university,
-                    you generally cannot convert from within Italy — you must return to your home country and apply for a student visa
+                    you generally cannot convert from within Italy. You must return to your home country and apply for a student visa
                     at the Italian Embassy or Consulate.
                   </p>
                   <p>Consult your university's International Office or an immigration lawyer before attempting this process.</p>
@@ -564,7 +564,7 @@ export default function ImmigrationRegistrationPage() {
                   </p>
                 </ExpandableCard>
 
-                <ExpandableCard title="I lost my receipt — what do I do?" badge={<Badge label="Emergency" variant="warning" />}>
+                <ExpandableCard title="I lost my receipt. What do I do?" badge={<Badge label="Emergency" variant="warning" />}>
                   <p>
                     Contact the Post Office where you submitted your application immediately and explain the situation.
                     They can issue a duplicate receipt (doppione). Also contact your university's International Office
@@ -609,7 +609,7 @@ export default function ImmigrationRegistrationPage() {
                     <StepItem
                       number={1}
                       title="Register at the Anagrafe (Registry Office)"
-                      description="Go to the Anagrafe (Municipal Registry Office) in Milan to register your residence. This is the 'Iscrizione Anagrafica' — it's voluntary but highly recommended."
+                      description="Go to the Anagrafe (Municipal Registry Office) in Milan to register your residence. This is the 'Iscrizione Anagrafica', voluntary but highly recommended."
                       tip="Registration gives you access to the NHS, makes opening a bank account easier, and is required for some public services."
                     />
                     <StepItem
@@ -621,12 +621,12 @@ export default function ImmigrationRegistrationPage() {
                       number={3}
                       title="Book an appointment or walk in"
                       description="The Anagrafe in Milan accepts appointments online via the city's portal. Some offices also accept walk-ins during specific hours."
-                      tip="Book early — appointments can be several weeks out, especially at the start of term."
+                      tip="Book early. Appointments can be several weeks out, especially at the start of term."
                     />
                     <StepItem
                       number={4}
                       title="Receive Attestato di Iscrizione Anagrafica"
-                      description="After registering, you receive a certificate of registration (Attestato di Iscrizione Anagrafica). Keep this document — it proves your registered residence in Milan."
+                      description="After registering, you receive a certificate of registration (Attestato di Iscrizione Anagrafica). Keep this document, as it proves your registered residence in Milan."
                     />
                   </ol>
                 </div>
@@ -652,8 +652,8 @@ export default function ImmigrationRegistrationPage() {
                   <ExpandableCard title="Where is the Anagrafe in Milan?" badge={<Badge label="Milan" variant="eu" />}>
                     <div className="space-y-3">
                       {[
-                        { name: 'Sportello Unico Cittadini — Via Larga', address: 'Via Larga, 12 (City Centre)', metro: 'Missori (M3)', hours: 'Mon–Fri 8:15–12:00' },
-                        { name: 'NIL Municipio 1 — Via Orti', address: 'Via degli Orti, 1', metro: 'Crocetta (M3)', hours: 'Mon, Wed 9:00–12:00 / Tue, Thu 14:00–16:00' },
+                        { name: 'Sportello Unico Cittadini (Via Larga)', address: 'Via Larga, 12 (City Centre)', metro: 'Missori (M3)', hours: 'Mon–Fri 8:15–12:00' },
+                        { name: 'NIL Municipio 1 (Via Orti)', address: 'Via degli Orti, 1', metro: 'Crocetta (M3)', hours: 'Mon, Wed 9:00–12:00 / Tue, Thu 14:00–16:00' },
                       ].map((o) => (
                         <div key={o.name} className="rounded-md border border-slate-100 bg-white p-3">
                           <p className="text-sm font-semibold text-slate-800">{o.name}</p>
@@ -710,7 +710,7 @@ export default function ImmigrationRegistrationPage() {
                   <div className="h-full rounded-full bg-emerald-400 transition-all duration-500" style={{ width: `${progressPct}%` }} />
                 </div>
                 {progressPct === 100 && (
-                  <p className="mt-1.5 text-xs font-medium text-emerald-600">All required documents ready — head to the Post Office! 🎉</p>
+                  <p className="mt-1.5 text-xs font-medium text-emerald-600">All required documents ready. Head to the Post Office! 🎉</p>
                 )}
               </div>
 
@@ -736,11 +736,11 @@ export default function ImmigrationRegistrationPage() {
                 <div className="mt-5 space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Important notes</p>
                   {[
-                    'Always bring both originals AND photocopies — they keep the copies, you leave with the originals.',
+                    'Always bring both originals AND photocopies. They keep the copies, you leave with the originals.',
                     'Make extra copies of everything. The Post Office clerk may request additional copies on the spot.',
-                    'The proof of address is OPTIONAL at submission — only include it if your address is confirmed for the date of the Questura appointment.',
-                    'Your codice fiscale is NOT required at this stage — don\'t delay your application waiting for it.',
-                    'The application form must be signed and dated at the Post Office — not before.',
+                    'The proof of address is OPTIONAL at submission: only include it if your address is confirmed for the date of the Questura appointment.',
+                    'Your codice fiscale is NOT required at this stage. Don\'t delay your application waiting for it.',
+                    'The application form must be signed and dated at the Post Office, not before.',
                     'Photocopy all pages of your passport that have stamps, visas, or personal data.',
                   ].map((note, i) => (
                     <div key={i} className="flex items-start gap-2 text-xs text-slate-600">
@@ -760,12 +760,12 @@ export default function ImmigrationRegistrationPage() {
             <SectionCard title="Police interview at the Questura" icon={<BadgeCheck size={18} />}>
               <p className="mb-4 text-sm text-slate-500">
                 After submitting your application at the Post Office, you will receive an appointment letter for an interview
-                at the <strong className="text-slate-800">Questura di Milano — Ufficio Immigrazione</strong>.
-                This is a mandatory step — do not miss it.
+                at the <strong className="text-slate-800">Questura di Milano, Ufficio Immigrazione</strong>.
+                This is a mandatory step. Do not miss it.
               </p>
 
               <div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-800 mb-1">Questura di Milano — Immigration Office</p>
+                <p className="text-sm font-semibold text-slate-800 mb-1">Questura di Milano, Immigration Office</p>
                 <p className="text-xs text-slate-500"><MapPin size={11} className="inline mr-1" />Via Montebello, 26, Milan</p>
                 <p className="text-xs text-slate-500">Metro: Turati (M3) or Repubblica (M2/M3)</p>
                 <p className="text-xs text-slate-500">Hours: as stated in your appointment letter</p>
@@ -776,19 +776,19 @@ export default function ImmigrationRegistrationPage() {
                   <ul className="space-y-2">
                     {[
                       { item: 'Original passport', note: 'With valid student visa and all stamps' },
-                      { item: 'Original receipt (Ricevuta mod. 22A)', note: 'The one you received at the Post Office — required proof that you applied on time' },
+                      { item: 'Original receipt (Ricevuta mod. 22A)', note: 'The one you received at the Post Office. Required proof that you applied on time' },
                       { item: 'Photocopies of ALL documents submitted at the Post Office', note: 'Have an extra set just in case' },
                       { item: 'Original admission letter / enrollment certificate', note: 'From Bocconi or your university' },
                       { item: 'Original health insurance policy', note: 'Or NHS registration if you have already registered' },
                       { item: 'Updated proof of address (if you now have a stable address)', note: 'Rental contract, or university dorm contract' },
-                      { item: '4 passport-size photographs', note: 'Standard size — same as on your passport' },
+                      { item: '4 passport-size photographs', note: 'Standard size, same as on your passport' },
                       { item: 'Original financial statement', note: 'Recent bank statement or letter of financial good standing' },
                     ].map(({ item, note }) => (
                       <li key={item} className="flex items-start gap-2 text-sm">
                         <CheckCircle2 size={14} className="mt-0.5 flex-shrink-0 text-emerald-400" />
                         <div>
                           <span className="font-medium text-slate-800">{item}</span>
-                          <span className="text-slate-500"> — {note}</span>
+                          <span className="text-slate-500"> ({note})</span>
                         </div>
                       </li>
                     ))}
@@ -806,14 +806,14 @@ export default function ImmigrationRegistrationPage() {
                   </ol>
                   <div className="mt-3 flex items-start gap-2 rounded-md border border-[#EDE9D8] bg-[#F0EDFF] px-3 py-2 text-xs text-[#6a54e0]">
                     <Info size={12} className="mt-0.5 flex-shrink-0" />
-                    The interview is standard procedure for students — it typically takes 15–30 minutes. Be polite and cooperative.
+                    The interview is standard procedure for students. It typically takes 15–30 minutes. Be polite and cooperative.
                   </div>
                 </ExpandableCard>
 
-                <ExpandableCard title="I missed my appointment — what do I do?" badge={<Badge label="Emergency" variant="warning" />}>
+                <ExpandableCard title="I missed my appointment. What do I do?" badge={<Badge label="Emergency" variant="warning" />}>
                   <p className="mb-2">
                     Contact the Questura Immigration Office as soon as possible to explain the situation and reschedule.
-                    Also inform your university's International Office — they can often help mediate.
+                    Also inform your university's International Office, as they can often help mediate.
                   </p>
                   <p>
                     In general, one missed appointment does not invalidate your application, but repeated absences can.
@@ -827,7 +827,7 @@ export default function ImmigrationRegistrationPage() {
                     or the receipt number.
                   </p>
                   <a href="https://questure.poliziadistato.it/stranieri" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] px-3 py-2 text-sm font-medium text-[#6a54e0] hover:bg-[#F0EDFF] transition-colors">
-                    Check status — Polizia di Stato <ExternalLink size={13} />
+                    Check status: Polizia di Stato <ExternalLink size={13} />
                   </a>
                 </ExpandableCard>
               </div>
@@ -877,7 +877,7 @@ export default function ImmigrationRegistrationPage() {
                   </ol>
                   <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-700">
                     <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
-                    If your permit expires before the renewal is processed, keep the renewal receipt — it serves as proof of legal stay while the new card is being issued.
+                    If your permit expires before the renewal is processed, keep the renewal receipt. It serves as proof of legal stay while the new card is being issued.
                   </div>
                 </ExpandableCard>
 
@@ -887,7 +887,7 @@ export default function ImmigrationRegistrationPage() {
                     official Polizia di Stato portal. You will need your fiscal code or receipt number.
                   </p>
                   <a href="https://questure.poliziadistato.it/stranieri" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] px-3 py-2 text-sm font-medium text-[#6a54e0] hover:bg-[#F0EDFF] transition-colors">
-                    Check status — Polizia di Stato <ExternalLink size={13} />
+                    Check status: Polizia di Stato <ExternalLink size={13} />
                   </a>
                 </ExpandableCard>
 
@@ -901,7 +901,7 @@ export default function ImmigrationRegistrationPage() {
                       'A valid job offer or employment contract',
                       'The employer submitting a request via the Sportello Unico per l\'Immigrazione at the Prefecture',
                       'Meeting the quota requirements (numbers flussi) for work permits',
-                      'Not all conversions are allowed — consult an immigration lawyer or your HR department',
+                      'Not all conversions are allowed: consult an immigration lawyer or your HR department',
                     ].map((pt, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
@@ -927,7 +927,7 @@ export default function ImmigrationRegistrationPage() {
                   },
                   {
                     q: 'Can I travel outside Italy while waiting for my card?',
-                    a: 'Yes — your receipt (Ricevuta mod. 22A) plus your passport is generally accepted for re-entry into Italy and for travel within the Schengen area while your card is being processed. However, some countries may have different rules. Check before booking flights.',
+                    a: 'Yes. Your receipt (Ricevuta mod. 22A) plus your passport is generally accepted for re-entry into Italy and for travel within the Schengen area while your card is being processed. However, some countries may have different rules. Check before booking flights.',
                   },
                   {
                     q: 'My Post Office says they don\'t accept residence permit applications. What do I do?',
@@ -950,7 +950,7 @@ export default function ImmigrationRegistrationPage() {
                     a: 'You can check your appointment date using the online status tool on the Polizia di Stato website using your receipt number. Alternatively, contact the Questura Immigration Office directly.',
                   },
                   {
-                    q: 'The Post Office told me to pay €80.46 instead of €70.46 — is that right?',
+                    q: 'The Post Office told me to pay €80.46 instead of €70.46. Is that right?',
                     a: 'Yes. The fee is €70.46 for permits valid up to 1 year and €80.46 for permits valid more than 1 year and up to 2 years. The Post Office clerk determines which fee applies based on your program duration.',
                   },
                   {
@@ -958,7 +958,7 @@ export default function ImmigrationRegistrationPage() {
                     a: 'Formally, nothing is required for stays up to 3 months. For longer stays, you should register at the Comune di Milano (Anagrafe). Registration gives you access to the NHS, makes banking easier, and is generally recommended.',
                   },
                   {
-                    q: 'My health insurance is the European Health Insurance Card (EHIC) — is that acceptable?',
+                    q: 'My health insurance is the European Health Insurance Card (EHIC). Is that acceptable?',
                     a: 'The EHIC is accepted for EU citizens but not for non-EU students applying for a permesso. Non-EU students need private health insurance valid in Italy, or proof of enrollment in the Italian NHS.',
                   },
                 ].map(({ q, a }) => (
@@ -977,16 +977,16 @@ export default function ImmigrationRegistrationPage() {
             <SectionCard title="Key links" icon={<LinkIcon size={18} />}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {[
-                  { label: 'YesMilano — Residence permit guide (students)', url: 'https://www.yesmilano.it/en/study/how-to/residence-permit-students' },
-                  { label: 'YesMilano — Residence permit (non-EU workers)', url: 'https://www.yesmilano.it/en/work/getting-started-guide/residence-permit' },
-                  { label: 'Enabled Post Offices (Sportelli Amici) — list', url: 'https://www.prefmi.it/sui/prf_est/elencoSportelliAmici.pdf' },
-                  { label: 'Check application status — Polizia di Stato', url: 'https://questure.poliziadistato.it/stranieri' },
+                  { label: 'YesMilano: Residence permit guide (students)', url: 'https://www.yesmilano.it/en/study/how-to/residence-permit-students' },
+                  { label: 'YesMilano: Residence permit (non-EU workers)', url: 'https://www.yesmilano.it/en/work/getting-started-guide/residence-permit' },
+                  { label: 'Enabled Post Offices (Sportelli Amici): list', url: 'https://www.prefmi.it/sui/prf_est/elencoSportelliAmici.pdf' },
+                  { label: 'Check application status: Polizia di Stato', url: 'https://questure.poliziadistato.it/stranieri' },
                   { label: 'Application form sample guide (Politecnico di Milano)', url: 'https://www.yesmilano.it/system/files/articolo/allegati/6510/32720/Permesso_di_soggiorno_sample_31ago%20%281%29.pdf' },
-                  { label: 'Questura di Milano — Immigration Office (Google Maps)', url: 'https://maps.app.goo.gl/3Gm5DZJjqXiHf7mZ8' },
-                  { label: 'Comune di Milano — EU citizen registration (Anagrafe)', url: 'https://www.comune.milano.it/servizi/iscrizione-allanagrafe-per-cittadini-ue' },
+                  { label: 'Questura di Milano: Immigration Office (Google Maps)', url: 'https://maps.app.goo.gl/3Gm5DZJjqXiHf7mZ8' },
+                  { label: 'Comune di Milano: EU citizen registration (Anagrafe)', url: 'https://www.comune.milano.it/servizi/iscrizione-allanagrafe-per-cittadini-ue' },
                   { label: 'Italian NHS (SSN) registration for students', url: 'https://www.yesmilano.it/en/study/how-to/national-health-service-students-step-step' },
-                  { label: 'Questura di Milano — book appointment', url: 'https://portaleimmigrazione.it/' },
-                  { label: 'YesMilano — Tax code (codice fiscale)', url: 'https://studyandwork.yesmilano.it/en/study/how-to/get-italian-tax-code-codice-fiscale' },
+                  { label: 'Questura di Milano: book appointment', url: 'https://portaleimmigrazione.it/' },
+                  { label: 'YesMilano: Tax code (codice fiscale)', url: 'https://studyandwork.yesmilano.it/en/study/how-to/get-italian-tax-code-codice-fiscale' },
                 ].map(({ label, url }) => (
                   <a
                     key={url}

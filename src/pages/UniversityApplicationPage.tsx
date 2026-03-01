@@ -370,7 +370,7 @@ function DeadlineRow({ round, isNext, isTarget }: { round: ApplicationRound; isN
               <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">Your target</span>
             )}
             {isTarget && isPast && (
-              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">Missed — apply next year</span>
+              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">Missed: apply next year</span>
             )}
           </div>
           {round.notes && <p className="text-xs text-slate-500">{round.notes}</p>}
@@ -411,8 +411,8 @@ type GmatTier = { label: string; barColor: string; badgeClass: string; note: str
 
 function getGmatTier(score: number, raw: string): GmatTier {
   if (isNaN(score)) return { label: raw, barColor: 'bg-slate-300', badgeClass: 'border-slate-200 bg-slate-50 text-slate-700', note: '' }
-  if (score >= 750) return { label: 'Excellent', barColor: 'bg-emerald-500', badgeClass: 'border-emerald-200 bg-emerald-50 text-emerald-700', note: 'Puts you in the top applicant tier — very strong advantage.' }
-  if (score >= 700) return { label: 'Strong',    barColor: 'bg-[#8870FF]',    badgeClass: 'border-[#D9D3FB] bg-[#F0EDFF] text-[#6a54e0]',       note: 'Well above the recommended minimum — a clear positive signal.' }
+  if (score >= 750) return { label: 'Excellent', barColor: 'bg-emerald-500', badgeClass: 'border-emerald-200 bg-emerald-50 text-emerald-700', note: 'Puts you in the top applicant tier. Very strong advantage.' }
+  if (score >= 700) return { label: 'Strong',    barColor: 'bg-[#8870FF]',    badgeClass: 'border-[#D9D3FB] bg-[#F0EDFF] text-[#6a54e0]',       note: 'Well above the recommended minimum. A clear positive signal.' }
   if (score >= 650) return { label: 'Good',      barColor: 'bg-violet-400',  badgeClass: 'border-violet-200 bg-violet-50 text-violet-700',  note: 'Meets the recommended minimum. Consider retaking if GPA is average.' }
   if (score >= 600) return { label: 'Borderline',barColor: 'bg-amber-400',   badgeClass: 'border-amber-200 bg-amber-50 text-amber-700',    note: "Below Bocconi's recommended 650. A retake would strengthen your application." }
   return               { label: 'Below target', barColor: 'bg-red-400',     badgeClass: 'border-red-200 bg-red-50 text-red-700',          note: 'Significantly below the recommended minimum. A strong retake is advised.' }
@@ -642,7 +642,7 @@ export default function UniversityApplicationPage() {
           subtitle={
             <span>
               Everything you need to apply to{' '}
-              <span className="font-semibold text-slate-800">{config.name}</span> — requirements,
+              <span className="font-semibold text-slate-800">{config.name}</span>: requirements,
               deadlines, tests, and documents.
             </span>
           }
@@ -690,7 +690,7 @@ export default function UniversityApplicationPage() {
                 <div>
                   <p className="text-base font-semibold text-emerald-800">You've been admitted to {config.shortName}! 🎉</p>
                   <p className="mt-1 text-sm text-emerald-700">
-                    Congratulations! You can now focus on enrollment steps — submitting your English proof, paying the deposit, and arranging housing.
+                    Congratulations! You can now focus on enrollment steps: submitting your English proof, paying the deposit, and arranging housing.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <a href="/dashboard/housing" className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors">
@@ -721,7 +721,7 @@ export default function UniversityApplicationPage() {
                   <p className="mt-1 text-sm font-semibold text-slate-800">
                     {config.city}, {config.country}
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">Via Sarfatti 25, Milan — city-integrated campus</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Via Sarfatti 25, Milan (city-integrated campus)</p>
                 </div>
               </div>
             </SectionCard>
@@ -763,16 +763,16 @@ export default function UniversityApplicationPage() {
                       : bocconiTestStatus === 'scheduled' ? 'text-[#5b3fd4]'
                       : 'text-amber-800'
                     }`}>
-                      {bocconiTestStatus === 'done' && 'Bocconi Online Test — completed ✓'}
-                      {bocconiTestStatus === 'scheduled' && 'Bocconi Online Test — waiting for invite'}
-                      {bocconiTestStatus === 'not_started' && 'Bocconi Online Test — not started yet'}
+                      {bocconiTestStatus === 'done' && 'Bocconi Online Test: completed ✓'}
+                      {bocconiTestStatus === 'scheduled' && 'Bocconi Online Test: waiting for invite'}
+                      {bocconiTestStatus === 'not_started' && 'Bocconi Online Test: not started yet'}
                     </p>
                     <p className={`mt-0.5 text-xs ${
                       bocconiTestStatus === 'done' ? 'text-emerald-700'
                       : bocconiTestStatus === 'scheduled' ? 'text-[#6a54e0]'
                       : 'text-amber-700'
                     }`}>
-                      {bocconiTestStatus === 'done' && 'Great — this is one less thing to worry about. Keep your confirmation email safe.'}
+                      {bocconiTestStatus === 'done' && 'Great, this is one less thing to worry about. Keep your confirmation email safe.'}
                       {bocconiTestStatus === 'scheduled' && 'You\'ll receive the test link by email once Bocconi reviews your submitted application.'}
                       {bocconiTestStatus === 'not_started' && 'You cannot take the test until after submitting your application. Submit first, then wait for the test invite.'}
                     </p>
@@ -831,7 +831,7 @@ export default function UniversityApplicationPage() {
                 <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
                   <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
                   <span>
-                    The Bocconi test is taken <strong>after</strong> you submit the application — not before. You
+                    The Bocconi test is taken <strong>after</strong> you submit the application, not before. You
                     receive the test link by email once your application is reviewed.
                   </span>
                 </div>
@@ -880,7 +880,7 @@ export default function UniversityApplicationPage() {
                 <div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5">
                   <CalendarClock size={15} className="flex-shrink-0 text-emerald-500" />
                   <span className="text-sm text-emerald-800">
-                    Your target is <strong>{targetRound}</strong> — highlighted below.
+                    Your target is <strong>{targetRound}</strong>, highlighted below.
                   </span>
                   <a href="/dashboard/my-situation" className="ml-auto text-xs text-emerald-600 hover:underline">Change</a>
                 </div>
@@ -932,7 +932,7 @@ export default function UniversityApplicationPage() {
                     <div>
                       <p className="text-sm font-semibold text-[#5b3fd4]">Possibly exempt from English proof</p>
                       <p className="mt-0.5 text-xs text-[#6a54e0]">
-                        Your previous degree was in English — Bocconi may waive the language requirement. "Proof of English" has been pre-checked.
+                        Your previous degree was in English. Bocconi may waive the language requirement. "Proof of English" has been pre-checked.
                         Confirm this with the{' '}
                         <a href="https://www.unibocconi.it/en/contact-us" target="_blank" rel="noopener noreferrer" className="underline">International Office</a>.
                       </p>
@@ -964,7 +964,7 @@ export default function UniversityApplicationPage() {
                     />
                   </div>
                   {progressPct === 100 && (
-                    <p className="mt-1.5 text-xs font-medium text-emerald-600">All required documents ready — you're good to apply! 🎉</p>
+                    <p className="mt-1.5 text-xs font-medium text-emerald-600">All required documents ready. You're good to apply! 🎉</p>
                   )}
                 </div>
 

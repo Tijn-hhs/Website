@@ -22,7 +22,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             Your journey to Milan starts here.
           </h1>
           <p className="text-base text-slate-700 leading-relaxed max-w-sm">
-            Sign in to access your personalised relocation plan — from visa to housing, all in one place.
+            Sign in to access your personalised relocation plan: from visa to housing, all in one place.
           </p>
           <div className="space-y-3 pt-2">
             {[

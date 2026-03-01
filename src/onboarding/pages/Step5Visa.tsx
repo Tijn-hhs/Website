@@ -67,11 +67,11 @@ export default function Step5Visa() {
         nextLabel="Next"
         nextDisabled={true}
       >
-        <div className={`${cardBase} border-2 border-amber-200 bg-amber-50`}>
-          <p className="text-sm text-amber-900 font-medium">
+        <div className="bg-[#F0EDFF] border border-[#D9D3FB] rounded-2xl p-5">
+          <p className="text-sm text-[#5b3fd4] font-medium">
             This step is not needed for EU citizens.
           </p>
-          <p className="text-sm text-amber-700 mt-2">
+          <p className="text-sm text-slate-600 mt-2">
             Since you indicated you're an EU citizen, you don't need to fill in visa information. You can skip ahead to the next step.
           </p>
         </div>

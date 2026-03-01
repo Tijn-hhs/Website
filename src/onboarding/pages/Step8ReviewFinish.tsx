@@ -416,7 +416,7 @@ export default function Step8ReviewFinish() {
     >
       {!userSignedIn && (
         <div className={cardBase}>
-          <h2 className="text-base font-semibold text-slate-900 mb-1">Almost there — create your account</h2>
+          <h2 className="text-base font-semibold text-slate-900 mb-1">Almost there: create your account</h2>
           <p className="text-sm text-slate-500 mb-5">
             Create a free account to save your dashboard and continue where you left off.
           </p>

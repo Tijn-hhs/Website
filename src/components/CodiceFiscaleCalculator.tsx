@@ -175,7 +175,7 @@ export default function CodiceFiscaleCalculator() {
           <AlertTriangle size={20} className="mt-0.5 flex-shrink-0 text-red-500" />
           <div>
             <p className="text-sm font-bold text-red-800">
-              This is an unofficial estimate — NOT a legal document
+              This is an unofficial estimate. NOT a legal document
             </p>
             <p className="mt-1 text-sm text-red-700">
               The codice fiscale generated here uses the official Agenzia delle Entrate algorithm and
@@ -321,12 +321,12 @@ export default function CodiceFiscaleCalculator() {
               {form.countryCode ? (
                 <p className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-600">
                   <Check size={12} />
-                  {COUNTRY_CODES.find(c => c.code === form.countryCode)?.label} — code <code className="font-mono">{form.countryCode}</code>
+                  {COUNTRY_CODES.find(c => c.code === form.countryCode)?.label}, code <code className="font-mono">{form.countryCode}</code>
                 </p>
               ) : countrySearch.length > 0 ? (
                 <div className="mt-1 max-h-40 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-md">
                   {filteredCountries.length === 0 ? (
-                    <p className="px-3 py-2 text-xs text-slate-400">No match — use manual code entry below</p>
+                    <p className="px-3 py-2 text-xs text-slate-400">No match. Use manual code entry below</p>
                   ) : (
                     filteredCountries.map((c) => (
                       <button
@@ -366,13 +366,13 @@ export default function CodiceFiscaleCalculator() {
               {form.comuneCode ? (
                 <p className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-600">
                   <Check size={12} />
-                  {ITALIAN_COMUNI.find(c => c.code === form.comuneCode)?.label} — code <code className="font-mono">{form.comuneCode}</code>
+                  {ITALIAN_COMUNI.find(c => c.code === form.comuneCode)?.label}, code <code className="font-mono">{form.comuneCode}</code>
                 </p>
               ) : comuneSearch.length > 0 ? (
                 <div className="mt-1 max-h-40 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-md">
                   {filteredComuni.length === 0 ? (
                     <p className="px-3 py-2 text-xs text-slate-400">
-                      Comune not in list — look up the Belfiore code on{' '}
+                      Comune not in list. Look up the Belfiore code on{' '}
                       <a
                         href="https://www.codicefiscale.com/"
                         target="_blank"
@@ -451,7 +451,7 @@ export default function CodiceFiscaleCalculator() {
                 </span>
               )}
               {saveStatus === 'error' && (
-                <span className="text-xs text-red-500">Could not save — are you logged in?</span>
+                <span className="text-xs text-red-500">Could not save. Are you logged in?</span>
               )}
             </div>
             <div className="flex gap-2">
@@ -508,7 +508,7 @@ export default function CodiceFiscaleCalculator() {
                 Agenzia delle Entrate.
               </p>
               <p>
-                The official certificate is <strong>free</strong> and issued on the same day — don't skip the step.
+                The official certificate is <strong>free</strong> and issued on the same day. Don't skip the step.
               </p>
             </div>
           </div>

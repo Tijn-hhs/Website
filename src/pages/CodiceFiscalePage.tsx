@@ -380,7 +380,7 @@ export default function CodiceFiscalePage() {
   ]
   const nonEuDocs = [
     { key: 'passport', label: 'Valid passport', required: true, note: 'Must be valid for your full stay in Italy' },
-    { key: 'visa', label: 'Valid visa (if required for your nationality)', required: true, note: 'Student visa, or national visa — whichever you hold' },
+    { key: 'visa', label: 'Valid visa (if required for your nationality)', required: true, note: 'Student visa, or national visa (whichever you hold)' },
     { key: 'right-to-stay', label: 'Proof of right to stay in Italy', required: true, note: 'University enrollment letter, permesso di soggiorno, or Questura receipt' },
     { key: 'application-form', label: 'Completed application form AA4/8', required: true, note: 'Available at the office or downloadable from agenziaentrate.gov.it' },
   ]
@@ -395,7 +395,7 @@ export default function CodiceFiscalePage() {
       {showModal && (
         <StepIntroModal
           stepTitle="Codice Fiscale"
-          stepDescription="Get your Italian tax identification number — required for virtually everything in Italy."
+          stepDescription="Get your Italian tax identification number, required for virtually everything in Italy."
           onConfirm={handleConfirm}
           onBack={handleBack}
         />
@@ -406,7 +406,7 @@ export default function CodiceFiscalePage() {
           totalSteps={totalSteps}
           stepLabel={`STEP ${stepNumber}`}
           title="Codice Fiscale"
-          subtitle="Your Italian tax code — essential for banking, housing, healthcare, and daily life."
+          subtitle="Your Italian tax code: essential for banking, housing, healthcare, and daily life."
           useGradientBar={true}
           userInfoTitle="This page is personalised based on your profile"
           userInfoSubtitle={
@@ -455,7 +455,7 @@ export default function CodiceFiscalePage() {
                   <div>
                     <p className="text-base font-semibold text-emerald-800">You already have your Codice Fiscale ✓</p>
                     <p className="mt-1 text-sm text-emerald-700">
-                      Great — you're ahead of the game. Keep the card somewhere safe and make a few copies.
+                      Great, you're ahead of the game. Keep the card somewhere safe and make a few copies.
                       This page still has useful info about where it's needed and how to verify it.
                     </p>
                   </div>
@@ -475,7 +475,7 @@ export default function CodiceFiscalePage() {
 
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
-                    { label: 'Cost',       value: 'Free',         sub: 'Always — no fee whatsoever' },
+                    { label: 'Cost',       value: 'Free',         sub: 'Always free, no fee whatsoever' },
                     { label: 'Valid for',  value: 'Lifetime',     sub: 'Never expires, never changes' },
                     { label: 'Time',       value: '15–30 min',    sub: 'Issued same day at the office' },
                   ].map(({ label, value, sub }) => (
@@ -552,13 +552,13 @@ export default function CodiceFiscalePage() {
                   >
                     <ol className="space-y-3">
                       <StepItem number={1} title="Gather documents" description="Bring your valid national ID card or passport. No additional proof of address is needed." />
-                      <StepItem number={2} title="Go to any Agenzia delle Entrate office" description="No appointment is required for EU citizens — you can walk in during opening hours." />
+                      <StepItem number={2} title="Go to any Agenzia delle Entrate office" description="No appointment is required for EU citizens: you can walk in during opening hours." />
                       <StepItem number={3} title="Fill out form AA4/8" description="Pick up the form at the counter or download and pre-fill it from the Revenue Agency website." />
                       <StepItem number={4} title="Submit and receive code" description="Hand in the form with your ID. The code is usually issued immediately or within a few days." />
                     </ol>
                     <div className="mt-4 flex items-start gap-2 rounded-md border border-[#EDE9D8] bg-[#F0EDFF] p-3 text-xs text-[#6a54e0]">
                       <Info size={13} className="mt-0.5 flex-shrink-0" />
-                      You will receive a small plastic card — keep it safe. You can also use the code immediately via a printed receipt.
+                      You will receive a small plastic card. Keep it safe. You can also use the code immediately via a printed receipt.
                     </div>
                   </ExpandableCard>
                 )}
@@ -580,7 +580,7 @@ export default function CodiceFiscalePage() {
                     </ol>
                     <div className="mt-4 flex items-start gap-2 rounded-md border border-amber-100 bg-amber-50 p-3 text-xs text-amber-700">
                       <AlertTriangle size={13} className="mt-0.5 flex-shrink-0" />
-                      If you don't yet have a permesso di soggiorno, your university enrollment letter is typically sufficient. Ask the Agenzia delle Entrate clerk — they are used to helping newly arrived students.
+                      If you don't yet have a permesso di soggiorno, your university enrollment letter is typically sufficient. Ask the Agenzia delle Entrate clerk, they are used to helping newly arrived students.
                     </div>
                   </ExpandableCard>
                 )}
@@ -592,7 +592,7 @@ export default function CodiceFiscalePage() {
                   <p>
                     Bocconi and other universities in Milan often assist students with codice fiscale applications
                     during orientation week. Check with the <strong>International Students Office</strong> as
-                    soon as you arrive — this can save you the trip to the Agenzia delle Entrate.
+                    soon as you arrive, as this can save you the trip to the Agenzia delle Entrate.
                   </p>
                   <p className="mt-2 text-slate-500">
                     Bocconi international students: contact the International Affairs office at{' '}
@@ -653,7 +653,7 @@ export default function CodiceFiscalePage() {
                   />
                 </div>
                 {progressPct === 100 && (
-                  <p className="mt-1.5 text-xs font-medium text-emerald-600">All required documents ready — head to the office! 🎉</p>
+                  <p className="mt-1.5 text-xs font-medium text-emerald-600">All required documents ready. Head to the office! 🎉</p>
                 )}
               </div>
 
@@ -679,7 +679,7 @@ export default function CodiceFiscalePage() {
                 <div className="space-y-2 text-sm text-slate-600">
                   <div className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
-                    You will receive a printed receipt immediately — you can use the code right away.
+                    You will receive a printed receipt immediately. You can use the code right away.
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
@@ -687,11 +687,11 @@ export default function CodiceFiscalePage() {
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
-                    Make several photocopies of the card once you receive it — many offices ask for copies.
+                    Make several photocopies of the card once you receive it, as many offices ask for copies.
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
-                    Signing a rental contract does <em>not</em> legally require a codice fiscale — though landlords may ask for it.
+                    Signing a rental contract does <em>not</em> legally require a codice fiscale, though landlords may ask for it.
                   </div>
                 </div>
               </div>
@@ -703,7 +703,7 @@ export default function CodiceFiscalePage() {
             <SectionCard title="Agenzia delle Entrate offices in Milan" icon={<MapPin size={18} />}>
               <p className="mb-4 text-sm text-slate-500">
                 All offices handle codice fiscale requests. You can walk in or book an appointment online.
-                Arrive early — especially during September and October — to avoid long queues.
+                Arrive early, especially during September and October, to avoid long queues.
               </p>
 
               <div className="space-y-3">
@@ -713,7 +713,7 @@ export default function CodiceFiscalePage() {
                     address: 'Via Carlo Freguglia, 1',
                     metro: 'Turati (M3)',
                     hours: 'Mon–Fri 8:30–12:30',
-                    note: 'Closest to Bocconi campus. Busiest office — arrive before 8:30.',
+                    note: 'Closest to Bocconi campus. Busiest office, so arrive before 8:30.',
                   },
                   {
                     name: 'Sempione',
@@ -800,7 +800,7 @@ export default function CodiceFiscalePage() {
 
                 <ExpandableCard title="Calculate your code before going to the office" badge={<Badge label="Calculator" variant="note" />}>
                   <p className="mb-3">
-                    We have a built-in calculator that uses the official algorithm — it produces the same code
+                    We have a built-in calculator that uses the official algorithm. It produces the same code
                     you will receive at the Agenzia delle Entrate. It is <strong>not a legal document</strong>,
                     but it lets you fill in forms while waiting for your appointment.
                   </p>
@@ -814,7 +814,7 @@ export default function CodiceFiscalePage() {
 
                 <ExpandableCard title="Lost or stolen card" badge={<Badge label="Replacement" variant="warning" />}>
                   <p className="mb-3">
-                    Your codice fiscale code itself never changes — only the physical card can be lost.
+                    Your codice fiscale code itself never changes. Only the physical card can be lost.
                     You can request a duplicate:
                   </p>
                   <ul className="space-y-2">
@@ -850,11 +850,11 @@ export default function CodiceFiscalePage() {
                 {[
                   {
                     q: 'Can I get the codice fiscale before arriving in Italy?',
-                    a: 'No — as of May 2025, it is no longer possible to apply at Italian Embassies or Consulates abroad. You must request it after arriving in Italy.',
+                    a: 'No. As of May 2025, it is no longer possible to apply at Italian Embassies or Consulates abroad. You must request it after arriving in Italy.',
                   },
                   {
                     q: 'Do I need a permanent address in Italy to apply?',
-                    a: 'No. A temporary address — such as a hotel, student dorm, or university accommodation letter — is sufficient. The plastic card will be mailed there.',
+                    a: 'No. A temporary address such as a hotel, student dorm, or university accommodation letter is sufficient. The plastic card will be mailed there.',
                   },
                   {
                     q: 'Can I use the codice fiscale immediately after getting a receipt?',
@@ -862,7 +862,7 @@ export default function CodiceFiscalePage() {
                   },
                   {
                     q: 'Is the codice fiscale mandatory to sign a rental contract?',
-                    a: 'No — according to Italian law, a codice fiscale is not legally mandatory for registering a rental contract. However, many landlords will ask for it anyway.',
+                    a: 'No. According to Italian law, a codice fiscale is not legally mandatory for registering a rental contract. However, many landlords will ask for it anyway.',
                   },
                   {
                     q: 'Will I need a new codice fiscale if I change jobs, city, or name?',
@@ -873,7 +873,7 @@ export default function CodiceFiscalePage() {
                     a: 'You can calculate it using a third-party tool. In practice, the calculated code is usually correct. However, only the official card issued by the Revenue Agency is legally valid for binding procedures.',
                   },
                   {
-                    q: 'I need the codice fiscale to open a bank account, but the bank needs my address first — what do I do?',
+                    q: 'I need the codice fiscale to open a bank account, but the bank needs my address first. What do I do?',
                     a: 'Most banks accept a university address or student accommodation address for initial registration. Get your codice fiscale as early as possible after arriving to avoid a circular dependency.',
                   },
                 ].map(({ q, a }) => (
@@ -890,8 +890,8 @@ export default function CodiceFiscalePage() {
             <SectionCard title="Key links" icon={<LinkIcon size={18} />}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {[
-                  { label: 'Revenue Agency — Tax ID for foreigners (EN)', url: 'https://www.agenziaentrate.gov.it/portale/web/english/nse/individuals/tax-identification-number-for-foreign-citizens' },
-                  { label: 'YesMilano — Step by step guide', url: 'https://studyandwork.yesmilano.it/en/study/how-to/get-italian-tax-code-codice-fiscale' },
+                  { label: 'Revenue Agency: Tax ID for foreigners (EN)', url: 'https://www.agenziaentrate.gov.it/portale/web/english/nse/individuals/tax-identification-number-for-foreign-citizens' },
+                  { label: 'YesMilano: Step by step guide', url: 'https://studyandwork.yesmilano.it/en/study/how-to/get-italian-tax-code-codice-fiscale' },
                   { label: 'Book an appointment online', url: 'https://prenot.agenziaentrate.gov.it/' },
                   { label: 'Find Agenzia delle Entrate offices', url: 'http://www1.agenziaentrate.gov.it/indirizzi/agenzia/uffici_locali/' },
                   { label: 'Application form AA4/8 (download)', url: 'https://www.agenziaentrate.gov.it/portale/forms-versione-in-inglese-cittadini' },

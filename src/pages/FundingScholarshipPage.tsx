@@ -341,7 +341,7 @@ export default function FundingScholarshipPage() {
             <>
               <SectionCard title="Funding overview" icon={<BadgeDollarSign size={18} />}>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  As an international student at Bocconi, you can significantly reduce — or even eliminate — your tuition through a combination of merit-based scholarships, income-based financial aid, and external grants. The total tuition for a Bocconi MSc is between <strong className="text-slate-800">€14,000–€15,000/year</strong> for non-EU students and uses a sliding scale based on family income for EU students. With the right scholarships, many students pay significantly less.
+                  As an international student at Bocconi, you can significantly reduce, or even eliminate, your tuition through a combination of merit-based scholarships, income-based financial aid, and external grants. The total tuition for a Bocconi MSc is between <strong className="text-slate-800">€14,000–€15,000/year</strong> for non-EU students and uses a sliding scale based on family income for EU students. With the right scholarships, many students pay significantly less.
                 </p>
 
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -360,7 +360,7 @@ export default function FundingScholarshipPage() {
                   <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-emerald-500">External</p>
                     <p className="mt-1 text-lg font-bold text-emerald-900">Gov't & bilateral</p>
-                    <p className="mt-0.5 text-sm text-emerald-700">Varies by country — can cover tuition and living costs</p>
+                    <p className="mt-0.5 text-sm text-emerald-700">Varies by country, can cover tuition and living costs</p>
                     <p className="mt-2 text-xs text-emerald-500">Apply through your home country</p>
                   </div>
                 </div>
@@ -368,14 +368,14 @@ export default function FundingScholarshipPage() {
                 <div className="mt-5 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
                   <Lightbulb size={16} className="mt-0.5 flex-shrink-0 text-amber-500" />
                   <p className="text-sm text-amber-800">
-                    <strong>Key insight:</strong> Merit awards are automatically considered at the time of your university application — no separate form needed. Income-based grants (DSU) require a separate application <em>after</em> you are admitted and enrolled. Start both processes in parallel.
+                    <strong>Key insight:</strong> Merit awards are automatically considered at the time of your university application. No separate form needed. Income-based grants (DSU) require a separate application <em>after</em> you are admitted and enrolled. Start both processes in parallel.
                   </p>
                 </div>
               </SectionCard>
 
               <SectionCard title="Can I combine scholarships?" icon={<Info size={18} />}>
                 <p className="text-sm text-slate-600 mb-4">
-                  Yes — in many cases Bocconi merit awards and DSU grants can be combined, effectively covering both tuition and living costs. However, some external scholarships may not stack with Bocconi's own awards. Always verify with the Bocconi International Office.
+                  Yes, in many cases Bocconi merit awards and DSU grants can be combined, effectively covering both tuition and living costs. However, some external scholarships may not stack with Bocconi's own awards. Always verify with the Bocconi International Office.
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -390,17 +390,17 @@ export default function FundingScholarshipPage() {
                       <tr className="align-top">
                         <td className="py-2.5 pr-4 font-medium text-slate-800">Excellence Award</td>
                         <td className="py-2.5 pr-4 text-slate-600">Full tuition + €11,000 living</td>
-                        <td className="py-2.5 text-emerald-700 font-medium">Yes — with DSU</td>
+                        <td className="py-2.5 text-emerald-700 font-medium">Yes, with DSU</td>
                       </tr>
                       <tr className="align-top">
                         <td className="py-2.5 pr-4 font-medium text-slate-800">Merit Award</td>
                         <td className="py-2.5 pr-4 text-slate-600">Partial tuition reduction</td>
-                        <td className="py-2.5 text-emerald-700 font-medium">Yes — with DSU</td>
+                        <td className="py-2.5 text-emerald-700 font-medium">Yes, with DSU</td>
                       </tr>
                       <tr className="align-top">
                         <td className="py-2.5 pr-4 font-medium text-slate-800">DSU Grant</td>
                         <td className="py-2.5 pr-4 text-slate-600">Tuition + living allowance</td>
-                        <td className="py-2.5 text-emerald-700 font-medium">Yes — with merit awards</td>
+                        <td className="py-2.5 text-emerald-700 font-medium">Yes, with merit awards</td>
                       </tr>
                       <tr className="align-top">
                         <td className="py-2.5 pr-4 font-medium text-slate-800">External (gov't)</td>
@@ -420,7 +420,7 @@ export default function FundingScholarshipPage() {
               <div className="mb-4 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-sm text-[#5b3fd4]">
                 <Info size={16} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                 <span>
-                  All merit awards are assessed <strong>automatically</strong> when you submit your Bocconi application — no separate scholarship form is needed. Higher application rounds may offer stronger scholarship chances as fewer spots are taken.
+                  All merit awards are assessed <strong>automatically</strong> when you submit your Bocconi application. No separate scholarship form is needed. Higher application rounds may offer stronger scholarship chances as fewer spots are taken.
                 </span>
               </div>
 
@@ -438,7 +438,7 @@ export default function FundingScholarshipPage() {
                       'Strong GMAT/GRE score (700+ strongly recommended for MSc)',
                       'Compelling motivation letter and application essays',
                       'Professional or extracurricular achievements',
-                      'No separate application required — automatic consideration',
+                      'No separate application required, automatic consideration',
                     ].map((pt, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-violet-400" />
@@ -462,7 +462,7 @@ export default function FundingScholarshipPage() {
                     {[
                       'Based on academic performance and entrance test score',
                       'GMAT/GRE submission improves your score significantly',
-                      'Awarded automatically — no separate application',
+                      'Awarded automatically, no separate application',
                       'Renewable each year based on academic performance at Bocconi',
                     ].map((pt, i) => (
                       <li key={i} className="flex items-start gap-2">
@@ -504,7 +504,7 @@ export default function FundingScholarshipPage() {
                     Bocconi uses a sliding-scale tuition system based on your family's economic situation. ISU Bocconi (the financial aid office) assesses your income and adjusts your annual tuition accordingly. EU and non-EU students both qualify.
                   </p>
                   <p className="mb-2 text-slate-700">
-                    <strong>EU students:</strong> Submit an ISEE declaration (from the Italian Revenue Agency). Your tuition band is set accordingly — minimum band is approximately <strong>€1,000–3,000/year</strong>.
+                    <strong>EU students:</strong> Submit an ISEE declaration (from the Italian Revenue Agency). Your tuition band is set accordingly. The minimum band is approximately <strong>€1,000–3,000/year</strong>.
                   </p>
                   <p className="text-slate-700">
                     <strong>Non-EU students:</strong> Submit an ISEE parificato (income declaration translated and legalised). Process is more complex but significantly reduces tuition.
@@ -532,7 +532,7 @@ export default function FundingScholarshipPage() {
                   <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <div className="rounded-lg border border-slate-200 bg-white p-3">
                       <p className="text-xs font-semibold text-slate-500 mb-1">Economic threshold</p>
-                      <p className="text-sm text-slate-700">ISEE ≤ ~€26,306 (approx. — updated each year)</p>
+                      <p className="text-sm text-slate-700">ISEE ≤ ~€26,306 (approx., updated each year)</p>
                     </div>
                     <div className="rounded-lg border border-slate-200 bg-white p-3">
                       <p className="text-xs font-semibold text-slate-500 mb-1">Merit threshold</p>
@@ -565,7 +565,7 @@ export default function FundingScholarshipPage() {
                       <div>
                         <p className="text-sm font-semibold text-amber-800">Non-EU: ISEE parificato required</p>
                         <p className="mt-1 text-sm text-amber-700">
-                          As a non-EU student, you'll need an <strong>ISEE parificato</strong> to qualify for DSU. This requires your family's income documents to be translated into Italian, notarised, and submitted to the Italian consulate in your home country before arriving in Italy. Start this process early — it can take months.
+                          As a non-EU student, you'll need an <strong>ISEE parificato</strong> to qualify for DSU. This requires your family's income documents to be translated into Italian, notarised, and submitted to the Italian consulate in your home country before arriving in Italy. Start this process early, as it can take months.
                         </p>
                         <a href="https://www.isu.unibocconi.it/en/scholarships/isee-parificato" target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-amber-700 hover:underline text-xs font-medium">
                           ISEE parificato guide <ExternalLink size={11} />
@@ -626,7 +626,7 @@ export default function FundingScholarshipPage() {
                   </p>
                   <ul className="space-y-1 mb-3">
                     {[
-                      'Available to students from ~180 countries — check if your country qualifies',
+                      'Available to students from ~180 countries. Check if your country qualifies.',
                       'Applications are submitted via the Italian diplomatic mission in your home country',
                       'Application period: typically January–March for the following academic year',
                       'Covers tuition and may include a monthly stipend',
@@ -721,7 +721,7 @@ export default function FundingScholarshipPage() {
                     {[
                       'Many consulting firms (McKinsey, BCG, Bain) run fellowship programmes in select markets',
                       'Foundations like the Soroptimist International and local community foundations offer smaller grants',
-                      "Check your employer's HR policy — some companies part-fund graduate study",
+                      "Check your employer's HR policy. Some companies part-fund graduate study.",
                       'LinkedIn Scholarship Search and Scholarshipportal.eu are good starting points',
                     ].map((pt, i) => (
                       <li key={i} className="flex items-start gap-2">
@@ -741,7 +741,7 @@ export default function FundingScholarshipPage() {
               <div className="mb-4 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-sm text-[#5b3fd4]">
                 <Info size={16} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                 <span>
-                  Merit awards are automatic — the deadlines that matter most are <strong>your Bocconi application round</strong> (earlier = better scholarship chances) and the <strong>DSU application window</strong> (opens after admission).
+                  Merit awards are automatic. The deadlines that matter most are <strong>your Bocconi application round</strong> (earlier = better scholarship chances) and the <strong>DSU application window</strong> (opens after admission).
                 </span>
               </div>
 
@@ -749,7 +749,7 @@ export default function FundingScholarshipPage() {
                 {[
                   {
                     label: 'Bocconi application Round 1',
-                    detail: 'Highest scholarship priority — most Excellence Awards go to Round 1 applicants',
+                    detail: 'Highest scholarship priority. Most Excellence Awards go to Round 1 applicants.',
                     date: 'Nov–Dec (AY 2025–26: 12 Dec 2024)',
                     color: 'border-violet-200 bg-violet-50',
                     textColor: 'text-violet-800',
@@ -767,7 +767,7 @@ export default function FundingScholarshipPage() {
                   },
                   {
                     label: 'ISEE / ISEE parificato submission',
-                    detail: 'Required for DSU income-based aid and ISU tuition bands — start early, it takes time',
+                    detail: 'Required for DSU income-based aid and ISU tuition bands. Start early, it takes time.',
                     date: 'Typically July–September (year of enrollment)',
                     color: 'border-emerald-200 bg-emerald-50',
                     textColor: 'text-emerald-800',
@@ -776,7 +776,7 @@ export default function FundingScholarshipPage() {
                   },
                   {
                     label: 'DSU Borse di Studio application',
-                    detail: 'Opens each year via the ISU Bocconi portal — must apply before the published deadline',
+                    detail: 'Opens each year via the ISU Bocconi portal. Must apply before the published deadline.',
                     date: 'Typically August–September (check ISU Bocconi annually)',
                     color: 'border-emerald-200 bg-emerald-50',
                     textColor: 'text-emerald-800',
@@ -786,7 +786,7 @@ export default function FundingScholarshipPage() {
                   {
                     label: 'Italian Government (MAECI) bilateral scholarships',
                     detail: 'Applications through Italian consulates in your home country',
-                    date: 'Varies by country — typically January–March',
+                    date: 'Varies by country, typically January–March',
                     color: 'border-slate-200 bg-slate-50',
                     textColor: 'text-slate-800',
                     badgeColor: 'bg-slate-100 text-slate-600',
@@ -822,13 +822,13 @@ export default function FundingScholarshipPage() {
           {activeSection === 'documents' && (() => {
             const docsState = checklistState
             const items = [
-              { key: 'transcripts', label: 'Official academic transcripts', notes: 'Required for all scholarship applications — translated into English or Italian if needed', required: true },
+              { key: 'transcripts', label: 'Official academic transcripts', notes: 'Required for all scholarship applications, translated into English or Italian if needed', required: true },
               { key: 'motivation', label: 'Motivation letter / personal statement', notes: 'Strengthens both your university application and scholarship assessment', required: true },
               { key: 'cv', label: 'CV in EU/Europass format', notes: 'Include academic achievements, work experience, and any awards', required: true },
               { key: 'gmat', label: 'GMAT or GRE score (MSc applicants)', notes: 'Not mandatory but significantly improves Excellence Award chances', required: programLevel === 'master' },
-              { key: 'isee', label: 'ISEE declaration (EU students)', notes: 'Required for DSU income-based grant — request via local CAF office', required: false },
+              { key: 'isee', label: 'ISEE declaration (EU students)', notes: 'Required for DSU income-based grant. Request via local CAF office.', required: false },
               { key: 'isee-parificato', label: 'ISEE parificato (non-EU students)', notes: 'Income documents translated, notarised, and submitted to Italian consulate', required: false },
-              { key: 'tax-docs', label: 'Family income / tax documents from home country', notes: 'Needed to prepare ISEE or ISEE parificato — gather originals early', required: false },
+              { key: 'tax-docs', label: 'Family income / tax documents from home country', notes: 'Needed to prepare ISEE or ISEE parificato. Gather originals early.', required: false },
               { key: 'passport', label: 'Valid passport copy', notes: 'Required for all scholarship and income-aid applications', required: true },
               { key: 'references', label: 'Reference letters (academic or professional)', notes: 'Optional for internal awards, often required for external scholarships', required: false },
             ]
@@ -873,14 +873,14 @@ export default function FundingScholarshipPage() {
             <SectionCard title="Insider tips" icon={<Lightbulb size={18} />}>
               <div className="space-y-2">
                 {[
-                  'Apply in Round 1 — most Excellence Awards are given to Round 1 applicants. Even a month earlier can make a huge difference.',
+                  'Apply in Round 1. Most Excellence Awards are given to Round 1 applicants. Even a month earlier can make a huge difference.',
                   'A strong GMAT score (700+) is one of the most reliable ways to improve your scholarship assessment. Even if your programme doesn\'t require it, submission is highly recommended.',
-                  'Non-EU students: start your ISEE parificato process before you leave home. You need your family\'s income documents notarised and submitted to the Italian consulate — this can take 2–4 months.',
-                  'EU students can get an ISEE declaration completed quickly through any local CAF (tax assistance centre) office in Italy — usually free of charge.',
+                  'Non-EU students: start your ISEE parificato process before you leave home. You need your family\'s income documents notarised and submitted to the Italian consulate, as it can take 2–4 months.',
+                  'EU students can get an ISEE declaration completed quickly through any local CAF (tax assistance centre) office in Italy, usually free of charge.',
                   'DSU applications are first-come, first-served for borderline cases. Submit as early as the portal opens in summer.',
                   'If you receive a DSU grant, make sure you accumulate the minimum required academic credits (CFU) each year to keep it. Falling below the threshold means losing the scholarship for the following year.',
-                  'External scholarships (Rotary, MAECI, government) must usually be arranged 6–18 months before your program starts — research these at the very beginning of your application process.',
-                  'ISU Bocconi holds regular financial aid info sessions for incoming students in September — attend early to understand all options.',
+                  'External scholarships (Rotary, MAECI, government) must usually be arranged 6–18 months before your program starts. Research these at the very beginning of your application process.',
+                  'ISU Bocconi holds regular financial aid info sessions for incoming students in September. Attend early to understand all options.',
                   'Academic merit and scholarship decisions are made partly based on your application letter. A well-crafted, authentic motivation letter matters more than many students realise.',
                 ].map((tip, i) => (
                   <div key={i} className="flex items-start gap-3 rounded-lg border border-emerald-100 bg-emerald-50/60 px-4 py-3 text-sm text-slate-700">
@@ -897,16 +897,16 @@ export default function FundingScholarshipPage() {
             <SectionCard title="Key links" icon={<LinkIcon size={18} />}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {[
-                  { label: 'ISU Bocconi — financial aid portal', url: 'https://www.isu.unibocconi.it/en' },
+                  { label: 'ISU Bocconi: financial aid portal', url: 'https://www.isu.unibocconi.it/en' },
                   { label: 'Bocconi scholarships overview page', url: 'https://www.unibocconi.eu/en/programs/master-science/scholarships-and-financial-aid' },
                   { label: 'DSU Lombardia scholarship info', url: 'https://www.dsu.lombardia.it/en' },
                   { label: 'ISEE parificato guide (ISU)', url: 'https://www.isu.unibocconi.it/en/scholarships/isee-parificato' },
                   { label: 'Italian MAECI government scholarships', url: 'https://www.esteri.it/it/opportunita/borse-di-studio/per-stranieri/' },
                   { label: 'Rotary Foundation scholarships', url: 'https://www.rotary.org/en/our-programs/scholarships' },
-                  { label: 'ScholarshipPortal.eu — search tool', url: 'https://www.scholarshipportal.com' },
-                  { label: 'Euraxess — research funding database', url: 'https://euraxess.ec.europa.eu/jobs-funding/funding' },
+                  { label: 'ScholarshipPortal.eu: search tool', url: 'https://www.scholarshipportal.com' },
+                  { label: 'Euraxess: research funding database', url: 'https://euraxess.ec.europa.eu/jobs-funding/funding' },
                   { label: 'Bocconi official apply portal', url: 'https://apply.unibocconi.it' },
-                  { label: 'CAF — ISEE declaration help', url: 'https://www.cafacli.it/en/' },
+                  { label: 'CAF: ISEE declaration help', url: 'https://www.cafacli.it/en/' },
                 ].map((link) => (
                   <a
                     key={link.url}

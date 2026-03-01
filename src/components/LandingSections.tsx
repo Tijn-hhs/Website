@@ -47,7 +47,7 @@ const features = [
       </svg>
     ),
     title: 'Local guides',
-    desc: 'Curated info on housing, banking, healthcare and more — for Milan.',
+    desc: 'Curated info on housing, banking, healthcare and more, specifically for Milan.',
   },
   {
     icon: (
@@ -112,7 +112,7 @@ export default function LandingSections() {
               10 steps. One clear path.
             </h2>
             <p className="mt-3 text-slate-500 max-w-xl mx-auto">
-              From your acceptance letter to settling in — Leavs covers every milestone in order.
+              From your acceptance letter to settling in. Leavs covers every milestone in order.
             </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -151,9 +151,9 @@ export default function LandingSections() {
               <div className="inline-flex items-center gap-2 bg-[#D9D3FB] text-[#8870FF] text-xs font-bold px-3 py-1.5 rounded-full mb-5 tracking-wide uppercase">
                 🇪🇺 EU citizen
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">No visa needed — but still a lot to do.</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">No visa needed, but still a lot to do.</h3>
               <ul className="space-y-3 text-sm text-slate-600">
-                {['Register at the Comune (residency)', 'Get your Codice Fiscale', 'Open an Italian bank account', 'Find housing — avoid scams', 'Set up Italian healthcare (SSN)'].map(item => (
+                {['Register at the Comune (residency)', 'Get your Codice Fiscale', 'Open an Italian bank account', 'Find housing (avoid scams)', 'Set up Italian healthcare (SSN)'].map(item => (
                   <li key={item} className="flex items-center gap-2.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#8870FF] flex-shrink-0" />
                     {item}
@@ -166,7 +166,7 @@ export default function LandingSections() {
               <div className="inline-flex items-center gap-2 bg-[#8870FF] text-white text-xs font-bold px-3 py-1.5 rounded-full mb-5 tracking-wide uppercase">
                 🌍 Non-EU citizen
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Visa, permit, registration — all in one place.</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Visa, permit, registration: all in one place.</h3>
               <ul className="space-y-3 text-sm text-slate-600">
                 {['Apply for student visa (Type D)', 'Declare presence within 8 days of arrival', 'Apply for Permesso di Soggiorno', 'Get your Codice Fiscale', 'Open a bank account & find housing'].map(item => (
                   <li key={item} className="flex items-center gap-2.5">
@@ -196,7 +196,7 @@ export default function LandingSections() {
                 Milan, Italy.
               </h2>
               <p className="text-[#D9D3FB]/80 text-lg leading-relaxed max-w-md">
-                Home to Bocconi, Politecnico, Cattolica and more. Every year thousands of international students move to Milan — Leavs is built specifically for that journey.
+                Home to Bocconi, Politecnico, Cattolica and more. Every year thousands of international students move to Milan. Leavs is built specifically for that journey.
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
                 {['Bocconi University', 'Politecnico di Milano', 'Cattolica', 'NABA', 'IED', 'Humanitas'].map(uni => (

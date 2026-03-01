@@ -33,7 +33,7 @@ export default function LandingPage() {
           <div className="flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
 
             {/* Left — compact lavender card, sits high */}
-            <div className="w-full lg:w-[45%] flex-shrink-0 bg-[#D9D3FB] rounded-3xl p-8 sm:p-10 flex flex-col gap-8 shadow-lg">
+            <div className="w-full lg:w-[50%] flex-shrink-0 bg-[#D9D3FB] rounded-3xl p-8 sm:p-10 flex flex-col gap-8 shadow-lg">
               <div className="space-y-4">
                 <p className="text-xs font-bold text-[#8870FF] tracking-widest uppercase">
                   Welcome to Leavs
@@ -42,7 +42,7 @@ export default function LandingPage() {
                   Your international student journey, simplified.
                 </h1>
                 <p className="text-base text-slate-700 leading-relaxed">
-                  From visa to housing to banking — Leavs gives you a personalised step-by-step plan for moving to your new city.
+                  From visa to housing to banking; Leavs gives you a personalised step-by-step plan for moving to your new city.
                 </p>
               </div>
 
@@ -57,7 +57,7 @@ export default function LandingPage() {
                   </button>
                   <span className="text-sm text-slate-600 font-medium">Free for students</span>
                 </div>
-                <p className="text-xs text-slate-500">Helping international students move to Milan, Italy</p>
+        
               </div>
             </div>
 

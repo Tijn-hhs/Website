@@ -279,7 +279,7 @@ export default function InsurancePage() {
       {showModal && (
         <StepIntroModal
           stepTitle="Insurance"
-          stepDescription="Learn what insurance you need as an international student in Milan — from enrolling in Italy's national health service to renter's and travel coverage."
+          stepDescription="Learn what insurance you need as an international student in Milan: from enrolling in Italy's national health service to renter's and travel coverage."
           onConfirm={handleConfirm}
           onBack={handleBack}
         />
@@ -290,7 +290,7 @@ export default function InsurancePage() {
         totalSteps={totalSteps}
         stepLabel={`STEP ${stepNumber}`}
         title="Insurance"
-        subtitle="Everything you need to stay protected in Milan — health, housing, and beyond."
+        subtitle="Everything you need to stay protected in Milan: health, housing, and beyond."
         useGradientBar={true}
         userInfoTitle="Your insurance profile"
         userInfoFields={[
@@ -319,7 +319,7 @@ export default function InsurancePage() {
               <div className="col-span-full flex items-start gap-4 rounded-xl border border-[#a594ff] bg-[#F0EDFF] p-5 shadow-sm">
                 <Shield size={24} className="mt-0.5 flex-shrink-0 text-[#8870FF]" />
                 <div>
-                  <p className="text-base font-semibold text-[#5b3fd4]">Good news — as an EU/EEA citizen your healthcare is simpler</p>
+                  <p className="text-base font-semibold text-[#5b3fd4]">Good news: as an EU/EEA citizen your healthcare is simpler</p>
                   <p className="mt-1 text-sm text-[#6a54e0]">
                     Your European Health Insurance Card (EHIC / TEAM card) gives you free access to medically necessary care in Italy on the same terms as Italian residents. You can optionally also enroll in the Italian SSN for broader coverage. Start with the{' '}
                     <button className="underline font-medium" onClick={() => handleTabSelect('ssn')}>SSN tab</button>.
@@ -341,9 +341,9 @@ export default function InsurancePage() {
               </div>
             )}
 
-            <SectionCard title="Insurance in Italy — the big picture" icon={<Shield size={18} />}>
+            <SectionCard title="Insurance in Italy: the big picture" icon={<Shield size={18} />}>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Italy has one of Europe's best universal healthcare systems — the{' '}
+                Italy has one of Europe's best universal healthcare systems. The{' '}
                 <strong className="text-slate-800">Servizio Sanitario Nazionale (SSN)</strong>, often called the NHS of Italy.
                 As a student in Milan you will deal with three overlapping layers of protection:
               </p>
@@ -431,29 +431,29 @@ export default function InsurancePage() {
 
             <div className="space-y-3">
               <ExpandableCard
-                title="EU / EEA students — EHIC card"
+                title="EU / EEA students: EHIC card"
                 badge={<Badge label="EU / EEA" variant="eu" />}
               >
                 <p className="mb-3">
-                  Your <strong>European Health Insurance Card (EHIC)</strong> — called the TEAM card in some countries — entitles you to medically necessary state-provided healthcare in Italy on the same terms as Italian residents.
+                  Your <strong>European Health Insurance Card (EHIC)</strong>, called the TEAM card in some countries, entitles you to medically necessary state-provided healthcare in Italy on the same terms as Italian residents.
                   This means GP visits, specialist referrals, emergency care, and subsidised prescriptions are covered.
                 </p>
                 <p className="mb-2 font-medium text-slate-700">Before you leave home:</p>
                 <ol className="space-y-2">
                   {[
-                    { t: 'Check your existing EHIC card', d: 'If you already have one, confirm the expiry date — it must be valid for your entire stay in Milan.' },
+                    { t: 'Check your existing EHIC card', d: 'If you already have one, confirm the expiry date. It must be valid for your entire stay in Milan.' },
                     { t: 'Apply or renew your EHIC', d: 'Request it from your national health authority (it is free). Processing takes 1–4 weeks, so apply early.' },
                     { t: 'Keep the card on you when you arrive', d: 'Show it at pharmacies, clinics, and hospitals to access subsidised care.' },
                   ].map((s, i) => <StepItem key={i} number={i + 1} title={s.t} detail={s.d} />)}
                 </ol>
                 <div className="mt-3 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-xs text-[#5b3fd4]">
                   <Info size={14} className="mt-0.5 flex-shrink-0" />
-                  EU students can also voluntarily enroll in the SSN at the local ATS free of charge — this gives you a permanent Italian GP and Tessera Sanitaria, helpful for stays longer than 6 months.
+                  EU students can also voluntarily enroll in the SSN at the local ATS free of charge. This gives you a permanent Italian GP and Tessera Sanitaria, helpful for stays longer than 6 months.
                 </div>
               </ExpandableCard>
 
               <ExpandableCard
-                title="Non-EU students — voluntary SSN enrollment"
+                title="Non-EU students: voluntary SSN enrollment"
                 badge={<Badge label="Non-EU" variant="non-eu" />}
               >
                 <p className="mb-3">
@@ -462,7 +462,7 @@ export default function InsurancePage() {
                 </p>
                 <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
                   <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" />
-                  You need your <strong>permesso di soggiorno</strong> (or the postal receipt proving you applied) before you can enroll. Get your Codice Fiscale first — it is required for everything.
+                  You need your <strong>permesso di soggiorno</strong> (or the postal receipt proving you applied) before you can enroll. Get your Codice Fiscale first: it is required for everything.
                 </div>
                 <p className="mb-2 font-medium text-slate-700">Step-by-step enrollment:</p>
                 <ol className="space-y-2">
@@ -493,7 +493,7 @@ export default function InsurancePage() {
                 </ul>
                 <div className="mt-3 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
                   <CheckCircle2 size={14} className="mt-0.5 flex-shrink-0" />
-                  Once enrolled in SSN, you no longer need a separate private health policy for healthcare within Italy — though keeping your original visa insurance active until enrollment is complete is wise.
+                  Once enrolled in SSN, you no longer need a separate private health policy for healthcare within Italy, though keeping your original visa insurance active until enrollment is complete is wise.
                 </div>
               </ExpandableCard>
 
@@ -503,8 +503,8 @@ export default function InsurancePage() {
                     { title: 'GP (medico di base)', detail: 'Free with SSN enrollment. Required for referrals to specialists.' },
                     { title: 'Specialist visits', detail: 'Covered with a small co-payment (ticket). Higher cost if you self-refer without a GP letter.' },
                     { title: 'Emergency care (pronto soccorso)', detail: 'Always free for genuine emergencies, regardless of insurance status.' },
-                    { title: 'Prescribed medicines', detail: 'Heavily subsidised — there is normally a small co-payment per prescription.' },
-                    { title: 'Diagnostic tests', detail: 'Blood tests, X-rays, ultrasounds — free or very low-cost with a GP referral.' },
+                    { title: 'Prescribed medicines', detail: 'Heavily subsidised: there is normally a small co-payment per prescription.' },
+                    { title: 'Diagnostic tests', detail: 'Blood tests, X-rays, ultrasounds: free or very low-cost with a GP referral.' },
                     { title: 'Mental health services', detail: 'Some services covered, but wait times are long. Bocconi provides free counselling on campus.' },
                   ].map(c => (
                     <div key={c.title} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
@@ -522,9 +522,9 @@ export default function InsurancePage() {
             <div className="mt-4 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
               <MapPin size={16} className="mt-0.5 flex-shrink-0 text-slate-400" />
               <div>
-                <p className="text-sm font-semibold text-slate-700">ATS Milano — main enrollment office</p>
+                <p className="text-sm font-semibold text-slate-700">ATS Milano: main enrollment office</p>
                 <p className="text-xs text-slate-500 mt-0.5">Via Unione 2, 20122 Milano (MM3 Missori, 10 min walk from Bocconi)</p>
-                <p className="text-xs text-slate-500">Mon–Fri 08:30–12:00. Arrive early — queues can be long. Online appointments available.</p>
+                <p className="text-xs text-slate-500">Mon–Fri 08:30–12:00. Arrive early; queues can be long. Online appointments available.</p>
                 <a
                   href="https://www.ats-milano.it"
                   target="_blank"
@@ -544,7 +544,7 @@ export default function InsurancePage() {
         {activeSection === 'private' && (
           <SectionCard title="Private health insurance" icon={<CreditCard size={18} />}>
             <p className="mb-4 text-sm text-slate-600 leading-relaxed">
-              Private insurance is <strong className="text-slate-800">required for non-EU students</strong> as part of the Italian student visa application — you must show proof of comprehensive health coverage before the embassy issues your visa.
+              Private insurance is <strong className="text-slate-800">required for non-EU students</strong> as part of the Italian student visa application. You must show proof of comprehensive health coverage before the embassy issues your visa.
               EU students may also want private insurance to fill SSN gaps (dental, optical, faster specialist access).
             </p>
 
@@ -658,7 +658,7 @@ export default function InsurancePage() {
           <SectionCard title="Coverage included with your Bocconi enrollment" icon={<GraduationCap size={18} />}>
             <p className="mb-4 text-sm text-slate-600 leading-relaxed">
               All students enrolled at Bocconi automatically benefit from several forms of protection and on-campus health services.
-              These supplement — but do not replace — health insurance.
+              These supplement, but do not replace, health insurance.
             </p>
 
             <div className="space-y-3">
@@ -681,12 +681,12 @@ export default function InsurancePage() {
                           </li>
                         ))}
                       </ul>
-                      <p className="text-xs text-slate-500">This does not cover illness or accidents outside university activities — you still need separate health coverage.</p>
+                      <p className="text-xs text-slate-500">This does not cover illness or accidents outside university activities; you still need separate health coverage.</p>
                     </>
                   ),
                 },
                 {
-                  title: 'Psychological counselling — SCAR service',
+                  title: 'Psychological counselling: SCAR service',
                   badge: <Badge label="Free" variant="recommended" />,
                   content: (
                     <>
@@ -705,7 +705,7 @@ export default function InsurancePage() {
                   badge: undefined,
                   content: (
                     <>
-                      <p className="mb-2">A physician is available on campus at set hours for non-emergency consultations — useful for getting prescriptions quickly without needing your own GP appointment.</p>
+                      <p className="mb-2">A physician is available on campus at set hours for non-emergency consultations, useful for getting prescriptions quickly without needing your own GP appointment.</p>
                       <p className="text-xs text-slate-500">Check the current schedule on the Bocconi student portal under "Welfare at Bocconi".</p>
                     </>
                   ),
@@ -749,13 +749,13 @@ export default function InsurancePage() {
                 title="Renter's insurance (assicurazione affittuari)"
                 badge={<Badge label="Highly recommended" variant="recommended" />}
               >
-                <p className="mb-2">Student apartments in Milan are often older buildings with shared use — water leaks, accidental damage, and theft are common. A renter's policy bundles:</p>
+                <p className="mb-2">Student apartments in Milan are often older buildings with shared use: water leaks, accidental damage, and theft are common. A renter's policy bundles:</p>
                 <ul className="mb-2 space-y-1">
                   {[
-                    'Civil liability (RC) — if you accidentally damage the apartment or injure someone',
-                    'Contents coverage — laptop, phone, bicycle, clothing',
+                    'Civil liability (RC): if you accidentally damage the apartment or injure someone',
+                    'Contents coverage: laptop, phone, bicycle, clothing',
                     'Fire and water damage',
-                    'Theft — usually covers break-ins, sometimes portable items',
+                    'Theft: usually covers break-ins, sometimes portable items',
                   ].map((x, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
                       <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-400" />
@@ -764,10 +764,10 @@ export default function InsurancePage() {
                   ))}
                 </ul>
                 <p className="mb-1.5 text-sm"><span className="font-semibold text-slate-700">Typical cost:</span> €5–20/month</p>
-                <p className="mb-2 text-xs text-slate-500">Some landlords require tenants to hold an RC policy — check your rental contract before signing.</p>
+                <p className="mb-2 text-xs text-slate-500">Some landlords require tenants to hold an RC policy; check your rental contract before signing.</p>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { label: 'Facile.it — compare', url: 'https://www.facile.it/assicurazione-casa/' },
+                    { label: 'Facile.it: compare', url: 'https://www.facile.it/assicurazione-casa/' },
                     { label: 'UnipolSai', url: 'https://www.unipolsai.it' },
                     { label: 'Generali', url: 'https://www.generali.it' },
                   ].map(l => (
@@ -783,7 +783,7 @@ export default function InsurancePage() {
                 <p className="mb-2">If you plan to travel around Europe during your studies, travel insurance covers cancellations, lost baggage, delayed flights, and medical emergencies abroad. Important if you use low-cost carriers.</p>
                 <ul className="space-y-1 mb-2">
                   {[
-                    'Check if your bank card includes travel insurance — many premium debit/credit cards do',
+                    'Check if your bank card includes travel insurance: many premium debit/credit cards do',
                     'ISIC (International Student Identity Card) includes travel assistance in some plans',
                     'Erasmus+ participants are covered by the Erasmus insurance scheme',
                     'Annual multi-trip plans are more cost-effective than per-trip cover',
@@ -804,10 +804,10 @@ export default function InsurancePage() {
                 <p className="mb-2">Bicycle theft in Milan is extremely common. If you plan to cycle:</p>
                 <ul className="space-y-1 mb-2">
                   {[
-                    'Register your bike on the Comune di Milano Registro Biciclette — free and deters theft',
+                    'Register your bike on the Comune di Milano Registro Biciclette: free and deters theft',
                     'Get your bike punzonatura (serial number stamp) at a police station or civic point',
                     'Take a photo of your bike and note the frame serial number',
-                    'Many renter\'s insurance policies include bicycle theft — check the wording',
+                    'Many renter\'s insurance policies include bicycle theft: check the wording',
                   ].map((x, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
                       <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
@@ -823,7 +823,7 @@ export default function InsurancePage() {
 
               <ExpandableCard title="Electronics / valuables insurance">
                 <p className="mb-2">Laptops and smartphones may not be covered under basic renter's policies. Check whether your policy includes "all-risks" cover for portable valuables. If not, a gadget top-up rider is worth considering.</p>
-                <p className="text-xs text-slate-500">Some student bank accounts (Revolut Plus, N26 Smart) include limited device insurance — worth checking before buying separately.</p>
+                <p className="text-xs text-slate-500">Some student bank accounts (Revolut Plus, N26 Smart) include limited device insurance; worth checking before buying separately.</p>
               </ExpandableCard>
             </div>
           </SectionCard>
@@ -836,12 +836,12 @@ export default function InsurancePage() {
           <SectionCard title="Insider tips" icon={<Lightbulb size={18} />}>
             <div className="space-y-2">
               {[
-                'Apply for your EHIC card 3–4 weeks before departure — it can take time to arrive (EU/EEA students).',
+                'Apply for your EHIC card 3–4 weeks before departure: it can take time to arrive (EU/EEA students).',
                 'The Bocconi International Office can advise on recommended insurance providers and whether your existing policy satisfies visa requirements.',
-                'The Tessera Sanitaria (health card) doubles as your Codice Fiscale card — carry it with you everywhere.',
-                'Top up or check SSN for dental referrals before having any procedure — dental work is expensive in Milan without coverage.',
-                "If you have a chronic condition or disability, inform Bocconi's Equal Opportunities Office — they coordinate with healthcare providers for additional support.",
-                'Renew your SSN enrollment and private insurance before expiry — gaps in coverage can cause complications when renewing your permesso di soggiorno.',
+                'The Tessera Sanitaria (health card) doubles as your Codice Fiscale card; carry it with you everywhere.',
+                'Top up or check SSN for dental referrals before having any procedure; dental work is expensive in Milan without coverage.',
+                "If you have a chronic condition or disability, inform Bocconi's Equal Opportunities Office; they coordinate with healthcare providers for additional support.",
+                'Renew your SSN enrollment and private insurance before expiry; gaps in coverage can cause complications when renewing your permesso di soggiorno.',
               ].map((tip, i) => (
                 <div
                   key={i}
@@ -862,14 +862,14 @@ export default function InsurancePage() {
           <SectionCard title="Key links" icon={<LinkIcon size={18} />}>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {[
-                { label: 'ATS Milano — enroll in SSN', url: 'https://www.ats-milano.it' },
-                { label: 'Bocconi — healthcare & welfare', url: 'https://www.unibocconi.it/en/programs/current-students/services-and-activities/student-services/welfare-at-bocconi/healthcare-and-psychological-support' },
-                { label: 'EHIC — UK NHS (GHIC) application', url: 'https://www.nhs.uk/using-the-nhs/healthcare-abroad/apply-for-a-free-uk-global-health-insurance-card-ghic/' },
+                { label: 'ATS Milano: enroll in SSN', url: 'https://www.ats-milano.it' },
+                { label: 'Bocconi: healthcare & welfare', url: 'https://www.unibocconi.it/en/programs/current-students/services-and-activities/student-services/welfare-at-bocconi/healthcare-and-psychological-support' },
+                { label: 'EHIC: UK NHS (GHIC) application', url: 'https://www.nhs.uk/using-the-nhs/healthcare-abroad/apply-for-a-free-uk-global-health-insurance-card-ghic/' },
                 { label: 'Italian SSN official info (Salute.gov)', url: 'https://www.salute.gov.it/portale/temi/p2_6.jsp?lingua=english&id=2392&area=Sistema%20sanitario&menu=sistema' },
                 { label: 'AON Student Insurance Italy', url: 'https://www.aon.com/italy/studenti' },
                 { label: 'Allianz Care student plans', url: 'https://www.allianzcare.com/en/student-health-insurance.html' },
-                { label: 'Facile.it — home insurance compare', url: 'https://www.facile.it/assicurazione-casa/' },
-                { label: 'Facile.it — health insurance compare', url: 'https://www.facile.it/assicurazione-salute/' },
+                { label: 'Facile.it: home insurance compare', url: 'https://www.facile.it/assicurazione-casa/' },
+                { label: 'Facile.it: health insurance compare', url: 'https://www.facile.it/assicurazione-salute/' },
                 { label: 'Milan bike registry (Comune)', url: 'https://www.comune.milano.it/servizi/registro-biciclette' },
                 { label: 'ISIC student card + travel benefits', url: 'https://www.isic.org' },
               ].map(link => (
@@ -893,22 +893,22 @@ export default function InsurancePage() {
                 {[
                   {
                     name: 'Bocconi International Students Office',
-                    detail: 'Via Sarfatti 25, Building D — international@unibocconi.it',
+                    detail: 'Via Sarfatti 25, Building D: international@unibocconi.it',
                     url: 'https://www.unibocconi.it/en/programs/current-students/services-and-activities/international-students-services',
                   },
                   {
-                    name: 'ATS Milano — Sportello Stranieri',
-                    detail: 'Via Unione 2, 20122 Milano — SSN enrollment, GP registration',
+                    name: 'ATS Milano: Sportello Stranieri',
+                    detail: 'Via Unione 2, 20122 Milano: SSN enrollment, GP registration',
                     url: 'https://www.ats-milano.it',
                   },
                   {
                     name: 'Ospedale Policlinico di Milano',
-                    detail: 'Via Francesco Sforza 35 — major teaching hospital near Bocconi',
+                    detail: 'Via Francesco Sforza 35: major teaching hospital near Bocconi',
                     url: 'https://www.policlinico.mi.it',
                   },
                   {
                     name: 'Humanitas Research Hospital',
-                    detail: 'Via Alessandro Manzoni 56, Rozzano — private hospital, English-speaking staff',
+                    detail: 'Via Alessandro Manzoni 56, Rozzano: private hospital, English-speaking staff',
                     url: 'https://www.humanitas.it',
                   },
                 ].map(c => (

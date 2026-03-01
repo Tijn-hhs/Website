@@ -48,24 +48,24 @@ export default function CongratulationsModal({ isOpen, onClose }: Congratulation
   if (!isOpen) return null
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
       onClick={onClose}
     >
-      <div 
-        className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center transform transition-all"
+      <div
+        className="bg-white rounded-2xl shadow-2xl p-10 max-w-sm w-full mx-4 text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="text-6xl mb-4">🎉</div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">
+        <div className="text-5xl mb-5">🎉</div>
+        <h2 className="text-2xl font-bold text-[#1a1a2e] mb-3">
           Congratulations!
         </h2>
-        <p className="text-lg text-gray-600 mb-6">
+        <p className="text-[15px] text-gray-500 leading-relaxed mb-7">
           Amazing news! Getting accepted is a huge achievement. We're excited to help you with your journey to Milan!
         </p>
         <button
           onClick={onClose}
-          className="inline-flex items-center justify-center rounded-full bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+          className="w-full rounded-xl bg-[#8870FF] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#7660ee] focus:outline-none focus:ring-2 focus:ring-[#8870FF] focus:ring-offset-2"
         >
           Continue
         </button>

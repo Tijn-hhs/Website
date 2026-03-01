@@ -338,7 +338,7 @@ export default function BankingPage() {
                 <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Digital banks</p>
                   <p className="mt-1 text-sm font-semibold text-slate-800">Revolut, Wise, N26</p>
-                  <p className="mt-0.5 text-xs text-slate-500">Best for most students — instant setup, low fees, mobile-first</p>
+                  <p className="mt-0.5 text-xs text-slate-500">Best for most students: instant setup, low fees, mobile-first</p>
                 </div>
                 <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Traditional banks</p>
@@ -355,7 +355,7 @@ export default function BankingPage() {
                 ]}
               />
               <div className="mt-5 space-y-2">
-                <TipRow text="Open a digital bank account before you arrive — most accept remote applications and ship a card to your home address." />
+                <TipRow text="Open a digital bank account before you arrive: most accept remote applications and ship a card to your home address." />
                 <TipRow text="Have a backup payment method (credit card) for emergencies or countries with limited digital-bank acceptance." />
               </div>
             </SectionCard>
@@ -365,7 +365,7 @@ export default function BankingPage() {
           {activeSection === 'digital' && (
             <SectionCard title="Digital banking for students" icon={<Smartphone size={18} />}>
               <p className="mb-4 text-sm text-slate-500">
-                Modern digital banks offer the best experience for international students — instant
+                Modern digital banks offer the best experience for international students: instant
                 setup, no fees, and excellent currency exchange rates. All can be opened before
                 arriving in your destination country.
               </p>
@@ -384,9 +384,9 @@ export default function BankingPage() {
                   </a>
                 </ExpandableCard>
                 <ExpandableCard title="Wise (formerly TransferWise)">
-                  <p className="mb-3">Best for international transfers. Holds 40+ currencies and charges low, transparent fees — no hidden exchange-rate markups.</p>
+                  <p className="mb-3">Best for international transfers. Holds 40+ currencies and charges low, transparent fees: no hidden exchange-rate markups.</p>
                   <BulletList items={[
-                    'Bank details in EUR, GBP, USD, and more — receive money like a local',
+                    'Bank details in EUR, GBP, USD, and more: receive money like a local',
                     'Transparent fee breakdown before every transfer',
                     'Wise debit card spends at mid-market rate',
                     'Ideal for receiving money from parents abroad',
@@ -422,11 +422,11 @@ export default function BankingPage() {
               </p>
               <div className="space-y-2">
                 {[
-                  { label: 'Valid passport', notes: 'Primary identity document — required by all banks' },
+                  { label: 'Valid passport', notes: 'Primary identity document: required by all banks' },
                   { label: 'Student visa or residence permit', notes: 'May be requested once you arrive' },
                   { label: 'University enrollment letter', notes: 'Confirms your student status' },
                   { label: 'Proof of address', notes: 'Rental contract or utility bill in your name' },
-                  { label: 'Tax identification number', notes: 'Varies by country — see the Tax ID tab' },
+                  { label: 'Tax identification number', notes: 'Varies by country: see the Tax ID tab' },
                   { label: 'Codice Fiscale (Italy)', notes: 'Mandatory for any financial account in Italy' },
                 ].map((doc) => (
                   <div key={doc.label} className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
@@ -439,8 +439,8 @@ export default function BankingPage() {
                 ))}
               </div>
               <div className="mt-5 space-y-2">
-                <TipRow text="Digital document verification (photo upload) is standard for online banks — keep high-quality scans ready." />
-                <TipRow text="Contact your university's international office for a letter confirming enrollment — it speeds up the process." />
+                <TipRow text="Digital document verification (photo upload) is standard for online banks: keep high-quality scans ready." />
+                <TipRow text="Contact your university's international office for a letter confirming enrollment: it speeds up the process." />
               </div>
             </SectionCard>
           )}
@@ -456,7 +456,7 @@ export default function BankingPage() {
                   { step: 'Compare options', detail: 'Decide between digital, traditional, or both based on your needs.' },
                   { step: 'Gather documents', detail: 'Passport, enrollment letter, proof of address (where required).' },
                   { step: 'Apply online', detail: 'Most digital banks can be set up before you arrive in the country.' },
-                  { step: 'Complete identity verification', detail: 'Video selfie or live check — usually takes a few minutes.' },
+                  { step: 'Complete identity verification', detail: 'Video selfie or live check: usually takes a few minutes.' },
                   { step: 'Receive your card', detail: 'Virtual card available immediately; physical card ships in 3–5 days.' },
                   { step: 'Activate and set up mobile banking', detail: 'Enable notifications, Face ID, and set your PIN.' },
                 ].map((item, i) => (
@@ -465,14 +465,14 @@ export default function BankingPage() {
                       {i + 1}
                     </span>
                     <div>
-                      <span className="font-semibold text-slate-800">{item.step} — </span>
+                      <span className="font-semibold text-slate-800">{item.step}: </span>
                       {item.detail}
                     </div>
                   </li>
                 ))}
               </ol>
               <div className="mt-5 space-y-2">
-                <TipRow text="Keep digital copies of all submitted documents — you may be asked to re-submit." />
+                <TipRow text="Keep digital copies of all submitted documents: you may be asked to re-submit." />
                 <TipRow text="Video verification is standard for remote onboarding; ensure you have good lighting and a stable internet connection." />
               </div>
             </SectionCard>
@@ -486,7 +486,7 @@ export default function BankingPage() {
                 significantly on every transfer.
               </p>
               <div className="mb-5 space-y-3">
-                <ExpandableCard title="Wise — best for most corridors">
+                <ExpandableCard title="Wise: best for most corridors">
                   <BulletList items={[
                     'Uses the real mid-market exchange rate with a small transparent fee',
                     'Transfers typically arrive in 1–2 business days',
@@ -494,22 +494,22 @@ export default function BankingPage() {
                     'Compare fees for your specific currency pair at wise.com',
                   ]} />
                 </ExpandableCard>
-                <ExpandableCard title="Revolut — great for EUR moves">
+                <ExpandableCard title="Revolut: great for EUR moves">
                   <BulletList items={[
                     'Free currency conversion up to monthly limits on the standard plan',
-                    'Weekend surcharge applies outside market hours — transfer on weekdays',
+                    'Weekend surcharge applies outside market hours: transfer on weekdays',
                     'Instant transfers between Revolut users',
                   ]} />
                 </ExpandableCard>
-                <ExpandableCard title="Traditional banks — when to use">
+                <ExpandableCard title="Traditional banks: when to use">
                   <BulletList items={[
                     'Some landlords or institutions require a SEPA bank transfer',
-                    'Always get a fee quote before sending — markups can be 2–4%',
+                    'Always get a fee quote before sending: markups can be 2–4%',
                     'Use OANDA or XE.com to check the mid-market rate for comparison',
                   ]} />
                 </ExpandableCard>
               </div>
-              <TipRow text="Beware of 'zero fee' marketing — banks often hide the cost in a worse exchange rate. Always compare the final amount received." />
+              <TipRow text="Beware of 'zero fee' marketing: banks often hide the cost in a worse exchange rate. Always compare the final amount received." />
             </SectionCard>
           )}
 
@@ -517,7 +517,7 @@ export default function BankingPage() {
           {activeSection === 'finances' && (
             <SectionCard title="Managing your finances" icon={<BarChart2 size={18} />}>
               <p className="mb-4 text-sm text-slate-500">
-                Your banking app is your best tool for staying on top of spending — most modern apps
+                Your banking app is your best tool for staying on top of spending: most modern apps
                 include built-in analytics and goal features.
               </p>
               <BulletList items={[
@@ -590,7 +590,7 @@ export default function BankingPage() {
               </div>
               <div className="mt-5 space-y-2">
                 <TipRow text="For Italy: you can apply for the Codice Fiscale at the Italian consulate in your home country before you arrive." />
-                <TipRow text="Check with your university's international office — they often help students obtain their tax ID on arrival." />
+                <TipRow text="Check with your university's international office: they often help students obtain their tax ID on arrival." />
               </div>
             </SectionCard>
           )}
@@ -599,7 +599,7 @@ export default function BankingPage() {
           {activeSection === 'budgeting' && (
             <SectionCard title="Budgeting tips" icon={<PiggyBank size={18} />}>
               <p className="mb-4 text-sm text-slate-500">
-                The first month is the most important — track everything carefully to establish your
+                The first month is the most important: track everything carefully to establish your
                 baseline before setting a budget.
               </p>
               <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -627,8 +627,8 @@ export default function BankingPage() {
                 'Cost-of-living calculators on student platforms can help set expectations before you arrive',
               ]} />
               <div className="mt-5 space-y-2">
-                <TipRow text="Track spending for the first month without restrictions — then use real data to set your budget categories." />
-                <TipRow text="Connect with other students about their monthly costs — local insight beats any calculator." />
+                <TipRow text="Track spending for the first month without restrictions: then use real data to set your budget categories." />
+                <TipRow text="Connect with other students about their monthly costs: local insight beats any calculator." />
               </div>
             </SectionCard>
           )}

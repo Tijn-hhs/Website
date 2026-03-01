@@ -372,6 +372,7 @@ const secretsClient = new SecretsManagerClient({})
 
 // Cache the Gemini API key across warm Lambda invocations
 let cachedGeminiApiKey: string | null = null
+let cachedFirecrawlApiKey: string | null = null
 
 const TABLE = {
   profiles: process.env.USER_PROFILE_TABLE_NAME!,
@@ -1594,6 +1595,92 @@ async function handlePostAdminSendDeadlineReminders(event: any): Promise<ApiResp
   return ok({ ...results, targetDate: targetDateStr })
 }
 
+// ─── Firecrawl Deadline Scraper ─────────────────────────────────────────────
+
+const DEADLINE_SCRAPE_SOURCES = [
+  {
+    id: 'bocconi-admissions',
+    university: 'Bocconi',
+    url: 'https://www.unibocconi.eu/wps/wcm/connect/bocconi/sitopubblico_en/navigation+tree/home/programs/master+of+science/admissions',
+  },
+  {
+    id: 'polimi-admissions',
+    university: 'Politecnico di Milano',
+    url: 'https://www.polimi.it/en/programmes/laurea-magistrale-equivalent-to-master-of-science/how-to-apply',
+  },
+]
+
+interface ScrapedDeadlineItem {
+  title: string
+  date: string
+  description?: string
+  type?: string
+}
+
+/**
+ * POST /admin/scrape-deadlines
+ * Uses Firecrawl to extract deadline info from official university pages.
+ * Returns the raw extracted data for admin review — does NOT write to DynamoDB.
+ */
+async function handlePostAdminScrapeDeadlines(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+
+  let apiKey: string
+  try {
+    apiKey = await getFirecrawlApiKey()
+  } catch (err) {
+    console.error('[scrape-deadlines] Failed to load Firecrawl key:', err)
+    return fail(500, 'Could not load Firecrawl API key')
+  }
+
+  const results: Array<{
+    source: string
+    university: string
+    status: 'ok' | 'error'
+    deadlines?: ScrapedDeadlineItem[]
+    error?: string
+  }> = []
+
+  for (const source of DEADLINE_SCRAPE_SOURCES) {
+    try {
+      const firecrawlRes = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: source.url,
+          formats: ['extract'],
+          extract: {
+            prompt: `Extract all application deadlines, enrollment deadlines, and important dates from this page.
+Return a JSON array of objects, each with fields:
+- title (string): short name for the deadline, e.g. "Early application deadline"
+- date (string): ISO 8601 date, e.g. "2025-03-15"
+- description (string, optional): 1–2 sentence explanation
+- type (string): one of "application", "enrollment", "visa", "scholarship", "other"
+Only include items that have a specific date. Skip vague or relative dates.`,
+          },
+        }),
+      })
+
+      if (!firecrawlRes.ok) {
+        const errText = await firecrawlRes.text()
+        throw new Error(`Firecrawl HTTP ${firecrawlRes.status}: ${errText}`)
+      }
+
+      const data = await firecrawlRes.json() as any
+      const extracted: ScrapedDeadlineItem[] = data?.data?.extract ?? data?.extract ?? []
+      results.push({ source: source.url, university: source.university, status: 'ok', deadlines: extracted })
+    } catch (err: any) {
+      console.error(`[scrape-deadlines] Error scraping ${source.university}:`, err)
+      results.push({ source: source.url, university: source.university, status: 'error', error: err?.message ?? String(err) })
+    }
+  }
+
+  return ok({ results })
+}
+
 /** GET /admin/buddy-pool — list all users who opted into the buddy system. */
 async function handleGetAdminBuddyPool(event: any): Promise<ApiResponse> {
   const adminSecret = process.env.ADMIN_SECRET
@@ -1712,6 +1799,30 @@ async function getGeminiApiKey(): Promise<string> {
 
   cachedGeminiApiKey = key
   return cachedGeminiApiKey
+}
+
+async function getFirecrawlApiKey(): Promise<string> {
+  if (cachedFirecrawlApiKey) return cachedFirecrawlApiKey
+  const secretName = process.env.FIRECRAWL_SECRET_NAME
+  if (!secretName) throw new Error('FIRECRAWL_SECRET_NAME env var not set')
+
+  const { SecretString } = await secretsClient.send(
+    new GetSecretValueCommand({ SecretId: secretName })
+  )
+  if (!SecretString) throw new Error('Firecrawl secret has no string value')
+
+  const isJson = SecretString.trimStart().startsWith('{')
+  let key: string
+  if (isJson) {
+    const parsed = JSON.parse(SecretString) as Record<string, unknown>
+    key = (parsed.api_key ?? parsed.apiKey ?? parsed.key ?? Object.values(parsed)[0]) as string
+  } else {
+    key = SecretString.trim()
+  }
+
+  if (!key) throw new Error('Firecrawl API key resolved to empty string')
+  cachedFirecrawlApiKey = key
+  return cachedFirecrawlApiKey
 }
 
 async function handlePostChat(userId: string, event: any): Promise<ApiResponse> {
@@ -2341,6 +2452,7 @@ export async function handler(event: any): Promise<ApiResponse> {
     const emailTemplateMatch = path.match(/^\/admin\/email-templates\/([^/]+)$/)
     if (method === 'PUT'  && emailTemplateMatch) return await handlePutAdminEmailTemplate(event, emailTemplateMatch[1])
     if (method === 'POST' && path === '/admin/send-deadline-reminders') return await handlePostAdminSendDeadlineReminders(event)
+    if (method === 'POST' && path === '/admin/scrape-deadlines') return await handlePostAdminScrapeDeadlines(event)
     if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
 

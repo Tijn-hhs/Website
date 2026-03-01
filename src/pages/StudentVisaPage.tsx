@@ -312,7 +312,7 @@ const VISA_DOCUMENTS = [
     tips: {
       heading: 'Passport tips',
       points: [
-        'Check the expiry date carefully — many consulates require validity well beyond your course end date.',
+        'Check the expiry date carefully: many consulates require validity well beyond your course end date.',
         'Bring the original AND a photocopy of the data page and any previous Italian visas.',
         'If your passport expires soon, renew it before applying for the visa.',
       ],
@@ -326,7 +326,7 @@ const VISA_DOCUMENTS = [
     tips: {
       heading: 'Photo tips',
       points: [
-        'Use a professional photo booth or photographer — phone photos are usually rejected.',
+        'Use a professional photo booth or photographer: phone photos are usually rejected.',
         'White or off-white background only; avoid glasses unless medically necessary.',
         'Check your specific consulate website for exact specifications.',
       ],
@@ -358,7 +358,7 @@ const VISA_DOCUMENTS = [
         'The letter must be on official university letterhead with a stamp/signature.',
         'It should state your degree programme, duration, and start date.',
         'For Bocconi: download your official enrollment confirmation from the student portal (yoU@B) after accepting the offer and paying the enrollment fee.',
-        'If you only have a conditional offer, contact the consulate — some accept it with additional proof of meeting conditions.',
+        'If you only have a conditional offer, contact the consulate: some accept it with additional proof of meeting conditions.',
       ],
     },
   },
@@ -371,9 +371,9 @@ const VISA_DOCUMENTS = [
       heading: 'Universitaly tips',
       points: [
         'Pre-enrollment opens each year around December–January for the following academic year.',
-        'You must upload your diploma and transcripts on Universitaly — have certified translations ready.',
+        'You must upload your diploma and transcripts on Universitaly: have certified translations ready.',
         'Print and bring the confirmation PDF you receive after submission.',
-        "Some consulates skip this requirement — check your specific consulate's instructions.",
+        "Some consulates skip this requirement: check your specific consulate's instructions.",
       ],
     },
   },
@@ -387,9 +387,9 @@ const VISA_DOCUMENTS = [
       points: [
         'This must be requested from the Italian consulate or embassy in the country where you studied (not just where you live).',
         'Bring your original diploma + transcripts with an official translation into Italian or English.',
-        'Processing can take 4–8 weeks — request this as early as possible.',
+        'Processing can take 4–8 weeks: request this as early as possible.',
         'Costs vary by consulate; expect €50–150.',
-        "Some universities accept an apostille instead — confirm with Bocconi's international admissions office.",
+        "Some universities accept an apostille instead: confirm with Bocconi's international admissions office.",
       ],
     },
   },
@@ -404,8 +404,8 @@ const VISA_DOCUMENTS = [
         'Bank statements must typically cover the last 3–6 months and show a sufficient running balance.',
         'If a family member is sponsoring you, include their bank statements + a signed sponsor declaration.',
         'Scholarship letters (e.g., from your university or a government body) are accepted as financial proof.',
-        'The exact amount required is based on the Italian INPS "assegno sociale" — roughly €6,000–7,000/year as of 2025.',
-        'Some consulates accept a credit statement or investment portfolio statement — check locally.',
+        'The exact amount required is based on the Italian INPS "assegno sociale": roughly €6,000–7,000/year as of 2025.',
+        'Some consulates accept a credit statement or investment portfolio statement: check locally.',
       ],
     },
   },
@@ -420,7 +420,7 @@ const VISA_DOCUMENTS = [
         'University dormitory confirmation letters are the easiest option and highly trusted by consulates.',
         'If renting privately, bring a signed rental contract (contratto di locazione) registered with the Italian tax authority (Agenzia delle Entrate).',
         'Hotel bookings can work for initial weeks, but consulates may ask about longer-term plans.',
-        "Bocconi's Student Housing Service releases results in June/July — book alternative backup options early.",
+        "Bocconi's Student Housing Service releases results in June/July: book alternative backup options early.",
       ],
     },
   },
@@ -435,8 +435,8 @@ const VISA_DOCUMENTS = [
         'Must explicitly state it covers medical expenses in Italy.',
         'Policy start date must be on or before your intended arrival date in Italy.',
         "European Health Insurance Card (EHIC) is NOT sufficient for non-EU students' initial visa application.",
-        'Once enrolled and residing in Italy, you can register with the Italian National Health Service (SSN) — this is cheaper long-term.',
-        'Many universities offer group insurance plans — check with Bocconi before buying separately.',
+        'Once enrolled and residing in Italy, you can register with the Italian National Health Service (SSN): this is cheaper long-term.',
+        'Many universities offer group insurance plans: check with Bocconi before buying separately.',
       ],
     },
   },
@@ -449,9 +449,9 @@ const VISA_DOCUMENTS = [
       heading: 'Fee tips',
       points: [
         'Fees are non-refundable even if the visa is denied.',
-        'Some consulates require payment in local currency — check in advance.',
+        'Some consulates require payment in local currency: check in advance.',
         'VFS Global centres (used by many consulates) may charge an additional service fee of €30–50.',
-        "Keep your payment receipt — you'll need it at the appointment.",
+        "Keep your payment receipt: you'll need it at the appointment.",
       ],
     },
   },
@@ -463,7 +463,7 @@ const VISA_DOCUMENTS = [
     tips: {
       heading: 'Marca da bollo tips',
       points: [
-        'Not required by all consulates — check your specific one.',
+        'Not required by all consulates: check your specific one.',
         'If needed, it can be purchased in Italy or sometimes at the Italian Honorary Consulate.',
         'The stamp must not be cancelled before submission.',
       ],
@@ -477,7 +477,7 @@ const VISA_DOCUMENTS = [
     tips: {
       heading: 'Translation tips',
       points: [
-        'Use a certified or sworn translator — some consulates require notarisation.',
+        'Use a certified or sworn translator: some consulates require notarisation.',
         'Budget 1–2 weeks for translation turnaround.',
         'Diploma and transcript translations are typically the most critical and expensive.',
         'Universitaly may require Italian translations specifically.',
@@ -601,7 +601,7 @@ export default function StudentVisaPage() {
                 <p className="text-base font-semibold text-amber-800">Not applicable for EU/EEA citizens</p>
                 <p className="mt-1 text-sm text-amber-700">
                   As an EU/EEA citizen you benefit from freedom of movement and do not need a student visa to study in Italy.
-                  You will still need to register your residency — this is covered in the Residence Permit step.
+                  You will still need to register your residency: this is covered in the Residence Permit step.
                 </p>
                 <a href="/dashboard/immigration-registration" className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors">
                   Go to Residence Permit step &rarr;
@@ -631,7 +631,7 @@ export default function StudentVisaPage() {
           title="Student Visa"
           subtitle={
             <span>
-              Everything you need to get your <span className="font-semibold text-slate-800">Italian student visa (Visto D)</span> as a non-EU student — from prerequisites to your consulate appointment.
+              Everything you need to get your <span className="font-semibold text-slate-800">Italian student visa (Visto D)</span> as a non-EU student: from prerequisites to your consulate appointment.
             </span>
           }
           userInfoTitle="Your visa details"
@@ -676,20 +676,20 @@ export default function StudentVisaPage() {
 
               <SectionCard title="What is the Italian student visa?" icon={<Globe size={18} />}>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Italy issues two main visa types for students: the <strong>Type C Schengen visa</strong> (short stay, up to 90 days — not sufficient for a full degree)
+                  Italy issues two main visa types for students: the <strong>Type C Schengen visa</strong> (short stay, up to 90 days, not sufficient for a full degree)
                   and the <strong>Type D national long-stay visa</strong> for stays exceeding 90 days. As a student pursuing a full programme at Bocconi or another
                   Italian university, you need the Type D student visa.
                 </p>
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
                     <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Visa type</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-800">Type D — Visto Nazionale</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-800">Type D: Visto Nazionale</p>
                     <p className="text-xs text-slate-500 mt-0.5">Long-stay visa for full-degree students (&gt;90 days)</p>
                   </div>
                   <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
                     <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Processing time</p>
                     <p className="mt-1 text-sm font-semibold text-slate-800">3–8 weeks</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Varies by consulate — apply at least 3 months before departure</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Varies by consulate: apply at least 3 months before departure</p>
                   </div>
                   <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
                     <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Visa fee</p>
@@ -737,7 +737,7 @@ export default function StudentVisaPage() {
           {activeSection === 'timeline' && (
             <SectionCard title="Recommended timeline" icon={<CalendarClock size={18} />}>
               <p className="mb-4 text-sm text-slate-500 leading-relaxed">
-                The visa process involves multiple sequential steps — some require weeks of waiting. Start as early as possible.
+                The visa process involves multiple sequential steps: some require weeks of waiting. Start as early as possible.
                 Below is a recommended timeline counting <strong>backwards from your intended arrival</strong> in Italy.
               </p>
               <div className="space-y-3">
@@ -745,7 +745,7 @@ export default function StudentVisaPage() {
                   description="You cannot apply for a visa without an official acceptance letter from your Italian university. Have your degree confirmed (for Bocconi, complete the enrollment fee payment to trigger the official letter)."
                   variant="important" />
                 <TimelineStep number={2} title="Complete Universitaly pre-enrollment" timing="Dec – Feb (check yearly dates)"
-                  description="Non-EU students must pre-enroll on the Universitaly portal. This window is fixed each academic year — typically December to February. Missing it can delay your entire visa application."
+                  description="Non-EU students must pre-enroll on the Universitaly portal. This window is fixed each academic year: typically December to February. Missing it can delay your entire visa application."
                   variant="warning" />
                 <TimelineStep number={3} title="Request Dichiarazione di Valore" timing="5–7 months before arrival"
                   description="Submit your diploma and transcripts to the Italian consulate in your home country to get the Dichiarazione di Valore. This can take 4–8 weeks and is often the biggest bottleneck."
@@ -753,7 +753,7 @@ export default function StudentVisaPage() {
                 <TimelineStep number={4} title="Gather all supporting documents" timing="3–4 months before arrival"
                   description="Collect financial proof, accommodation confirmation, health insurance, certified translations, and passport photos. Allow extra time for certified translations." />
                 <TimelineStep number={5} title="Book consulate appointment" timing="3–4 months before arrival"
-                  description="Many consulates and VFS Global centres have limited appointment slots — popular slots are often booked weeks in advance. Book as soon as your documents are ready."
+                  description="Many consulates and VFS Global centres have limited appointment slots: popular slots are often booked weeks in advance. Book as soon as your documents are ready."
                   variant="warning" />
                 <TimelineStep number={6} title="Attend visa appointment & submit documents" timing="2–3 months before arrival"
                   description="Attend your consulate appointment with all original documents plus copies. Processing takes 3–8 weeks. Keep your tracking number."
@@ -787,7 +787,7 @@ export default function StudentVisaPage() {
                 <div className="space-y-3">
                   <ExpandableCard title="What is Universitaly?" badge={<Badge label="Government portal" variant="info" />}>
                     <p className="mb-2">Universitaly is Italy's centralised portal for the pre-enrollment of international students. It is managed by the Italian Ministry of Foreign Affairs (MAECI) and is part of the visa application process for most non-EU students coming to study at Italian universities.</p>
-                    <p>The portal collects your academic credentials, then notifies the Italian consulate in your country — this is required before the consulate will accept your visa application in many jurisdictions.</p>
+                    <p>The portal collects your academic credentials, then notifies the Italian consulate in your country: this is required before the consulate will accept your visa application in many jurisdictions.</p>
                   </ExpandableCard>
                   <ExpandableCard title="When does the pre-enrollment window open?" badge={<Badge label="Time-sensitive" variant="warning" />}>
                     <p className="mb-2">The Universitaly pre-enrollment window typically opens in <strong>December</strong> and closes in <strong>February</strong> each year for the following academic year. Exact dates are published on the Universitaly website.</p>
@@ -827,7 +827,7 @@ export default function StudentVisaPage() {
                 <div className="space-y-3">
                   <ExpandableCard title="What is it exactly?" badge={<Badge label="Required by most consulates" variant="required" />}>
                     <p className="mb-2">It is an official statement by the Italian consulate attesting to: the authenticity of your diploma, the number of years of study, the school type, and the grading system.</p>
-                    <p>Think of it as Italy's way of validating foreign educational qualifications — in the absence of an international mutual recognition agreement.</p>
+                    <p>Think of it as Italy's way of validating foreign educational qualifications, in the absence of an international mutual recognition agreement.</p>
                   </ExpandableCard>
                   <ExpandableCard title="How do I get it?">
                     <ol className="space-y-2 text-sm list-none">
@@ -875,7 +875,7 @@ export default function StudentVisaPage() {
               {docsDoneCount === VISA_DOCUMENTS.length && (
                 <div className="mb-4 flex items-center gap-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3">
                   <CheckCircle2 size={18} className="text-emerald-500" />
-                  <p className="text-sm font-semibold text-emerald-800">All documents ready — you're set for your appointment!</p>
+                  <p className="text-sm font-semibold text-emerald-800">All documents ready: you're set for your appointment!</p>
                 </div>
               )}
               <div className="mb-3 flex items-start gap-2 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-xs text-[#6a54e0]">
@@ -997,13 +997,13 @@ export default function StudentVisaPage() {
               </div>
               <div className="space-y-3">
                 <ExpandableCard title="What is the Permesso di Soggiorno?" badge={<Badge label="Mandatory" variant="required" />}>
-                  <p className="mb-2">The <em>Permesso di Soggiorno per Studio</em> is a residence permit that allows you to legally live in Italy for the duration of your studies. It is different from the visa — the visa allows entry; the permit allows you to stay.</p>
+                  <p className="mb-2">The <em>Permesso di Soggiorno per Studio</em> is a residence permit that allows you to legally live in Italy for the duration of your studies. It is different from the visa: the visa allows entry; the permit allows you to stay.</p>
                   <p>Without it, your stay in Italy becomes irregular after 8 working days, even if your visa is still technically valid.</p>
                 </ExpandableCard>
                 <ExpandableCard title="How do I apply?" badge={<Badge label="Post office" variant="info" />}>
                   <ol className="space-y-2 text-sm list-none">
                     {[
-                      "Pick up a 'kit' (yellow envelope) from any Italian post office (Poste Italiane) — it's free",
+                      "Pick up a 'kit' (yellow envelope) from any Italian post office (Poste Italiane): it's free",
                       'Fill in the application form (modulo) included in the kit',
                       'Return the completed kit to the post office with the required documents and a €16 marca da bollo + €30 postal fee',
                       "You'll receive an SMS with your appointment date at the local Questura (police headquarters)",
@@ -1046,8 +1046,8 @@ export default function StudentVisaPage() {
                 </ExpandableCard>
               </div>
               <div className="mt-4 rounded-lg border border-[#D9D3FB] bg-[#F0EDFF] p-3 text-sm text-[#5b3fd4]">
-                <p className="font-semibold mb-1">Milan Questura — Ufficio Immigrazione</p>
-                <p className="text-xs text-[#6a54e0]">Via Montebello 26, 20121 Milan. Appointments are arranged through the post office kit system — you cannot walk in without one.</p>
+                <p className="font-semibold mb-1">Milan Questura: Ufficio Immigrazione</p>
+                <p className="text-xs text-[#6a54e0]">Via Montebello 26, 20121 Milan. Appointments are arranged through the post office kit system: you cannot walk in without one.</p>
                 <a href="https://questure.poliziadistato.it/it/Milano" target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-[#8870FF] hover:underline">
                   Milan Questura website <ExternalLink size={11} />
                 </a>
@@ -1064,20 +1064,20 @@ export default function StudentVisaPage() {
             <SectionCard title="Insider tips & common mistakes" icon={<Lightbulb size={18} />}>
               <div className="space-y-3">
                 {[
-                  { title: "Start the Dichiarazione di Valore first — it's the biggest bottleneck", variant: 'warning' as const,
+                  { title: "Start the Dichiarazione di Valore first: it's the biggest bottleneck", variant: 'warning' as const,
                     body: "Most students underestimate how long the Dichiarazione di Valore takes. Contact the Italian consulate in your home country immediately after receiving your acceptance letter. Don't wait until you have all other documents." },
-                  { title: "Check your specific consulate's requirements — they differ", variant: 'warning' as const,
+                  { title: "Check your specific consulate's requirements: they differ", variant: 'warning' as const,
                     body: 'The Italian consulate in New York has different procedures to the one in Mumbai or Nairobi. Always check the official consulate website for your jurisdiction. Requirements and accepted documents vary significantly.' },
-                  { title: 'Book your appointment early — slots disappear fast', variant: 'warning' as const,
+                  { title: 'Book your appointment early: slots disappear fast', variant: 'warning' as const,
                     body: 'Popular consulates (especially in Asia and North America) have very limited appointment slots that are booked weeks in advance. Set a calendar reminder to open the booking system as soon as your documents are ready.' },
                   { title: 'Bring multiple copies of everything', variant: 'tip' as const,
                     body: 'Bring 2–3 copies of every document, including your passport pages. Some consulates ask for extra copies on the spot. Having them ready avoids being turned away.' },
                   { title: 'Keep your receipt after submitting the Permesso di Soggiorno', variant: 'tip' as const,
-                    body: 'The postal receipt you get after submitting your Permesso application is a valid legal document. Keep it with you at all times — it works as an ID for most purposes while you wait months for the actual permit.' },
+                    body: 'The postal receipt you get after submitting your Permesso application is a valid legal document. Keep it with you at all times: it works as an ID for most purposes while you wait months for the actual permit.' },
                   { title: 'Financial proof: avoid sudden large deposits before applying', variant: 'warning' as const,
                     body: 'Consular officers look at your transaction history, not just the current balance. A sudden large deposit raises red flags. Ideally, your account should have maintained the required balance for at least 3 months.' },
                   { title: 'Your visa entry date matters', variant: 'tip' as const,
-                    body: "Check the 'valid from' date on your visa. You cannot enter Italy before that date. Plan your travel so that you enter within the visa validity window — most Type D visas allow entry 6 months from the date of issue." },
+                    body: "Check the 'valid from' date on your visa. You cannot enter Italy before that date. Plan your travel so that you enter within the visa validity window: most Type D visas allow entry 6 months from the date of issue." },
                   { title: 'Bocconi students: use the International Students Office', variant: 'tip' as const,
                     body: "The Bocconi International Students Office (ISO) provides visa guidance and can sometimes provide supporting letters. They also run pre-arrival webinars covering the Permesso process. It's free." },
                   { title: "Don't confuse the study visa with the Erasmus/exchange visa", variant: 'info' as const,
@@ -1100,14 +1100,14 @@ export default function StudentVisaPage() {
             <SectionCard title="Key links & official resources" icon={<LinkIcon size={18} />}>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {[
-                  { title: "Visto per L'Italia — Official visa portal", description: "Italy's official immigration portal listing all visa types, requirements, and consulate contacts.", url: 'https://vistoperitalia.esteri.it', badge: 'Official' },
+                  { title: "Visto per L'Italia: Official visa portal", description: "Italy's official immigration portal listing all visa types, requirements, and consulate contacts.", url: 'https://vistoperitalia.esteri.it', badge: 'Official' },
                   { title: 'Universitaly pre-enrollment', description: 'Government portal where non-EU students complete mandatory pre-enrollment before applying for a visa.', url: 'https://www.universitaly.it', badge: 'Required' },
-                  { title: 'Italian Ministry of Foreign Affairs — Consulates', description: 'Directory of all Italian consulates and embassies worldwide. Find your local consulate and their specific requirements.', url: 'https://www.esteri.it/en/diplomatic-chair/', badge: 'Official' },
-                  { title: 'VFS Global — Italy visa centres', description: 'Many Italian consulates process visa applications through VFS Global centres. Book appointments here.', url: 'https://www.vfsglobal.com/en/individuals/find-visa-centre.html', badge: 'Appointments' },
-                  { title: 'Bocconi ISO — Visa guidance', description: "Bocconi's International Students Office page with visa and Permesso di Soggiorno guidance specific to Bocconi students.", url: 'https://www.unibocconi.eu/en/programmes/international-students-incoming/visa-and-residence-permits', badge: 'Bocconi' },
-                  { title: 'Poste Italiane — Permesso di Soggiorno kit', description: 'Pick up the Permesso kit from any Italian post office. This page explains the process.', url: 'https://www.poste.it/prodotti/permessodisoggiorno.html', badge: 'Post-arrival' },
-                  { title: 'Sportello Unico Immigrazione', description: "Italy's Single Immigration Desk — used for certain permit types and renewals in some provinces.", url: 'https://portaleimmigrazione.it', badge: 'Official' },
-                  { title: 'INPS — Assegno sociale (financial threshold)', description: 'Check the current social allowance figure used to calculate the minimum financial requirement for the visa.', url: 'https://www.inps.it/en/it/dettaglio-scheda.schede-servizio-e-prestazioni.assegno-sociale-2021.html', badge: 'Financial' },
+                  { title: 'Italian Ministry of Foreign Affairs: Consulates', description: 'Directory of all Italian consulates and embassies worldwide. Find your local consulate and their specific requirements.', url: 'https://www.esteri.it/en/diplomatic-chair/', badge: 'Official' },
+                  { title: 'VFS Global: Italy visa centres', description: 'Many Italian consulates process visa applications through VFS Global centres. Book appointments here.', url: 'https://www.vfsglobal.com/en/individuals/find-visa-centre.html', badge: 'Appointments' },
+                  { title: 'Bocconi ISO: Visa guidance', description: "Bocconi's International Students Office page with visa and Permesso di Soggiorno guidance specific to Bocconi students.", url: 'https://www.unibocconi.eu/en/programmes/international-students-incoming/visa-and-residence-permits', badge: 'Bocconi' },
+                  { title: 'Poste Italiane: Permesso di Soggiorno kit', description: 'Pick up the Permesso kit from any Italian post office. This page explains the process.', url: 'https://www.poste.it/prodotti/permessodisoggiorno.html', badge: 'Post-arrival' },
+                  { title: 'Sportello Unico Immigrazione', description: "Italy's Single Immigration Desk: used for certain permit types and renewals in some provinces.", url: 'https://portaleimmigrazione.it', badge: 'Official' },
+                  { title: 'INPS: Assegno sociale (financial threshold)', description: 'Check the current social allowance figure used to calculate the minimum financial requirement for the visa.', url: 'https://www.inps.it/en/it/dettaglio-scheda.schede-servizio-e-prestazioni.assegno-sociale-2021.html', badge: 'Financial' },
                 ].map((link) => {
                   const badgeVariants: Record<string, 'required' | 'optional' | 'warning' | 'tip' | 'info'> = {
                     Official: 'info', Required: 'required', Appointments: 'warning', Bocconi: 'tip', 'Post-arrival': 'optional', Financial: 'info',

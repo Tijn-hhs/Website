@@ -309,7 +309,7 @@ function DepartureOnboarding({
       { id: 'insurance', title: 'Do you have travel insurance arranged?',          desc: 'Covers trip cancellation, delays, lost luggage, and medical emergencies.' },
     ]
     if (isEU || isEuCitizen === null) {
-      base.push({ id: 'ehic', title: 'Do you have your European Health Insurance Card (EHIC)?', desc: 'Free from your national health service — covers emergency care at Italian public hospitals.' })
+      base.push({ id: 'ehic', title: 'Do you have your European Health Insurance Card (EHIC)?', desc: 'Free from your national health service: covers emergency care at Italian public hospitals.' })
     }
     if (isNonEU || isEuCitizen === null) {
       base.push({ id: 'health', title: 'Do you have private health insurance?', desc: 'Non-EU students must show comprehensive health insurance proof as part of their visa application.' })
@@ -371,7 +371,7 @@ function DepartureOnboarding({
             {current.id === 'flight' && (
               <>
                 <RadioBtn field="flightBooked" value="yes" label="Yes, flight is booked ✅" />
-                <RadioBtn field="flightBooked" value="no"  label="Not yet — I'm still planning" />
+                <RadioBtn field="flightBooked" value="no"  label="Not yet: I'm still planning" />
               </>
             )}
             {current.id === 'date' && (
@@ -389,26 +389,26 @@ function DepartureOnboarding({
             {current.id === 'insurance' && (
               <>
                 <RadioBtn field="hasTravelInsurance" value="yes" label="Yes, I have travel insurance ✅" />
-                <RadioBtn field="hasTravelInsurance" value="no"  label="Not yet — I need to arrange it" />
+                <RadioBtn field="hasTravelInsurance" value="no"  label="Not yet: I need to arrange it" />
               </>
             )}
             {current.id === 'ehic' && (
               <>
                 <RadioBtn field="hasEhic" value="yes" label="Yes, I have my EHIC / GHIC card ✅" />
-                <RadioBtn field="hasEhic" value="no"  label="Not yet — I need to apply for one" />
+                <RadioBtn field="hasEhic" value="no"  label="Not yet: I need to apply for one" />
                 <div className="mt-2 flex items-start gap-2 rounded-lg border border-[#EDE9D8] bg-[#F0EDFF] p-3 text-xs text-[#6a54e0]">
                   <Info size={13} className="mt-0.5 flex-shrink-0" />
-                  UK students: apply for a GHIC (not EHIC) at nhsbsa.nhs.uk — it's free!
+                  UK students: apply for a GHIC (not EHIC) at nhsbsa.nhs.uk: it's free!
                 </div>
               </>
             )}
             {current.id === 'health' && (
               <>
                 <RadioBtn field="hasHealthInsurance" value="yes" label="Yes, I have private health insurance ✅" />
-                <RadioBtn field="hasHealthInsurance" value="no"  label="Not yet — I need to arrange it" />
+                <RadioBtn field="hasHealthInsurance" value="no"  label="Not yet: I need to arrange it" />
                 <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50 p-3 text-xs text-amber-700">
                   <AlertTriangle size={13} className="mt-0.5 flex-shrink-0" />
-                  This is required for your student visa — minimum €30,000 coverage for the full study period.
+                  This is required for your student visa: minimum €30,000 coverage for the full study period.
                 </div>
               </>
             )}
@@ -607,18 +607,18 @@ export default function BeforeDeparturePage() {
 
   // Doc checklists
   const carryOnDocs = [
-    { key: 'passport',          label: 'Valid passport',                              required: true,    note: 'Never check this in — keep it in your carry-on at all times' },
+    { key: 'passport',          label: 'Valid passport',                              required: true,    note: 'Never check this in: keep it in your carry-on at all times' },
     { key: 'visa',              label: 'Student visa (non-EU only)',                  required: isNonEU, note: 'D-type national visa for stays over 90 days' },
-    { key: 'acceptance-letter', label: 'University acceptance / enrollment letter',   required: true,    note: 'Printed copy — needed at customs and for permesso di soggiorno' },
+    { key: 'acceptance-letter', label: 'University acceptance / enrollment letter',   required: true,    note: 'Printed copy: needed at customs and for permesso di soggiorno' },
     { key: 'financial-proof',   label: 'Proof of financial means',                    required: true,    note: 'Bank statement (≥ €6,000) or scholarship letter' },
     { key: 'insurance-docs',    label: 'Health & travel insurance certificate',       required: true,    note: 'Print both certificate and emergency contact numbers' },
     { key: 'housing-confirm',   label: 'Accommodation confirmation / address',        required: true,    note: 'Needed at customs and for permesso di soggiorno application' },
   ]
   const packedDocs = [
-    { key: 'birth-cert',    label: 'Birth certificate (Apostille + Italian translation)', required: false, note: 'Required for some registrations — get before leaving home' },
+    { key: 'birth-cert',    label: 'Birth certificate (Apostille + Italian translation)', required: false, note: 'Required for some registrations: get before leaving home' },
     { key: 'transcripts',   label: 'Academic transcripts / diploma (certified copies)',   required: false, note: 'May be needed for enrollment verification or credit transfer' },
     { key: 'photos',        label: '4× passport-size photos',                             required: true,  note: 'Needed for permesso, municipality registration, transport cards' },
-    { key: 'id-copies',     label: 'National ID card / 5 colour copies of passport',      required: true,  note: 'Italian offices always ask for copies — keep them handy' },
+    { key: 'id-copies',     label: 'National ID card / 5 colour copies of passport',      required: true,  note: 'Italian offices always ask for copies: keep them handy' },
     { key: 'vaccination',   label: 'Vaccination / health record',                         required: false, note: 'Useful for GP registration and municipality residency' },
     { key: 'tax-docs',      label: 'Home country tax ID / financial documents',           required: false, note: 'Some banks ask for these when opening an account' },
   ]
@@ -716,13 +716,13 @@ export default function BeforeDeparturePage() {
                         </p>
                         <p className="mt-0.5 text-sm text-slate-600">
                           {daysUntilDeparture <= 14
-                            ? 'Final stretch — make sure your checklist is complete!'
+                            ? 'Final stretch: make sure your checklist is complete!'
                             : 'You have time, but don\'t leave everything to the last minute.'}
                         </p>
                       </>
                     ) : (
                       <>
-                        <p className="text-base font-semibold text-emerald-800">You've already departed — welcome to Milan! 🇮🇹</p>
+                        <p className="text-base font-semibold text-emerald-800">You've already departed: welcome to Milan! 🇮🇹</p>
                         <p className="mt-0.5 text-sm text-emerald-700">Check the next steps for what to do now that you've arrived.</p>
                       </>
                     )}
@@ -819,9 +819,9 @@ export default function BeforeDeparturePage() {
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8870FF]">Pro tips</p>
                 <ul className="space-y-1 text-sm text-slate-600">
                   {[
-                    'Make 5–6 colour photocopies of every important document — Italian offices always ask.',
+                    'Make 5–6 colour photocopies of every important document: Italian offices always ask.',
                     'Scan everything and store securely in Google Drive or iCloud for emergency access.',
-                    'Italy uses EU Type-F (Schuko) outlets — bring an adapter and check charger voltage.',
+                    'Italy uses EU Type-F (Schuko) outlets: bring an adapter and check charger voltage.',
                     'A USB drive with digital copies is a handy offline backup.',
                   ].map((tip) => (
                     <li key={tip} className="flex items-start gap-2">
@@ -837,13 +837,13 @@ export default function BeforeDeparturePage() {
           {activeSection === 'travel' && (
             <SectionCard title="Travel & arrival in Milan" icon={<Plane size={18} />}>
               <p className="mb-4 text-sm text-slate-500">
-                Milan has three airports. Choose your transport option based on where you land — and plan it
+                Milan has three airports. Choose your transport option based on where you land: plan it
                 before you arrive, not at 2 am after a long flight.
               </p>
               <div className="mb-5 space-y-3">
                 {[
                   {
-                    code: 'MXP', name: 'Malpensa Airport', note: 'Main international hub — most long-haul and intercontinental flights',
+                    code: 'MXP', name: 'Malpensa Airport', note: 'Main international hub: most long-haul and intercontinental flights',
                     options: [
                       { method: 'Malpensa Express', time: '29–52 min', cost: '€13', to: 'Cadorna or Central Station', url: 'https://www.malpensaexpress.it/' },
                       { method: 'Terravision bus', time: '~60 min', cost: '~€9', to: 'Central Station', url: 'https://www.terravision.eu/' },
@@ -851,14 +851,14 @@ export default function BeforeDeparturePage() {
                     ],
                   },
                   {
-                    code: 'LIN', name: 'Linate Airport', note: 'Intra-EU flights — closest to the city centre',
+                    code: 'LIN', name: 'Linate Airport', note: 'Intra-EU flights: closest to the city centre',
                     options: [
                       { method: 'Metro M4 (blue line)', time: '30 min', cost: '€2.20', to: 'San Babila / Forlanini', url: 'https://www.atm.it/' },
                       { method: 'Taxi (fixed rate)', time: '20–30 min', cost: '€35', to: 'Central Milan', url: null },
                     ],
                   },
                   {
-                    code: 'BGY', name: 'Orio al Serio (Bergamo)', note: 'Low-cost carriers (Ryanair, Wizz Air) — 45 km from Milan',
+                    code: 'BGY', name: 'Orio al Serio (Bergamo)', note: 'Low-cost carriers (Ryanair, Wizz Air): 45 km from Milan',
                     options: [
                       { method: 'Terravision / Flixbus', time: '60–75 min', cost: '€7–€10', to: 'Central Station', url: 'https://www.terravision.eu/' },
                       { method: 'Taxi', time: '40–60 min', cost: '~€110–130', to: 'Central Milan', url: null },
@@ -900,8 +900,8 @@ export default function BeforeDeparturePage() {
                 <ul className="space-y-3 text-sm text-slate-600">
                   {[
                     { t: 'Arrive 3–5 days before orientation', d: 'Gives time to settle, find your apartment, and handle admin before the busy welcome week.' },
-                    { t: 'Bocconi orientation: mid-September', d: 'Check your specific welcome week dates at unibocconi.eu — dates vary by program.' },
-                    { t: 'Non-EU: permesso within 8 working days', d: 'The clock starts from entry into Italy — prioritise this on arrival.' },
+                    { t: 'Bocconi orientation: mid-September', d: 'Check your specific welcome week dates at unibocconi.eu: dates vary by program.' },
+                    { t: 'Non-EU: permesso within 8 working days', d: 'The clock starts from entry into Italy: prioritise this on arrival.' },
                     { t: 'Get an Italian SIM at the airport', d: 'TIM, Vodafone, WindTre, and Iliad all have airport counters. A local number is needed for most Italian services.' },
                   ].map(({ t, d }) => (
                     <li key={t} className="flex items-start gap-2">
@@ -914,12 +914,12 @@ export default function BeforeDeparturePage() {
 
               <div className="mt-3">
                 <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-4">
-                  <p className="text-sm font-semibold text-slate-800 mb-2">When you arrive — next steps</p>
+                  <p className="text-sm font-semibold text-slate-800 mb-2">When you arrive: next steps</p>
                   <p className="text-sm text-slate-500 mb-3">Once you land, the following steps each have their own dedicated page in the guide:</p>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {[
-                      { label: 'Codice Fiscale', sub: 'Your Italian tax ID — needed for almost everything', href: '/dashboard/codice-fiscale' },
-                      { label: 'Immigration Registration', sub: 'Permesso di soggiorno — non-EU students only', href: '/dashboard/immigration-registration' },
+                      { label: 'Codice Fiscale', sub: 'Your Italian tax ID: needed for almost everything', href: '/dashboard/codice-fiscale' },
+                      { label: 'Immigration Registration', sub: 'Permesso di soggiorno: non-EU students only', href: '/dashboard/immigration-registration' },
                       { label: 'Banking', sub: 'Opening an Italian account, Wise, Revolut', href: '/dashboard/banking' },
                       { label: 'Getting around Milan', sub: 'ATM passes, metro, and city transport', href: '/dashboard/getting-around' },
                     ].map(({ label, sub, href }) => (
@@ -945,15 +945,15 @@ export default function BeforeDeparturePage() {
                 {[
                   {
                     q: 'Can I stay in Italy during summer before my program starts?',
-                    a: 'EU citizens: yes, freely. Non-EU citizens: your D visa is tied to the study period. If you want to arrive significantly early, check with the consulate — you may need to justify an extended stay.',
+                    a: 'EU citizens: yes, freely. Non-EU citizens: your D visa is tied to the study period. If you want to arrive significantly early, check with the consulate: you may need to justify an extended stay.',
                   },
                   {
                     q: 'What if my accommodation isn\'t ready when I arrive?',
-                    a: 'Book a hostel, Airbnb, or hotel for the gap — 1–5 nights near Central Station works well. You\'ll still need an Italian address for your permesso di soggiorno, so confirm your permanent address as soon as possible.',
+                    a: 'Book a hostel, Airbnb, or hotel for the gap: 1–5 nights near Central Station works well. You\'ll still need an Italian address for your permesso di soggiorno, so confirm your permanent address as soon as possible.',
                   },
                   {
                     q: 'Can I use my home SIM card in Italy without extra cost?',
-                    a: 'EU SIM cards have no roaming fees within the EU — so EU SIMs work in Italy. However, data allowances may be limited while roaming. US, UK (post-Brexit), and non-EU SIMs typically face heavy roaming charges — an Italian SIM is strongly recommended.',
+                    a: 'EU SIM cards have no roaming fees within the EU: so EU SIMs work in Italy. However, data allowances may be limited while roaming. US, UK (post-Brexit), and non-EU SIMs typically face heavy roaming charges; an Italian SIM is strongly recommended.',
                   },
                   {
                     q: 'What documents do I need at Italian customs on arrival?',
@@ -974,15 +974,15 @@ export default function BeforeDeparturePage() {
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {[
                   { label: 'Italian visa requirements tool (official)',      url: 'https://vistoperitalia.esteri.it/' },
-                  { label: 'Universitaly — pre-enrollment portal',          url: 'https://www.universitaly.it/' },
-                  { label: 'VFS Global — Italian visa service centres',     url: 'https://www.vfsglobal.com/italy/' },
-                  { label: 'EHIC info — European Commission',               url: 'https://ec.europa.eu/social/main.jsp?catId=559' },
+                  { label: 'Universitaly: pre-enrollment portal',          url: 'https://www.universitaly.it/' },
+                  { label: 'VFS Global: Italian visa service centres',     url: 'https://www.vfsglobal.com/italy/' },
+                  { label: 'EHIC info: European Commission',               url: 'https://ec.europa.eu/social/main.jsp?catId=559' },
                   { label: 'UK GHIC application (NHS)',                     url: 'https://www.nhsbsa.nhs.uk/healthcare-abroad/applying-ghic' },
-                  { label: 'YesMilano — Student visa guide (EN)',           url: 'https://studyandwork.yesmilano.it/en/study/how-to/student-visa' },
-                  { label: 'Bocconi — International student services',      url: 'https://www.unibocconi.eu/en/programs/student-services' },
+                  { label: 'YesMilano: Student visa guide (EN)',           url: 'https://studyandwork.yesmilano.it/en/study/how-to/student-visa' },
+                  { label: 'Bocconi: International student services',      url: 'https://www.unibocconi.eu/en/programs/student-services' },
                   { label: 'Malpensa Express train to Milan',               url: 'https://www.malpensaexpress.it/' },
-                  { label: 'ATM Milano — tickets & transport passes',       url: 'https://www.atm.it/en/Pages/default.aspx' },
-                  { label: 'Wise — multi-currency account',                 url: 'https://wise.com/' },
+                  { label: 'ATM Milano: tickets & transport passes',       url: 'https://www.atm.it/en/Pages/default.aspx' },
+                  { label: 'Wise: multi-currency account',                 url: 'https://wise.com/' },
                   { label: 'AXA Schengen travel insurance',                 url: 'https://www.axaschengen.com/' },
                   { label: 'Italian Ministry of Foreign Affairs',           url: 'https://www.esteri.it/en/' },
                 ].map(({ label, url }) => (
