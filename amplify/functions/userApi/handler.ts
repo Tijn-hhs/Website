@@ -1617,6 +1617,17 @@ interface ScrapedDeadlineItem {
   type?: string
 }
 
+interface NumbeoMilanBenchmarks {
+  rent_shared_room: number
+  rent_studio: number
+  groceries_monthly: number
+  meal_inexpensive_restaurant: number
+  monthly_transport_pass: number
+  mobile_plan: number
+  internet_monthly: number
+  scrapedAt: string
+}
+
 /**
  * POST /admin/scrape-deadlines
  * Uses Firecrawl to extract deadline info from official university pages.
@@ -1679,6 +1690,104 @@ Include ALL entries regardless of whether they are past or future. Do not skip a
   const results = await Promise.all(DEADLINE_SCRAPE_SOURCES.map(scrapeOne))
 
   return ok({ results })
+}
+
+/**
+ * POST /admin/scrape-cost-benchmarks
+ * Scrapes Numbeo Milan for live cost-of-living prices and saves them to the
+ * profiles table under userId='system:cost-benchmarks' for all users to read.
+ */
+async function handlePostAdminScrapeCostBenchmarks(event: any): Promise<ApiResponse> {
+  if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+
+  let apiKey: string
+  try {
+    apiKey = await getFirecrawlApiKey()
+  } catch (err) {
+    console.error('[scrape-cost-benchmarks] Failed to load Firecrawl key:', err)
+    return fail(500, 'Could not load Firecrawl API key')
+  }
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 25000)
+
+  try {
+    const firecrawlRes = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: 'https://www.numbeo.com/cost-of-living/in/Milan',
+        formats: ['extract'],
+        extract: {
+          prompt: `Extract cost of living prices for Milan, Italy. Return a JSON object with ONLY these keys and their average euro prices as plain numbers:
+- rent_shared_room: average monthly rent for a room in a shared apartment (3-4 flatmates)
+- rent_studio: average monthly rent for a studio apartment (1 person)
+- groceries_monthly: typical monthly grocery budget for 1 person cooking at home
+- meal_inexpensive_restaurant: price of one meal at an inexpensive restaurant
+- monthly_transport_pass: monthly public transport pass price
+- mobile_plan: monthly mobile phone plan price (mid-range)
+- internet_monthly: monthly home internet price
+Return numbers only, no currency symbols, no units.`,
+        },
+      }),
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!firecrawlRes.ok) {
+      const errText = await firecrawlRes.text()
+      throw new Error(`Firecrawl HTTP ${firecrawlRes.status}: ${errText}`)
+    }
+
+    const data = await firecrawlRes.json() as any
+    const extracted = data?.data?.extract ?? data?.extract ?? {}
+
+    if (!extracted || typeof extracted !== 'object') {
+      throw new Error('Firecrawl returned no structured data')
+    }
+
+    const benchmarks: NumbeoMilanBenchmarks = {
+      rent_shared_room: Number(extracted.rent_shared_room ?? 0),
+      rent_studio: Number(extracted.rent_studio ?? 0),
+      groceries_monthly: Number(extracted.groceries_monthly ?? 0),
+      meal_inexpensive_restaurant: Number(extracted.meal_inexpensive_restaurant ?? 0),
+      monthly_transport_pass: Number(extracted.monthly_transport_pass ?? 0),
+      mobile_plan: Number(extracted.mobile_plan ?? 0),
+      internet_monthly: Number(extracted.internet_monthly ?? 0),
+      scrapedAt: new Date().toISOString(),
+    }
+
+    // Persist to profiles table under a system key so any authenticated user can read it
+    await dynamo.send(new PutItemCommand({
+      TableName: TABLE.profiles,
+      Item: marshall({ userId: 'system:cost-benchmarks', ...benchmarks }, { removeUndefinedValues: true }),
+    }))
+
+    console.log('[scrape-cost-benchmarks] Saved Numbeo benchmarks:', benchmarks)
+    return ok({ benchmarks })
+  } catch (err: any) {
+    clearTimeout(timeoutId)
+    console.error('[scrape-cost-benchmarks] Error:', err)
+    return fail(500, err?.message ?? 'Failed to scrape Numbeo')
+  }
+}
+
+/**
+ * GET /cost-benchmarks
+ * Returns the latest Numbeo cost-of-living benchmarks for Milan.
+ * Requires auth. Returns { benchmarks: null } if no data has been scraped yet.
+ */
+async function handleGetCostBenchmarks(): Promise<ApiResponse> {
+  const res = await dynamo.send(
+    new GetItemCommand({ TableName: TABLE.profiles, Key: marshall({ userId: 'system:cost-benchmarks' }) })
+  )
+  if (!res.Item) return ok({ benchmarks: null })
+  const { userId: _uid, ...benchmarks } = unmarshall(res.Item)
+  return ok({ benchmarks })
 }
 
 /** GET /admin/buddy-pool — list all users who opted into the buddy system. */
@@ -2453,6 +2562,8 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'PUT'  && emailTemplateMatch) return await handlePutAdminEmailTemplate(event, emailTemplateMatch[1])
     if (method === 'POST' && path === '/admin/send-deadline-reminders') return await handlePostAdminSendDeadlineReminders(event)
     if (method === 'POST' && path === '/admin/scrape-deadlines') return await handlePostAdminScrapeDeadlines(event)
+    if (method === 'POST' && path === '/admin/scrape-cost-benchmarks') return await handlePostAdminScrapeCostBenchmarks(event)
+    if (method === 'GET'  && path === '/cost-benchmarks') return await handleGetCostBenchmarks()
     if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
 

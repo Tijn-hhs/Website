@@ -8,7 +8,8 @@ import MonthlyCostsSummary from '../components/MonthlyCostsSummary'
 import StepIntroModal from '../components/StepIntroModal'
 import CostOfLivingOnboarding from '../components/CostOfLivingOnboarding'
 import { getCityConfig } from '../lib/cityConfig'
-import { fetchMe, saveProfile, markStepStarted } from '../lib/api'
+import { fetchMe, saveProfile, markStepStarted, fetchCostBenchmarks } from '../lib/api'
+import type { NumbeoMilanBenchmarks } from '../lib/api'
 import { getStepRequirements } from '../onboarding/stepRequirements'
 import type { UserProfile } from '../types/user'
 import type { CostSliderConfig } from '../lib/cityConfig'
@@ -49,6 +50,9 @@ export default function CostOfLivingPage() {
   
   // Housing type selection
   const [housingType, setHousingType] = useState<string>('shared-room')
+
+  // Numbeo live benchmarks
+  const [benchmarks, setBenchmarks] = useState<NumbeoMilanBenchmarks | null>(null)
   
   // State voor slider waarden - Fixed costs
   const [rentCost, setRentCost] = useState(0)
@@ -212,6 +216,13 @@ export default function CostOfLivingPage() {
     }
 
     loadUserData()
+  }, [])
+
+  // Fetch Numbeo benchmarks in parallel (silently — UI degrades gracefully if unavailable)
+  useEffect(() => {
+    fetchCostBenchmarks()
+      .then((data) => setBenchmarks(data.benchmarks))
+      .catch(() => { /* benchmarks are non-critical */ })
   }, [])
 
   const city = profile?.destinationCity
@@ -477,6 +488,7 @@ export default function CostOfLivingPage() {
                       value={rentCost}
                       onChange={setRentCost}
                       id="rent-slider"
+                      benchmark={housingType === 'studio' ? benchmarks?.rent_studio : benchmarks?.rent_shared_room}
                     />
                     
                     {/* Housing type options */}
@@ -553,6 +565,7 @@ export default function CostOfLivingPage() {
                       value={internetCost}
                       onChange={setInternetCost}
                       id="internet-slider"
+                      benchmark={benchmarks?.internet_monthly}
                     />
                   </div>
                   
@@ -562,6 +575,7 @@ export default function CostOfLivingPage() {
                       value={mobileCost}
                       onChange={setMobileCost}
                       id="mobile-slider"
+                      benchmark={benchmarks?.mobile_plan}
                     />
                   </div>
                   
@@ -571,6 +585,7 @@ export default function CostOfLivingPage() {
                       value={transportCost}
                       onChange={setTransportCost}
                       id="transport-slider"
+                      benchmark={benchmarks?.monthly_transport_pass}
                     />
                   </div>
                 </article>
@@ -596,6 +611,7 @@ export default function CostOfLivingPage() {
                     value={groceriesCost}
                     onChange={setGroceriesCost}
                     id="groceries-slider"
+                    benchmark={benchmarks?.groceries_monthly}
                   />
                   
                   <div className="border-t border-slate-200 pt-8">

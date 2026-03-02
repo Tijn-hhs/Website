@@ -998,7 +998,67 @@ export async function scrapeDeadlines(): Promise<{
   return res.json()
 }
 
+export interface NumbeoMilanBenchmarks {
+  rent_shared_room: number
+  rent_studio: number
+  groceries_monthly: number
+  meal_inexpensive_restaurant: number
+  monthly_transport_pass: number
+  mobile_plan: number
+  internet_monthly: number
+  scrapedAt: string
+}
 
+/** Admin: scrape Numbeo Milan and save benchmarks to DynamoDB for all users to see. */
+export async function scrapeCostBenchmarks(): Promise<{ benchmarks: NumbeoMilanBenchmarks }> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/admin/scrape-cost-benchmarks'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/admin/scrape-cost-benchmarks`
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+  })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  return res.json()
+}
+
+/** Fetch latest Numbeo cost-of-living benchmarks for Milan. Returns null benchmarks if not yet scraped. */
+export async function fetchCostBenchmarks(): Promise<{ benchmarks: NumbeoMilanBenchmarks | null }> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/cost-benchmarks'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/cost-benchmarks`
+  }
+
+  const res = await fetch(url, { headers })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  return res.json()
+}
 
 export interface ChatMessage {
   role: 'user' | 'assistant'

@@ -83,7 +83,7 @@ function StepTypeBadge({ type }: { type?: StepType }) {
   const m = STEP_TYPE_META[type]
   return <span className={`text-xs px-1.5 py-0.5 rounded border ${m.color}`}>{m.label}</span>
 }
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, scrapeDeadlines, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, recalculateDashboardPlans, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, scrapeDeadlines, scrapeCostBenchmarks, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, recalculateDashboardPlans, type NumbeoMilanBenchmarks, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -2753,6 +2753,12 @@ function ScrapersTab() {
   const [scrapeResults, setScrapeResults] = useState<Awaited<ReturnType<typeof scrapeDeadlines>>['results'] | null>(null)
   const [scrapeError, setScrapeError] = useState<string | null>(null)
 
+  // Numbeo state
+  const [numbeoLoading, setNumbeoLoading] = useState(false)
+  const [numbeoResult, setNumbeoResult] = useState<NumbeoMilanBenchmarks | null>(null)
+  const [numbeoError, setNumbeoError] = useState<string | null>(null)
+  const [numbeoSaved, setNumbeoSaved] = useState(false)
+
   async function runScrapeDeadlines() {
     setScrapeLoading(true)
     setScrapeResults(null)
@@ -2764,6 +2770,22 @@ function ScrapersTab() {
       setScrapeError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
       setScrapeLoading(false)
+    }
+  }
+
+  async function runScrapeNumbeo() {
+    setNumbeoLoading(true)
+    setNumbeoResult(null)
+    setNumbeoError(null)
+    setNumbeoSaved(false)
+    try {
+      const data = await scrapeCostBenchmarks()
+      setNumbeoResult(data.benchmarks)
+      setNumbeoSaved(true)
+    } catch (e: unknown) {
+      setNumbeoError(e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setNumbeoLoading(false)
     }
   }
 
@@ -2858,12 +2880,7 @@ function ScrapersTab() {
         <Globe className="w-6 h-6 text-gray-700 mx-auto mb-2" />
         <p className="text-sm text-gray-600">More scrapers coming soon</p>
         <p className="text-xs text-gray-700 mt-0.5">Add new Firecrawl sources here (housing, visa requirements, scholarships…)</p>
-      </div>
-    </div>
-  )
-}
-
-type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails' | 'content' | 'scrapers'
+      </div> | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails' | 'content' | 'scrapers'
 
 const ADMIN_TAB_KEY = 'adminDashboardTab'
 

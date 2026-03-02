@@ -6,9 +6,10 @@ interface CostSliderProps {
   value: number
   onChange: (value: number) => void
   id: string
+  benchmark?: number
 }
 
-export default function CostSlider({ config, value, onChange, id }: CostSliderProps) {
+export default function CostSlider({ config, value, onChange, id, benchmark }: CostSliderProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -155,12 +156,21 @@ export default function CostSlider({ config, value, onChange, id }: CostSliderPr
         <span>High (€{config.max})</span>
       </div>
 
-      {/* Uitleg - matches body text styling */}
+      {/* Description */}
       <div className="mt-2">
         <p className="whitespace-pre-line text-sm text-slate-600">
           {config.description}
         </p>
       </div>
-    </div>
+
+      {/* Numbeo benchmark pill */}
+      {benchmark !== undefined && benchmark > 0 && (
+        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200">
+          <svg className="w-3 h-3 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-xs text-amber-700">Numbeo avg: <span className="font-semibold">~€{Math.round(benchmark)}</span></span>
+        </div>
+      )}    </div>
   )
 }
