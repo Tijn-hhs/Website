@@ -1725,6 +1725,20 @@ Include ALL entries regardless of whether they are past or future. Do not skip a
 }
 
 /**
+ * Parses a Numbeo markdown page and extracts a price by matching the row label.
+ * Numbeo tables look like: | Row Label | 1,234.56 € | range |
+ */
+function parseNumbeoPrice(markdown: string, label: string): number {
+  // Escape special regex chars in the label
+  const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  // Match: ...| <label> | <number> € |...
+  const re = new RegExp(`\\|[^|]*${esc}[^|]*\\|\\s*([\\d,]+\\.?\\d*)\\s*[€$£]?`, 'i')
+  const m = markdown.match(re)
+  if (!m) return 0
+  return parseFloat(m[1].replace(/,/g, ''))
+}
+
+/**
  * POST /admin/scrape-cost-benchmarks
  * Accepts optional { city } body (defaults to "Milan").
  * Scrapes Numbeo for live cost-of-living prices and saves them to the
@@ -1760,56 +1774,7 @@ async function handlePostAdminScrapeCostBenchmarks(event: any): Promise<ApiRespo
       },
       body: JSON.stringify({
         url: numbeoUrl,
-        formats: ['extract'],
-        extract: {
-          prompt: `Extract ALL cost of living prices for this city from the page tables. Return a JSON object with EXACTLY these keys and their average prices as plain numbers (no currency symbols, no units, no ranges — just the single average/mid number shown):
-
-Rent:
-- rent_1br_city_center: 1 Bedroom Apartment in City Centre (monthly)
-- rent_1br_outside_center: 1 Bedroom Apartment Outside of City Centre (monthly)
-- rent_3br_city_center: 3 Bedroom Apartment in City Centre (monthly)
-- rent_3br_outside_center: 3 Bedroom Apartment Outside of City Centre (monthly)
-- rent_shared_room: estimate for a single room in a shared flat (roughly rent_3br_outside_center / 3)
-- rent_studio: same as rent_1br_outside_center
-
-Restaurants:
-- meal_inexpensive_restaurant: Meal at an Inexpensive Restaurant
-- meal_midrange_restaurant_2people: Meal for Two at a Mid-Range Restaurant (Three Courses)
-- meal_fastfood_combo: Combo Meal at McDonald's or equivalent
-- beer_domestic_pint: Domestic Draft Beer (1 Pint) at restaurant
-- cappuccino: Cappuccino (Regular Size)
-
-Markets:
-- milk_1l: Milk (Regular, 1 Liter)
-- bread_loaf: Fresh White Bread (1 lb Loaf)
-- eggs_12: Eggs (12 Large)
-- chicken_1lb: Chicken Fillets (1 lb)
-- apples_1lb: Apples (1 lb)
-- water_1_5l: Bottled Water (50 oz / ~1.5L)
-- wine_bottle_midrange: Bottle of Wine (Mid-Range)
-- cigarettes_pack: Cigarettes 20 pack Marlboro
-- groceries_monthly: estimate for typical monthly grocery budget for 1 person
-
-Transportation:
-- transport_one_way_ticket: One-Way Ticket Local Transport
-- monthly_transport_pass: Monthly Public Transport Pass
-- taxi_start: Taxi Start Standard Tariff
-- gasoline_1l: Gasoline per 1 Liter
-
-Utilities:
-- utilities_monthly_basic: Basic Utilities for ~85sqm apartment (electricity, heating, water, garbage)
-- mobile_plan: Mobile Phone Plan monthly (with calls and data)
-- internet_monthly: Broadband Internet monthly
-
-Leisure:
-- fitness_club_monthly: Monthly Fitness Club Membership
-- cinema_ticket: Cinema Ticket
-
-Salary:
-- avg_monthly_net_salary: Average Monthly Net Salary (After Tax)
-
-If a value is not found on the page, use 0. Return numbers only.`,
-        },
+        formats: ['markdown'],
       }),
     })
 
@@ -1821,53 +1786,74 @@ If a value is not found on the page, use 0. Return numbers only.`,
     }
 
     const data = await firecrawlRes.json() as any
-    const extracted = data?.data?.extract ?? data?.extract ?? {}
+    const md: string = data?.data?.markdown ?? data?.markdown ?? ''
 
-    if (!extracted || typeof extracted !== 'object') {
-      throw new Error('Firecrawl returned no structured data')
+    if (!md) {
+      throw new Error('Firecrawl returned no markdown content')
     }
 
-    const n = (key: string) => Number(extracted[key] ?? 0)
+    const p = (label: string) => parseNumbeoPrice(md, label)
+
+    // Derived estimates
+    const rent3brOut  = p('3 Bedroom Apartment Outside of City Centre')
+    const rent1brOut  = p('1 Bedroom Apartment Outside of City Centre')
+    const sharedRoom  = rent3brOut > 0 ? Math.round(rent3brOut / 3) : 0
+
     const benchmarks: NumbeoMilanBenchmarks = {
       city,
       // Rent
-      rent_1br_city_center: n('rent_1br_city_center'),
-      rent_1br_outside_center: n('rent_1br_outside_center'),
-      rent_3br_city_center: n('rent_3br_city_center'),
-      rent_3br_outside_center: n('rent_3br_outside_center'),
-      rent_shared_room: n('rent_shared_room'),
-      rent_studio: n('rent_studio'),
+      rent_1br_city_center:      p('1 Bedroom Apartment in City Centre'),
+      rent_1br_outside_center:   rent1brOut,
+      rent_3br_city_center:      p('3 Bedroom Apartment in City Centre'),
+      rent_3br_outside_center:   rent3brOut,
+      rent_shared_room:          sharedRoom,
+      rent_studio:               rent1brOut,
       // Restaurants
-      meal_inexpensive_restaurant: n('meal_inexpensive_restaurant'),
-      meal_midrange_restaurant_2people: n('meal_midrange_restaurant_2people'),
-      meal_fastfood_combo: n('meal_fastfood_combo'),
-      beer_domestic_pint: n('beer_domestic_pint'),
-      cappuccino: n('cappuccino'),
+      meal_inexpensive_restaurant:      p('Meal at an Inexpensive Restaurant'),
+      meal_midrange_restaurant_2people: p('Meal for Two at a Mid-Range Restaurant'),
+      meal_fastfood_combo:              p("Combo Meal at McDonald"),
+      beer_domestic_pint:               p('Domestic Draft Beer (1 Pint)'),
+      cappuccino:                       p('Cappuccino'),
       // Markets
-      milk_1l: n('milk_1l'),
-      bread_loaf: n('bread_loaf'),
-      eggs_12: n('eggs_12'),
-      chicken_1lb: n('chicken_1lb'),
-      apples_1lb: n('apples_1lb'),
-      water_1_5l: n('water_1_5l'),
-      wine_bottle_midrange: n('wine_bottle_midrange'),
-      cigarettes_pack: n('cigarettes_pack'),
-      groceries_monthly: n('groceries_monthly'),
+      milk_1l:             p('Milk (Regular'),
+      bread_loaf:          p('Fresh White Bread'),
+      eggs_12:             p('Eggs (12'),
+      chicken_1lb:         p('Chicken Fillets'),
+      apples_1lb:          p('Apples (1 lb)'),
+      water_1_5l:          p('Bottled Water (50 oz'),
+      wine_bottle_midrange: p('Bottle of Wine (Mid-Range)'),
+      cigarettes_pack:     p('Cigarettes'),
+      groceries_monthly:   0, // computed below from basket items
       // Transportation
-      transport_one_way_ticket: n('transport_one_way_ticket'),
-      monthly_transport_pass: n('monthly_transport_pass'),
-      taxi_start: n('taxi_start'),
-      gasoline_1l: n('gasoline_1l'),
+      transport_one_way_ticket: p('One-Way Ticket'),
+      monthly_transport_pass:   p('Monthly Public Transport Pass'),
+      taxi_start:               p('Taxi Start'),
+      gasoline_1l:              p('Gasoline (1 Liter)'),
       // Utilities
-      utilities_monthly_basic: n('utilities_monthly_basic'),
-      mobile_plan: n('mobile_plan'),
-      internet_monthly: n('internet_monthly'),
+      utilities_monthly_basic: p('Basic Utilities'),
+      mobile_plan:             p('Mobile Phone Plan'),
+      internet_monthly:        p('60 Mbps'),
       // Leisure
-      fitness_club_monthly: n('fitness_club_monthly'),
-      cinema_ticket: n('cinema_ticket'),
+      fitness_club_monthly: p('Fitness Club'),
+      cinema_ticket:        p('Cinema'),
       // Economy
-      avg_monthly_net_salary: n('avg_monthly_net_salary'),
+      avg_monthly_net_salary: p('Average Monthly Net Salary'),
       scrapedAt: new Date().toISOString(),
+    }
+
+    // Estimate monthly grocery spend from individual basket items (frugal student)
+    // milk×4 + bread×4 + eggs×1.5 + chicken×6lb + apples×4lb + water×4 + wine×1 + misc€60
+    if (benchmarks.milk_1l || benchmarks.bread_loaf || benchmarks.chicken_1lb) {
+      benchmarks.groceries_monthly = Math.round(
+        benchmarks.milk_1l * 4 +
+        benchmarks.bread_loaf * 4 +
+        benchmarks.eggs_12 * 1.5 +
+        benchmarks.chicken_1lb * 6 +
+        benchmarks.apples_1lb * 4 +
+        benchmarks.water_1_5l * 4 +
+        benchmarks.wine_bottle_midrange * 1 +
+        60 // misc: pasta, rice, vegetables, sauces, oils
+      )
     }
 
     await dynamo.send(new PutItemCommand({
