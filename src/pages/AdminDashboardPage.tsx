@@ -2938,24 +2938,65 @@ function ScrapersTab() {
         )}
 
         {numbeoResult && (
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-            <p className="text-xs text-gray-400 mb-2.5">Scraped {new Date(numbeoResult.scrapedAt).toLocaleString()} &mdash; <span className="text-white font-medium">{numbeoResult.city}</span></p>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
-              {(([
-                ['Shared room rent', numbeoResult.rent_shared_room],
-                ['Studio rent', numbeoResult.rent_studio],
-                ['Groceries/month', numbeoResult.groceries_monthly],
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 space-y-3">
+            <p className="text-xs text-gray-400">Scraped {new Date(numbeoResult.scrapedAt).toLocaleString()} &mdash; <span className="text-white font-medium">{numbeoResult.city}</span></p>
+            {([
+              ['🏠 Rent', [
+                ['1BR city centre', numbeoResult.rent_1br_city_center],
+                ['1BR outside centre', numbeoResult.rent_1br_outside_center],
+                ['3BR city centre', numbeoResult.rent_3br_city_center],
+                ['3BR outside centre', numbeoResult.rent_3br_outside_center],
+                ['Shared room (est.)', numbeoResult.rent_shared_room],
+                ['Studio (est.)', numbeoResult.rent_studio],
+              ]],
+              ['🍽️ Restaurants', [
                 ['Inexpensive meal', numbeoResult.meal_inexpensive_restaurant],
-                ['Transport pass', numbeoResult.monthly_transport_pass],
+                ['Mid-range (2 people)', numbeoResult.meal_midrange_restaurant_2people],
+                ['Fast food combo', numbeoResult.meal_fastfood_combo],
+                ['Beer (pint)', numbeoResult.beer_domestic_pint],
+                ['Cappuccino', numbeoResult.cappuccino],
+              ]],
+              ['🛒 Markets', [
+                ['Milk (1L)', numbeoResult.milk_1l],
+                ['Bread (loaf)', numbeoResult.bread_loaf],
+                ['Eggs (12)', numbeoResult.eggs_12],
+                ['Chicken (1lb)', numbeoResult.chicken_1lb],
+                ['Apples (1lb)', numbeoResult.apples_1lb],
+                ['Water (1.5L)', numbeoResult.water_1_5l],
+                ['Wine (bottle)', numbeoResult.wine_bottle_midrange],
+                ['Groceries/month', numbeoResult.groceries_monthly],
+              ]],
+              ['🚌 Transport', [
+                ['One-way ticket', numbeoResult.transport_one_way_ticket],
+                ['Monthly pass', numbeoResult.monthly_transport_pass],
+                ['Taxi start', numbeoResult.taxi_start],
+                ['Gasoline (1L)', numbeoResult.gasoline_1l],
+              ]],
+              ['⚡ Utilities', [
+                ['Basic utilities', numbeoResult.utilities_monthly_basic],
                 ['Mobile plan', numbeoResult.mobile_plan],
                 ['Internet/month', numbeoResult.internet_monthly],
-              ]) as [string, number][]).map(([label, val]) => (
-                <div key={label} className="flex justify-between gap-4">
-                  <span className="text-xs text-gray-500">{label}</span>
-                  <span className="text-xs font-semibold text-white tabular-nums">€{Math.round(val * 10) / 10}</span>
+              ]],
+              ['🎬 Leisure', [
+                ['Gym membership', numbeoResult.fitness_club_monthly],
+                ['Cinema ticket', numbeoResult.cinema_ticket],
+              ]],
+              ['💰 Economy', [
+                ['Avg net salary', numbeoResult.avg_monthly_net_salary],
+              ]],
+            ] as [string, [string, number][]][]).map(([section, rows]) => (
+              <div key={section}>
+                <p className="text-xs font-medium text-gray-400 mb-1">{section}</p>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-0.5">
+                  {rows.map(([label, val]) => (
+                    <div key={label} className="flex justify-between gap-4">
+                      <span className="text-xs text-gray-500">{label}</span>
+                      <span className="text-xs font-semibold text-white tabular-nums">{(val ?? 0) > 0 ? `€${Math.round((val ?? 0) * 10) / 10}` : '—'}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

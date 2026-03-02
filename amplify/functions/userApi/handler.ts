@@ -1620,13 +1620,43 @@ interface ScrapedDeadlineItem {
 
 interface NumbeoMilanBenchmarks {
   city: string
-  rent_shared_room: number
-  rent_studio: number
-  groceries_monthly: number
+  // Rent
+  rent_1br_city_center: number
+  rent_1br_outside_center: number
+  rent_3br_city_center: number
+  rent_3br_outside_center: number
+  rent_shared_room: number          // estimated (room in shared flat)
+  rent_studio: number               // estimated (small 1BR/studio)
+  // Restaurants & dining
   meal_inexpensive_restaurant: number
+  meal_midrange_restaurant_2people: number
+  meal_fastfood_combo: number
+  beer_domestic_pint: number
+  cappuccino: number
+  // Markets / groceries
+  milk_1l: number
+  bread_loaf: number
+  eggs_12: number
+  chicken_1lb: number
+  apples_1lb: number
+  water_1_5l: number
+  wine_bottle_midrange: number
+  cigarettes_pack: number
+  groceries_monthly: number         // estimated monthly grocery budget
+  // Transportation
+  transport_one_way_ticket: number
   monthly_transport_pass: number
+  taxi_start: number
+  gasoline_1l: number
+  // Utilities
+  utilities_monthly_basic: number   // electricity + heating + water + garbage
   mobile_plan: number
   internet_monthly: number
+  // Leisure
+  fitness_club_monthly: number
+  cinema_ticket: number
+  // Economy
+  avg_monthly_net_salary: number
   scrapedAt: string
 }
 
@@ -1732,15 +1762,53 @@ async function handlePostAdminScrapeCostBenchmarks(event: any): Promise<ApiRespo
         url: numbeoUrl,
         formats: ['extract'],
         extract: {
-          prompt: `Extract cost of living prices for this city. Return a JSON object with ONLY these keys and their average euro/local-currency prices as plain numbers:
-- rent_shared_room: average monthly rent for a room in a shared apartment (3-4 flatmates)
-- rent_studio: average monthly rent for a studio apartment (1 person)
-- groceries_monthly: typical monthly grocery budget for 1 person cooking at home
-- meal_inexpensive_restaurant: price of one meal at an inexpensive restaurant
-- monthly_transport_pass: monthly public transport pass price
-- mobile_plan: monthly mobile phone plan price (mid-range)
-- internet_monthly: monthly home internet price
-Return numbers only, no currency symbols, no units. Use the local currency shown on the page.`,
+          prompt: `Extract ALL cost of living prices for this city from the page tables. Return a JSON object with EXACTLY these keys and their average prices as plain numbers (no currency symbols, no units, no ranges — just the single average/mid number shown):
+
+Rent:
+- rent_1br_city_center: 1 Bedroom Apartment in City Centre (monthly)
+- rent_1br_outside_center: 1 Bedroom Apartment Outside of City Centre (monthly)
+- rent_3br_city_center: 3 Bedroom Apartment in City Centre (monthly)
+- rent_3br_outside_center: 3 Bedroom Apartment Outside of City Centre (monthly)
+- rent_shared_room: estimate for a single room in a shared flat (roughly rent_3br_outside_center / 3)
+- rent_studio: same as rent_1br_outside_center
+
+Restaurants:
+- meal_inexpensive_restaurant: Meal at an Inexpensive Restaurant
+- meal_midrange_restaurant_2people: Meal for Two at a Mid-Range Restaurant (Three Courses)
+- meal_fastfood_combo: Combo Meal at McDonald's or equivalent
+- beer_domestic_pint: Domestic Draft Beer (1 Pint) at restaurant
+- cappuccino: Cappuccino (Regular Size)
+
+Markets:
+- milk_1l: Milk (Regular, 1 Liter)
+- bread_loaf: Fresh White Bread (1 lb Loaf)
+- eggs_12: Eggs (12 Large)
+- chicken_1lb: Chicken Fillets (1 lb)
+- apples_1lb: Apples (1 lb)
+- water_1_5l: Bottled Water (50 oz / ~1.5L)
+- wine_bottle_midrange: Bottle of Wine (Mid-Range)
+- cigarettes_pack: Cigarettes 20 pack Marlboro
+- groceries_monthly: estimate for typical monthly grocery budget for 1 person
+
+Transportation:
+- transport_one_way_ticket: One-Way Ticket Local Transport
+- monthly_transport_pass: Monthly Public Transport Pass
+- taxi_start: Taxi Start Standard Tariff
+- gasoline_1l: Gasoline per 1 Liter
+
+Utilities:
+- utilities_monthly_basic: Basic Utilities for ~85sqm apartment (electricity, heating, water, garbage)
+- mobile_plan: Mobile Phone Plan monthly (with calls and data)
+- internet_monthly: Broadband Internet monthly
+
+Leisure:
+- fitness_club_monthly: Monthly Fitness Club Membership
+- cinema_ticket: Cinema Ticket
+
+Salary:
+- avg_monthly_net_salary: Average Monthly Net Salary (After Tax)
+
+If a value is not found on the page, use 0. Return numbers only.`,
         },
       }),
     })
@@ -1759,15 +1827,46 @@ Return numbers only, no currency symbols, no units. Use the local currency shown
       throw new Error('Firecrawl returned no structured data')
     }
 
+    const n = (key: string) => Number(extracted[key] ?? 0)
     const benchmarks: NumbeoMilanBenchmarks = {
       city,
-      rent_shared_room: Number(extracted.rent_shared_room ?? 0),
-      rent_studio: Number(extracted.rent_studio ?? 0),
-      groceries_monthly: Number(extracted.groceries_monthly ?? 0),
-      meal_inexpensive_restaurant: Number(extracted.meal_inexpensive_restaurant ?? 0),
-      monthly_transport_pass: Number(extracted.monthly_transport_pass ?? 0),
-      mobile_plan: Number(extracted.mobile_plan ?? 0),
-      internet_monthly: Number(extracted.internet_monthly ?? 0),
+      // Rent
+      rent_1br_city_center: n('rent_1br_city_center'),
+      rent_1br_outside_center: n('rent_1br_outside_center'),
+      rent_3br_city_center: n('rent_3br_city_center'),
+      rent_3br_outside_center: n('rent_3br_outside_center'),
+      rent_shared_room: n('rent_shared_room'),
+      rent_studio: n('rent_studio'),
+      // Restaurants
+      meal_inexpensive_restaurant: n('meal_inexpensive_restaurant'),
+      meal_midrange_restaurant_2people: n('meal_midrange_restaurant_2people'),
+      meal_fastfood_combo: n('meal_fastfood_combo'),
+      beer_domestic_pint: n('beer_domestic_pint'),
+      cappuccino: n('cappuccino'),
+      // Markets
+      milk_1l: n('milk_1l'),
+      bread_loaf: n('bread_loaf'),
+      eggs_12: n('eggs_12'),
+      chicken_1lb: n('chicken_1lb'),
+      apples_1lb: n('apples_1lb'),
+      water_1_5l: n('water_1_5l'),
+      wine_bottle_midrange: n('wine_bottle_midrange'),
+      cigarettes_pack: n('cigarettes_pack'),
+      groceries_monthly: n('groceries_monthly'),
+      // Transportation
+      transport_one_way_ticket: n('transport_one_way_ticket'),
+      monthly_transport_pass: n('monthly_transport_pass'),
+      taxi_start: n('taxi_start'),
+      gasoline_1l: n('gasoline_1l'),
+      // Utilities
+      utilities_monthly_basic: n('utilities_monthly_basic'),
+      mobile_plan: n('mobile_plan'),
+      internet_monthly: n('internet_monthly'),
+      // Leisure
+      fitness_club_monthly: n('fitness_club_monthly'),
+      cinema_ticket: n('cinema_ticket'),
+      // Economy
+      avg_monthly_net_salary: n('avg_monthly_net_salary'),
       scrapedAt: new Date().toISOString(),
     }
 

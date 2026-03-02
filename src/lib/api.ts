@@ -1000,13 +1000,43 @@ export async function scrapeDeadlines(): Promise<{
 
 export interface NumbeoMilanBenchmarks {
   city: string
+  // Rent
+  rent_1br_city_center: number
+  rent_1br_outside_center: number
+  rent_3br_city_center: number
+  rent_3br_outside_center: number
   rent_shared_room: number
   rent_studio: number
-  groceries_monthly: number
+  // Restaurants & dining
   meal_inexpensive_restaurant: number
+  meal_midrange_restaurant_2people: number
+  meal_fastfood_combo: number
+  beer_domestic_pint: number
+  cappuccino: number
+  // Markets / groceries
+  milk_1l: number
+  bread_loaf: number
+  eggs_12: number
+  chicken_1lb: number
+  apples_1lb: number
+  water_1_5l: number
+  wine_bottle_midrange: number
+  cigarettes_pack: number
+  groceries_monthly: number
+  // Transportation
+  transport_one_way_ticket: number
   monthly_transport_pass: number
+  taxi_start: number
+  gasoline_1l: number
+  // Utilities
+  utilities_monthly_basic: number
   mobile_plan: number
   internet_monthly: number
+  // Leisure
+  fitness_club_monthly: number
+  cinema_ticket: number
+  // Economy
+  avg_monthly_net_salary: number
   scrapedAt: string
 }
 
