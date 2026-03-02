@@ -2875,12 +2875,78 @@ function ScrapersTab() {
         )}
       </div>
 
+      {/* Numbeo Cost of Living scraper */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-950 border border-amber-800 flex items-center justify-center flex-shrink-0">
+            <Globe className="w-4 h-4 text-amber-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white">Numbeo Cost-of-Living Scraper</h3>
+            <p className="text-xs text-gray-500 mt-0.5 leading-snug">Scrapes Numbeo Milan for live average prices (rent, groceries, transport, mobile, internet) and saves them as benchmarks shown in the Cost of Living calculator.</p>
+            <a href="https://www.numbeo.com/cost-of-living/in/Milan" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-0.5">
+              <ExternalLink className="w-3 h-3" /> Numbeo Milan
+            </a>
+          </div>
+        </div>
+
+        <button
+          onClick={runScrapeNumbeo}
+          disabled={numbeoLoading}
+          className="flex items-center gap-1.5 text-xs bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${numbeoLoading ? 'animate-spin' : ''}`} />
+          {numbeoLoading ? 'Scraping & saving…' : 'Scrape & save benchmarks'}
+        </button>
+
+        {numbeoError && (
+          <div className="flex items-start gap-2 bg-red-950/40 border border-red-800 rounded-lg p-3">
+            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-red-400">{numbeoError}</p>
+          </div>
+        )}
+
+        {numbeoSaved && numbeoResult && (
+          <div className="flex items-start gap-2 bg-green-950/40 border border-green-800 rounded-lg p-2.5">
+            <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-green-400">Saved! Benchmarks are now live in the Cost of Living calculator.</p>
+          </div>
+        )}
+
+        {numbeoResult && (
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+            <p className="text-xs text-gray-400 mb-2.5">Scraped {new Date(numbeoResult.scrapedAt).toLocaleString()}</p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+              {(([
+                ['Shared room rent', numbeoResult.rent_shared_room],
+                ['Studio rent', numbeoResult.rent_studio],
+                ['Groceries/month', numbeoResult.groceries_monthly],
+                ['Inexpensive meal', numbeoResult.meal_inexpensive_restaurant],
+                ['Transport pass', numbeoResult.monthly_transport_pass],
+                ['Mobile plan', numbeoResult.mobile_plan],
+                ['Internet/month', numbeoResult.internet_monthly],
+              ]) as [string, number][]).map(([label, val]) => (
+                <div key={label} className="flex justify-between gap-4">
+                  <span className="text-xs text-gray-500">{label}</span>
+                  <span className="text-xs font-semibold text-white tabular-nums">€{Math.round(val * 10) / 10}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Placeholder for future scrapers */}
       <div className="border border-dashed border-gray-800 rounded-xl p-6 text-center">
         <Globe className="w-6 h-6 text-gray-700 mx-auto mb-2" />
         <p className="text-sm text-gray-600">More scrapers coming soon</p>
         <p className="text-xs text-gray-700 mt-0.5">Add new Firecrawl sources here (housing, visa requirements, scholarships…)</p>
-      </div> | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails' | 'content' | 'scrapers'
+      </div>
+    </div>
+  )
+}
+
+type Tab = 'overview' | 'analytics' | 'feedback' | 'users' | 'buddy' | 'emails' | 'content' | 'scrapers'
 
 const ADMIN_TAB_KEY = 'adminDashboardTab'
 
