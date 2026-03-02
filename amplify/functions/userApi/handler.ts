@@ -1633,18 +1633,13 @@ async function handlePostAdminScrapeDeadlines(event: any): Promise<ApiResponse> 
     return fail(500, 'Could not load Firecrawl API key')
   }
 
-  const results: Array<{
-    source: string
-    university: string
-    status: 'ok' | 'error'
-    deadlines?: ScrapedDeadlineItem[]
-    error?: string
-  }> = []
-
-  for (const source of DEADLINE_SCRAPE_SOURCES) {
+  const scrapeOne = async (source: typeof DEADLINE_SCRAPE_SOURCES[number]) => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 22000) // 22s per-source timeout
     try {
       const firecrawlRes = await fetch('https://api.firecrawl.dev/v1/scrape', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
@@ -1671,12 +1666,17 @@ Include ALL entries regardless of whether they are past or future. Do not skip a
 
       const data = await firecrawlRes.json() as any
       const extracted: ScrapedDeadlineItem[] = data?.data?.extract ?? data?.extract ?? []
-      results.push({ source: source.url, university: source.university, status: 'ok', deadlines: extracted })
+      return { source: source.url, university: source.university, status: 'ok' as const, deadlines: extracted }
     } catch (err: any) {
       console.error(`[scrape-deadlines] Error scraping ${source.university}:`, err)
-      results.push({ source: source.url, university: source.university, status: 'error', error: err?.message ?? String(err) })
+      return { source: source.url, university: source.university, status: 'error' as const, error: err?.message ?? String(err) }
+    } finally {
+      clearTimeout(timeoutId)
     }
   }
+
+  // Run all sources in parallel to stay within API Gateway's 29s limit
+  const results = await Promise.all(DEADLINE_SCRAPE_SOURCES.map(scrapeOne))
 
   return ok({ results })
 }

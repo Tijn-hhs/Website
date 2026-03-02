@@ -17,6 +17,8 @@ export default defineConfig({
         target: API_TARGET,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api-proxy/, ''),
+        timeout: 30000,        // 30s socket timeout for slow scrape endpoints
+        proxyTimeout: 30000,   // 30s proxy response timeout
       },
     },
   },
