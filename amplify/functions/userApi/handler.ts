@@ -390,6 +390,7 @@ const TABLE = {
   contentNeighborhoods:   process.env.CONTENT_NEIGHBORHOODS_TABLE_NAME       || '',
   contentModules:         process.env.CONTENT_MODULES_TABLE_NAME             || '',
   contentOriginCountries: process.env.CONTENT_ORIGIN_COUNTRIES_TABLE_NAME    || '',
+  costBenchmarks:         process.env.COST_BENCHMARKS_TABLE_NAME              || '',
 } as const
 
 const SENDER_EMAIL = 'hallo@weleav.com'
@@ -1618,6 +1619,7 @@ interface ScrapedDeadlineItem {
 }
 
 interface NumbeoMilanBenchmarks {
+  city: string
   rent_shared_room: number
   rent_studio: number
   groceries_monthly: number
@@ -1694,11 +1696,13 @@ Include ALL entries regardless of whether they are past or future. Do not skip a
 
 /**
  * POST /admin/scrape-cost-benchmarks
- * Scrapes Numbeo Milan for live cost-of-living prices and saves them to the
- * profiles table under userId='system:cost-benchmarks' for all users to read.
+ * Accepts optional { city } body (defaults to "Milan").
+ * Scrapes Numbeo for live cost-of-living prices and saves them to the
+ * costBenchmarks table keyed by city name.
  */
 async function handlePostAdminScrapeCostBenchmarks(event: any): Promise<ApiResponse> {
   if (!isAdminCaller(event)) return fail(403, 'Forbidden')
+  if (!TABLE.costBenchmarks) return fail(503, 'Cost benchmarks table not yet provisioned')
 
   let apiKey: string
   try {
@@ -1707,6 +1711,11 @@ async function handlePostAdminScrapeCostBenchmarks(event: any): Promise<ApiRespo
     console.error('[scrape-cost-benchmarks] Failed to load Firecrawl key:', err)
     return fail(500, 'Could not load Firecrawl API key')
   }
+
+  const body = event.body ? JSON.parse(event.body) : {}
+  const city: string = ((body.city as string) || 'Milan').trim()
+  const numbeoSlug = city.replace(/\s+/g, '-') // "New York" -> "New-York"
+  const numbeoUrl = `https://www.numbeo.com/cost-of-living/in/${numbeoSlug}`
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 25000)
@@ -1720,10 +1729,10 @@ async function handlePostAdminScrapeCostBenchmarks(event: any): Promise<ApiRespo
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        url: 'https://www.numbeo.com/cost-of-living/in/Milan',
+        url: numbeoUrl,
         formats: ['extract'],
         extract: {
-          prompt: `Extract cost of living prices for Milan, Italy. Return a JSON object with ONLY these keys and their average euro prices as plain numbers:
+          prompt: `Extract cost of living prices for this city. Return a JSON object with ONLY these keys and their average euro/local-currency prices as plain numbers:
 - rent_shared_room: average monthly rent for a room in a shared apartment (3-4 flatmates)
 - rent_studio: average monthly rent for a studio apartment (1 person)
 - groceries_monthly: typical monthly grocery budget for 1 person cooking at home
@@ -1731,7 +1740,7 @@ async function handlePostAdminScrapeCostBenchmarks(event: any): Promise<ApiRespo
 - monthly_transport_pass: monthly public transport pass price
 - mobile_plan: monthly mobile phone plan price (mid-range)
 - internet_monthly: monthly home internet price
-Return numbers only, no currency symbols, no units.`,
+Return numbers only, no currency symbols, no units. Use the local currency shown on the page.`,
         },
       }),
     })
@@ -1751,6 +1760,7 @@ Return numbers only, no currency symbols, no units.`,
     }
 
     const benchmarks: NumbeoMilanBenchmarks = {
+      city,
       rent_shared_room: Number(extracted.rent_shared_room ?? 0),
       rent_studio: Number(extracted.rent_studio ?? 0),
       groceries_monthly: Number(extracted.groceries_monthly ?? 0),
@@ -1761,13 +1771,12 @@ Return numbers only, no currency symbols, no units.`,
       scrapedAt: new Date().toISOString(),
     }
 
-    // Persist to profiles table under a system key so any authenticated user can read it
     await dynamo.send(new PutItemCommand({
-      TableName: TABLE.profiles,
-      Item: marshall({ userId: 'system:cost-benchmarks', ...benchmarks }, { removeUndefinedValues: true }),
+      TableName: TABLE.costBenchmarks,
+      Item: marshall(benchmarks, { removeUndefinedValues: true }),
     }))
 
-    console.log('[scrape-cost-benchmarks] Saved Numbeo benchmarks:', benchmarks)
+    console.log('[scrape-cost-benchmarks] Saved benchmarks for', city, ':', benchmarks)
     return ok({ benchmarks })
   } catch (err: any) {
     clearTimeout(timeoutId)
@@ -1777,17 +1786,27 @@ Return numbers only, no currency symbols, no units.`,
 }
 
 /**
- * GET /cost-benchmarks
- * Returns the latest Numbeo cost-of-living benchmarks for Milan.
- * Requires auth. Returns { benchmarks: null } if no data has been scraped yet.
+ * GET /cost-benchmarks?city=Milan
+ * Returns benchmarks for a specific city. Returns { benchmarks: null } if not scraped yet.
  */
-async function handleGetCostBenchmarks(): Promise<ApiResponse> {
+async function handleGetCostBenchmarks(event: any): Promise<ApiResponse> {
+  if (!TABLE.costBenchmarks) return ok({ benchmarks: null })
+  const city = (event.queryStringParameters?.city || 'Milan').trim()
   const res = await dynamo.send(
-    new GetItemCommand({ TableName: TABLE.profiles, Key: marshall({ userId: 'system:cost-benchmarks' }) })
+    new GetItemCommand({ TableName: TABLE.costBenchmarks, Key: marshall({ city }) })
   )
   if (!res.Item) return ok({ benchmarks: null })
-  const { userId: _uid, ...benchmarks } = unmarshall(res.Item)
-  return ok({ benchmarks })
+  return ok({ benchmarks: unmarshall(res.Item) })
+}
+
+/**
+ * GET /cost-benchmarks/all
+ * Returns all scraped city benchmarks (for admin comparison view).
+ */
+async function handleGetAllCostBenchmarks(): Promise<ApiResponse> {
+  if (!TABLE.costBenchmarks) return ok({ benchmarks: [] })
+  const items = await scanAll(TABLE.costBenchmarks)
+  return ok({ benchmarks: items })
 }
 
 /** GET /admin/buddy-pool — list all users who opted into the buddy system. */
@@ -2563,7 +2582,8 @@ export async function handler(event: any): Promise<ApiResponse> {
     if (method === 'POST' && path === '/admin/send-deadline-reminders') return await handlePostAdminSendDeadlineReminders(event)
     if (method === 'POST' && path === '/admin/scrape-deadlines') return await handlePostAdminScrapeDeadlines(event)
     if (method === 'POST' && path === '/admin/scrape-cost-benchmarks') return await handlePostAdminScrapeCostBenchmarks(event)
-    if (method === 'GET'  && path === '/cost-benchmarks') return await handleGetCostBenchmarks()
+    if (method === 'GET'  && path === '/cost-benchmarks') return await handleGetCostBenchmarks(event)
+    if (method === 'GET'  && path === '/cost-benchmarks/all') return await handleGetAllCostBenchmarks()
     if (method === 'GET'  && path === '/chat')             return await handleGetChat(userId)
     if (method === 'POST' && path === '/chat')             return await handlePostChat(userId, event)
 

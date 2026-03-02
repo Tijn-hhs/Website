@@ -83,7 +83,7 @@ function StepTypeBadge({ type }: { type?: StepType }) {
   const m = STEP_TYPE_META[type]
   return <span className={`text-xs px-1.5 py-0.5 rounded border ${m.color}`}>{m.label}</span>
 }
-import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, scrapeDeadlines, scrapeCostBenchmarks, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, recalculateDashboardPlans, type NumbeoMilanBenchmarks, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
+import { fetchAdminStats, fetchAdminWhatsappMessages, fetchAdminFeedback, fetchAdminBuddyPool, adminBuddyMatch, fetchAdminUsers, fetchAdminEmailTemplates, updateAdminEmailTemplate, sendTestEmail, sendDeadlineReminders, scrapeDeadlines, scrapeCostBenchmarks, fetchAllCostBenchmarks, fetchAdminContentCountries, createContentCountry, deleteContentCountry, fetchAdminContentCities, createContentCity, deleteContentCity, fetchAdminContentUniversities, createContentUniversity, deleteContentUniversity, fetchAdminContentModules, createContentModule, updateContentModule, deleteContentModule, fetchAdminContentOriginCountries, createContentOriginCountry, deleteContentOriginCountry, recalculateDashboardPlans, type NumbeoMilanBenchmarks, type AdminStats, type WhatsAppMessage, type WhatsAppMessagesResponse, type FeedbackItem, type BuddyPoolUser, type AdminUserRecord, type EmailTemplate, type ContentCountry, type ContentCity, type ContentUniversity, type ContentModule, type ContentOriginCountry, type ContentVariant, type StepType, type DashboardPlanItem } from '../lib/api'
 import { checkAdminStatus } from '../lib/adminAuth'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -2758,6 +2758,14 @@ function ScrapersTab() {
   const [numbeoResult, setNumbeoResult] = useState<NumbeoMilanBenchmarks | null>(null)
   const [numbeoError, setNumbeoError] = useState<string | null>(null)
   const [numbeoSaved, setNumbeoSaved] = useState(false)
+  const [numbeoCity, setNumbeoCity] = useState('Milan')
+  const [allBenchmarks, setAllBenchmarks] = useState<NumbeoMilanBenchmarks[]>([])
+
+  useEffect(() => {
+    fetchAllCostBenchmarks()
+      .then((d) => setAllBenchmarks(d.benchmarks))
+      .catch(() => {})
+  }, [])
 
   async function runScrapeDeadlines() {
     setScrapeLoading(true)
@@ -2779,9 +2787,11 @@ function ScrapersTab() {
     setNumbeoError(null)
     setNumbeoSaved(false)
     try {
-      const data = await scrapeCostBenchmarks()
+      const data = await scrapeCostBenchmarks(numbeoCity)
       setNumbeoResult(data.benchmarks)
       setNumbeoSaved(true)
+      // Refresh the list
+      fetchAllCostBenchmarks().then((d) => setAllBenchmarks(d.benchmarks)).catch(() => {})
     } catch (e: unknown) {
       setNumbeoError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
@@ -2883,21 +2893,35 @@ function ScrapersTab() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white">Numbeo Cost-of-Living Scraper</h3>
-            <p className="text-xs text-gray-500 mt-0.5 leading-snug">Scrapes Numbeo Milan for live average prices (rent, groceries, transport, mobile, internet) and saves them as benchmarks shown in the Cost of Living calculator.</p>
-            <a href="https://www.numbeo.com/cost-of-living/in/Milan" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-0.5">
-              <ExternalLink className="w-3 h-3" /> Numbeo Milan
+            <p className="text-xs text-gray-500 mt-0.5 leading-snug">Scrapes Numbeo for any city's average prices (rent, groceries, transport, mobile, internet) and saves them as benchmarks. Used in the Cost of Living calculator and for city comparisons.</p>
+            <a href="https://www.numbeo.com/cost-of-living/" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-0.5">
+              <ExternalLink className="w-3 h-3" /> Numbeo
             </a>
           </div>
         </div>
 
-        <button
-          onClick={runScrapeNumbeo}
-          disabled={numbeoLoading}
-          className="flex items-center gap-1.5 text-xs bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${numbeoLoading ? 'animate-spin' : ''}`} />
-          {numbeoLoading ? 'Scraping & saving…' : 'Scrape & save benchmarks'}
-        </button>
+        {/* City input + scrape button */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1 relative">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">City:</span>
+            <input
+              type="text"
+              value={numbeoCity}
+              onChange={(e) => setNumbeoCity(e.target.value)}
+              placeholder="e.g. Milan, Amsterdam, London"
+              className="w-full pl-11 pr-3 py-2 text-xs bg-gray-800 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500 placeholder-gray-600"
+              onKeyDown={(e) => e.key === 'Enter' && !numbeoLoading && runScrapeNumbeo()}
+            />
+          </div>
+          <button
+            onClick={runScrapeNumbeo}
+            disabled={numbeoLoading || !numbeoCity.trim()}
+            className="flex items-center gap-1.5 text-xs bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${numbeoLoading ? 'animate-spin' : ''}`} />
+            {numbeoLoading ? 'Scraping…' : 'Scrape & save'}
+          </button>
+        </div>
 
         {numbeoError && (
           <div className="flex items-start gap-2 bg-red-950/40 border border-red-800 rounded-lg p-3">
@@ -2915,7 +2939,7 @@ function ScrapersTab() {
 
         {numbeoResult && (
           <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-            <p className="text-xs text-gray-400 mb-2.5">Scraped {new Date(numbeoResult.scrapedAt).toLocaleString()}</p>
+            <p className="text-xs text-gray-400 mb-2.5">Scraped {new Date(numbeoResult.scrapedAt).toLocaleString()} &mdash; <span className="text-white font-medium">{numbeoResult.city}</span></p>
             <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
               {(([
                 ['Shared room rent', numbeoResult.rent_shared_room],
@@ -2935,6 +2959,39 @@ function ScrapersTab() {
           </div>
         )}
       </div>
+
+      {/* All scraped cities */}
+      {allBenchmarks.length > 0 && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-white mb-3">Saved City Benchmarks ({allBenchmarks.length})</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-gray-500 border-b border-gray-700">
+                  <th className="text-left pb-1.5 pr-4 font-medium">City</th>
+                  <th className="text-right pb-1.5 pr-3 font-medium">Shared room</th>
+                  <th className="text-right pb-1.5 pr-3 font-medium">Studio</th>
+                  <th className="text-right pb-1.5 pr-3 font-medium">Groceries</th>
+                  <th className="text-right pb-1.5 pr-3 font-medium">Transport</th>
+                  <th className="text-right pb-1.5 font-medium text-gray-600">Scraped</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {[...allBenchmarks].sort((a, b) => a.city.localeCompare(b.city)).map((b) => (
+                  <tr key={b.city}>
+                    <td className="py-1.5 pr-4 text-white font-medium">{b.city}</td>
+                    <td className="py-1.5 pr-3 text-gray-300 tabular-nums text-right">€{Math.round(b.rent_shared_room)}</td>
+                    <td className="py-1.5 pr-3 text-gray-300 tabular-nums text-right">€{Math.round(b.rent_studio)}</td>
+                    <td className="py-1.5 pr-3 text-gray-300 tabular-nums text-right">€{Math.round(b.groceries_monthly)}</td>
+                    <td className="py-1.5 pr-3 text-gray-300 tabular-nums text-right">€{Math.round(b.monthly_transport_pass)}</td>
+                    <td className="py-1.5 text-gray-600 text-right">{new Date(b.scrapedAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Placeholder for future scrapers */}
       <div className="border border-dashed border-gray-800 rounded-xl p-6 text-center">

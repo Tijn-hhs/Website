@@ -999,6 +999,7 @@ export async function scrapeDeadlines(): Promise<{
 }
 
 export interface NumbeoMilanBenchmarks {
+  city: string
   rent_shared_room: number
   rent_studio: number
   groceries_monthly: number
@@ -1009,8 +1010,8 @@ export interface NumbeoMilanBenchmarks {
   scrapedAt: string
 }
 
-/** Admin: scrape Numbeo Milan and save benchmarks to DynamoDB for all users to see. */
-export async function scrapeCostBenchmarks(): Promise<{ benchmarks: NumbeoMilanBenchmarks }> {
+/** Admin: scrape Numbeo for a city and save benchmarks to DynamoDB. */
+export async function scrapeCostBenchmarks(city = 'Milan'): Promise<{ benchmarks: NumbeoMilanBenchmarks }> {
   const headers = await getAuthHeaders()
 
   let url: string
@@ -1025,6 +1026,7 @@ export async function scrapeCostBenchmarks(): Promise<{ benchmarks: NumbeoMilanB
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify({ city }),
   })
 
   if (!res.ok) {
@@ -1036,17 +1038,41 @@ export async function scrapeCostBenchmarks(): Promise<{ benchmarks: NumbeoMilanB
   return res.json()
 }
 
-/** Fetch latest Numbeo cost-of-living benchmarks for Milan. Returns null benchmarks if not yet scraped. */
-export async function fetchCostBenchmarks(): Promise<{ benchmarks: NumbeoMilanBenchmarks | null }> {
+/** Fetch benchmarks for a specific city. Returns null benchmarks if not yet scraped. */
+export async function fetchCostBenchmarks(city = 'Milan'): Promise<{ benchmarks: NumbeoMilanBenchmarks | null }> {
   const headers = await getAuthHeaders()
 
   let url: string
   if (import.meta.env.DEV) {
-    url = '/api-proxy/cost-benchmarks'
+    url = `/api-proxy/cost-benchmarks?city=${encodeURIComponent(city)}`
   } else {
     const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
     const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
-    url = `${endpoint}/cost-benchmarks`
+    url = `${endpoint}/cost-benchmarks?city=${encodeURIComponent(city)}`
+  }
+
+  const res = await fetch(url, { headers })
+
+  if (!res.ok) {
+    let body = ''
+    try { body = await res.text() } catch {}
+    throw new Error(`HTTP ${res.status} ${res.statusText}${body ? ': ' + body : ''}`)
+  }
+
+  return res.json()
+}
+
+/** Fetch all scraped city benchmarks (admin use). */
+export async function fetchAllCostBenchmarks(): Promise<{ benchmarks: NumbeoMilanBenchmarks[] }> {
+  const headers = await getAuthHeaders()
+
+  let url: string
+  if (import.meta.env.DEV) {
+    url = '/api-proxy/cost-benchmarks/all'
+  } else {
+    const outputs = await fetch('/amplify_outputs.json').then((r) => r.json()) as any
+    const endpoint: string = (outputs?.custom?.API?.endpoint ?? '').replace(/\/+$/, '')
+    url = `${endpoint}/cost-benchmarks/all`
   }
 
   const res = await fetch(url, { headers })
